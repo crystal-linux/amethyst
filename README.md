@@ -16,6 +16,8 @@
 <p align="center"> amethyst is a fast, efficient and lightweight aur helper and pacman wrapper. 
 Made for crystalux, compatible with any arch-based linux distribution. <b>NOW IN RUST!</b></p>
 
+✅ This tool is jas-compliant. Read more [here](https://github.com/jaasio/jas-compliant).
+
 ![](screenshot.png)
 
 ## Basic usage - <b>NOT COMPLETE!</b>
