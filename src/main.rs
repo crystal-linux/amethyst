@@ -1,19 +1,15 @@
 mod clone;
 mod uninstall;
 mod help;
-use crate::{clone::clone, help::help, uninstall::uninstall};
+mod upgrade;
+use crate::{clone::clone, help::help, uninstall::uninstall, upgrade::upgrade};
 use std::{env, process::exit};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-
-    if args.len() < 3 {
-        help();
-        exit(0);
-    }
     
     let oper = &args[1];
-
+    print!("{}", oper);
     if oper == "-S" {
         for arg in env::args().skip(2) {
             clone(&arg);
@@ -22,5 +18,10 @@ fn main() {
         for arg in env::args().skip(2) {
             uninstall(&arg);
         }
+    } else if oper == "-Syu" {
+        upgrade();
+    } else {
+        help();
+        exit(0);
     }
 }
