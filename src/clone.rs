@@ -5,7 +5,6 @@ use serde_json::Value;
 pub fn clone(pkg: &str) {
     let url = format!("https://aur.archlinux.org/{}.git", pkg);
     let aurl = format!("https://aur.archlinux.org/packages/{}", pkg);
-    let ajsurl = format!("https://aur.archlinux.org/rpc/?v=5&type=info&arg={}", pkg);
     let homedir = std::env::var("HOME").unwrap();
     let cachedir = format!("{}/.cache/ame/{}", homedir, pkg);
     let path = Path::new(&cachedir);
