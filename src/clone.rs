@@ -24,7 +24,4 @@ pub fn clone(pkg: &str) {
     } else {
         println!("Error, repository {} not found", pkg);
     }
-
-    println!("{}", deps);
-
 }
