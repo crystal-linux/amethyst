@@ -2,7 +2,8 @@ mod clone;
 mod uninstall;
 mod help;
 mod upgrade;
-use crate::{clone::clone, help::help, uninstall::uninstall, upgrade::upgrade};
+mod search;
+use crate::{clone::clone, help::help, uninstall::uninstall, upgrade::upgrade, search::search};
 use std::{env, process::exit};
 
 fn main() {
@@ -20,6 +21,10 @@ fn main() {
         }
     } else if oper == "-Syu" {
         upgrade();
+    } else if oper == "-Ss" {
+        for arg in env::args().skip(2) {
+            search(&arg);
+        }
     } else {
         help();
         exit(0);
