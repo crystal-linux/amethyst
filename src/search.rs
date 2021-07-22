@@ -1,34 +1,19 @@
-use std::process::Command;
-use json;
-use std::fs::File;
-use std::io::prelude::*;
-use std::path::Path;
-use curl::easy::Easy;
-use std::io::{stdout, Write};
+use serde_json::Result;
+use serde_json::Value;
+use std::string::String;
 
-pub fn search(pkg: &str) {
-    let url = format!("https://aur.archlinux.org/rpc/?v=5&type=search&arg={}",&pkg);
-    
-    let mut easy = Easy::new();
-    easy.url("https://www.rust-lang.org/").unwrap();
 
-    let mut data = Vec::new();
-let mut handle = Easy::new();
-handle.url(&url).unwrap();
-{
-    let mut transfer = handle.transfer();
-    transfer.write_function(|new_data| {
-        data.extend_from_slice(new_data);
-        Ok(new_data.len())
-    }).unwrap();
-    transfer.perform().unwrap();
+pub fn search(pkg: &String) -> Result<()> {
+
+    let data = r#"{"version":5,"type":"search","resultcount":11,"results":[{"ID":427059,"Name":"neofetch-git","PackageBaseID":108127,"PackageBase":"neofetch-git","Version":"3.2.0.r28.g2eca41d-1","Description":"A CLI system information tool written in BASH that supports displaying images.","URL":"https:\/\/github.com\/dylanaraps\/neofetch","NumVotes":28,"Popularity":0.017397,"OutOfDate":null,"Maintainer":"dylan","FirstSubmitted":1456621163,"LastModified":1499929705,"URLPath":"\/cgit\/aur.git\/snapshot\/neofetch-git.tar.gz"},{"ID":759516,"Name":"paleofetch-git","PackageBaseID":151831,"PackageBase":"paleofetch-git","Version":"r185.f5340ca-1","Description":"neofetch, but written in C","URL":"https:\/\/github.com\/otreblan\/paleofetch","NumVotes":2,"Popularity":0.021744,"OutOfDate":null,"Maintainer":"otreblan","FirstSubmitted":1587556209,"LastModified":1593658341,"URLPath":"\/cgit\/aur.git\/snapshot\/paleofetch-git.tar.gz"},{"ID":802900,"Name":"freshfetch-git","PackageBaseID":157373,"PackageBase":"freshfetch-git","Version":"v0.1.2.r6.g093e489-1","Description":"A fresh take on Neofetch","URL":"https:\/\/github.com\/K4rakara\/freshfetch","NumVotes":1,"Popularity":0.001535,"OutOfDate":1622846840,"Maintainer":"k4rakara","FirstSubmitted":1599243169,"LastModified":1602343730,"URLPath":"\/cgit\/aur.git\/snapshot\/freshfetch-git.tar.gz"},{"ID":867208,"Name":"nekofetch-git","PackageBaseID":162080,"PackageBase":"nekofetch-git","Version":"r30.0e8a74b-3","Description":"neofetch but with nekos","URL":"https:\/\/github.com\/proprdev\/nekofetch","NumVotes":1,"Popularity":0.309904,"OutOfDate":null,"Maintainer":"bbaovanc","FirstSubmitted":1610656580,"LastModified":1613961504,"URLPath":"\/cgit\/aur.git\/snapshot\/nekofetch-git.tar.gz"},{"ID":878234,"Name":"nekofetch","PackageBaseID":161938,"PackageBase":"nekofetch","Version":"1.4-1","Description":"neofetch but with nekos","URL":"https:\/\/github.com\/proprdev\/nekofetch","NumVotes":1,"Popularity":0.020441,"OutOfDate":null,"Maintainer":"bbaovanc","FirstSubmitted":1610326924,"LastModified":1615929492,"URLPath":"\/cgit\/aur.git\/snapshot\/nekofetch.tar.gz"},{"ID":887724,"Name":"hentaifetch-git","PackageBaseID":164297,"PackageBase":"hentaifetch-git","Version":"r52.af6ffb6-1","Description":"neofetch but with hentai","URL":"https:\/\/github.com\/helpmeplsfortheloveofgod\/hentaifetch","NumVotes":2,"Popularity":0.306436,"OutOfDate":null,"Maintainer":"personifieddevil","FirstSubmitted":1615659415,"LastModified":1617560790,"URLPath":"\/cgit\/aur.git\/snapshot\/hentaifetch-git.tar.gz"},{"ID":893552,"Name":"freshfetch","PackageBaseID":158069,"PackageBase":"freshfetch","Version":"0.2.0-2","Description":"A fresh take on Neofetch","URL":"https:\/\/github.com\/K4rakara\/freshfetch","NumVotes":0,"Popularity":0,"OutOfDate":null,"Maintainer":"k4rakara","FirstSubmitted":1601150974,"LastModified":1618617762,"URLPath":"\/cgit\/aur.git\/snapshot\/freshfetch.tar.gz"},{"ID":894075,"Name":"freshfetch-bin","PackageBaseID":158605,"PackageBase":"freshfetch-bin","Version":"0.2.0-2","Description":"A fresh take on Neofetch","URL":"https:\/\/github.com\/K4rakara\/freshfetch","NumVotes":0,"Popularity":0,"OutOfDate":null,"Maintainer":"k4rakara","FirstSubmitted":1602342502,"LastModified":1618717811,"URLPath":"\/cgit\/aur.git\/snapshot\/freshfetch-bin.tar.gz"},{"ID":922286,"Name":"wayfetch-git","PackageBaseID":167993,"PackageBase":"wayfetch-git","Version":"0.00.01.e9b0693d-1","Description":"A CLI system information tool written in C. A neofetch clone.","URL":"https:\/\/github.com\/PalanixYT\/wayfetch","NumVotes":0,"Popularity":0,"OutOfDate":null,"Maintainer":"jahway603","FirstSubmitted":1623721001,"LastModified":1623947061,"URLPath":"\/cgit\/aur.git\/snapshot\/wayfetch-git.tar.gz"},{"ID":927940,"Name":"ppfetch-git","PackageBaseID":168459,"PackageBase":"ppfetch-git","Version":"1.09.8fd1ae9-1","Description":"Info script written in BASH, alternative for ufetch and neofetch.","URL":"https:\/\/gitlab.com\/pedro.portales\/ppfetch","NumVotes":1,"Popularity":0.627046,"OutOfDate":null,"Maintainer":"RedsonBr","FirstSubmitted":1624967494,"LastModified":1624968600,"URLPath":"\/cgit\/aur.git\/snapshot\/ppfetch-git.tar.gz"},{"ID":929407,"Name":"fastfetch-git","PackageBaseID":163476,"PackageBase":"fastfetch-git","Version":"r399.1717b51-1","Description":"Like neofetch, but much faster because written in c","URL":"https:\/\/github.com\/LinusDierheimer\/fastfetch","NumVotes":3,"Popularity":1.198992,"OutOfDate":null,"Maintainer":"LinusDierheimer","FirstSubmitted":1613686592,"LastModified":1625260324,"URLPath":"\/cgit\/aur.git\/snapshot\/fastfetch-git.tar.gz"}]}"#;
+
+    println!("before parse");
+    let p: Value = serde_json::from_str(data)?;
+    println!("after parse");
+    //let data1=p["results"][0].as_str();
+    println!("{}",p["results"][0]);
+    //let p1: Value = serde_json::from_str(&data1);
+    println!("Please call {} at the number {}", p["version"], p["results"][0]);
+
+    Ok(())
 }
-//println!("{:?}", data);
-
-    let s = String::from_utf8_lossy(&data);
-    println!("result: {}", s);
-
-    Command::new("pacman").arg("-Ss").arg(&pkg).spawn().expect("Failed to run pacman");
-
-    //let parsed = json::parse(&output)
-}  
