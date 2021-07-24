@@ -1,5 +1,5 @@
 use git2::Repository;
-use std::{fs, env, path::Path, process::Command};
+use std::{fs, path::Path, process::Command};
 
 pub fn clone(pkg: &str) {
     let cachedir = format!("{}/.cache/ame/{}", std::env::var("HOME").unwrap(), pkg);
@@ -15,11 +15,11 @@ pub fn clone(pkg: &str) {
         println!("Cloning {} ...", pkg);
         Repository::clone(&url, &path).unwrap();
         println!("Installing {} ...", pkg);
-        env::set_current_dir(&cachedir).expect(&error);
         Command::new("makepkg")
+                    .current_dir(&cachedir)
                     .arg("--noconfirm")
                     .arg("-si")
-                    .spawn()
+                    .output()
                     .expect(&error);
     }
 }
