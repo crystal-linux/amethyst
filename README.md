@@ -4,7 +4,7 @@
   </a>
 </p>
 <p align="center"> 
-<h2 align="center"> Amethyst - Rust rework</h2>
+<h2 align="center"> Amethyst</h2>
 </p>
 <p align="center">
 <img src=https://img.shields.io/github/stars/crystalux-project/ame?style=flat&color=a900ff />
@@ -13,10 +13,8 @@
 <img src=https://img.shields.io/github/issues-pr/crystalux-project/ame?style=flat&color=a900ff />
 <a href="https://discord.gg/yp4xpZeAgW"><img alt="Discord" src="https://img.shields.io/discord/825473796227858482?color=blue&label=Discord&logo=Discord&logoColor=white"?link=https://discord.gg/yp4xpZeAgW&link=https://discord.gg/yp4xpZeAgW> </p></a>
 
-<p align="center"> amethyst is a fast, efficient and lightweight aur helper and pacman wrapper. 
+<p align="center"> Amethyst is a fast, efficient and lightweight aur helper and pacman wrapper. 
 Made for crystalux, compatible with any arch-based linux distribution. <b>NOW IN RUST!</b></p>
-
-✅ This tool is jaś compliant. Read more [here](https://github.com/jaasio/jas-compliant).
 
 ![](screenshot.png)
 
