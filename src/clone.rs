@@ -18,8 +18,7 @@ pub fn clone(pkg: &str) {
         env::set_current_dir(&cachedir);
         Command::new("makepkg")
                     .arg("-i")
-                    .spawn()
-                    .expect(&error);
+                    .arg("--noconfirm")
+                    .spawn();
     }
 }
-
