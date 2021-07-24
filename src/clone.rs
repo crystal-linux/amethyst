@@ -17,6 +17,7 @@ pub fn clone(pkg: &str) {
         println!("Installing {} ...", pkg);
         env::set_current_dir(&cachedir);
         Command::new("makepkg")
+                    .arg("-i")
                     .spawn()
                     .expect(&error);
     }
