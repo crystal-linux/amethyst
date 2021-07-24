@@ -5,7 +5,6 @@ pub fn a_search(pkg: &str) {
     for res in &results {
         println!("{} {}\n   {}", res[0].name, res[0].version, res[0].description.as_ref().map_or("n/a", String::deref));
     }
-    println!("{:#?}", results);
 }
 
 pub fn r_search(pkg: &str) {
