@@ -15,10 +15,11 @@ pub fn clone(pkg: &str) {
         println!("Cloning {} ...", pkg);
         Repository::clone(&url, &path).unwrap();
         println!("Installing {} ...", pkg);
-        env::set_current_dir(&cachedir);
+        env::set_current_dir(&cachedir).expect(&error);
         Command::new("makepkg")
                     .arg("--noconfirm")
                     .arg("-si")
-                    .spawn();
+                    .spawn()
+                    .expect(&error);
     }
 }

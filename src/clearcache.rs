@@ -1,4 +1,4 @@
-use std::{fs, env};
+use std::fs;
 
 pub fn clearcache() {
     let path = format!("{}/.cache/ame/", std::env::var("HOME").unwrap());
