@@ -8,9 +8,11 @@ use std::{env, process::exit};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    
+    if args.len() <= 1 {
+        help();
+        exit(1);
+    }
     let oper = &args[1];
-    print!("{}", oper);
     if oper == "-S" {
         for arg in env::args().skip(2) {
             clone(&arg);

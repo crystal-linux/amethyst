@@ -3,6 +3,7 @@ pub fn help() {
 Usage:\n
 \"ame -S pkg\" - install a package
 \"ame -R pkg\" - remove  a package
-\"ame -Syu\"   - upgrade a package\
+\"ame -Syu\"   - upgrade a package
+\"ame -Ss\"    - search for a package
              ")
 }

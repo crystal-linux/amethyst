@@ -1,8 +1,6 @@
 use git2::Repository;
 use std::{fs, path::Path, process::exit};
-use serde_json::Value;
 use std::process::Command;
-use std::io::{Error, ErrorKind};
 
 pub fn clone(pkg: &str) {
     let url = format!("https://aur.archlinux.org/{}.git", pkg);
@@ -13,11 +11,11 @@ pub fn clone(pkg: &str) {
     let errcode = Command::new("pacman").arg("-Ss").arg(&pkg).status().unwrap();
 
     if errcode.success() {
-        println!("found {} in repos!", &pkg);
+        println!("Found {} in repos...", &pkg);
         Command::new("sudo").arg("pacman").arg("-S").arg(&pkg).spawn();
         
     } else {
-        println!("error");
+        println!("Error");
 
         if path.exists() {
             fs::remove_dir_all(path).unwrap();

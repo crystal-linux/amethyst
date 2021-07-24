@@ -7,9 +7,5 @@ edition = "2018"
 
 [dependencies]
 git2 = "*"
-serde = { version = "*", features = ["derive"] }
-serde_json = "*"
 ureq = "*"
-json = "*"
-cargo = "*"
-curl = "*"
+raur = "*"
