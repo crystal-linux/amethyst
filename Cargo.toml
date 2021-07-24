@@ -1,11 +1,12 @@
 [package]
 name = "ame"
-version = "0.1.0"
+version = "2.0.0"
+authors = [ "jnats <jnats@salyut.one>", "axtlos <axt@lo.s>" ]
 edition = "2018"
+description = "a fast and efficient aur helper."
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 git2 = "*"
-ureq = "*"
-raur = "*"
+raur = "2.0.2"

@@ -3,7 +3,7 @@ mod uninstall;
 mod help;
 mod upgrade;
 mod search;
-use crate::{clone::clone, help::help, uninstall::uninstall, upgrade::upgrade, search::search};
+use crate::{clone::clone, help::help, uninstall::uninstall, upgrade::upgrade, search::a_search, search::r_search};
 use std::{env, process::exit};
 
 fn main() {
@@ -25,7 +25,16 @@ fn main() {
         upgrade();
     } else if oper == "-Ss" {
         for arg in env::args().skip(2) {
-            search(&arg);
+            r_search(&arg);
+            a_search(&arg);
+        }
+    } else if oper == "-Sa" {
+        for arg in env::args().skip(2) {
+            a_search(&arg);
+        }
+    } else if oper == "-Sr" {
+        for arg in env::args().skip(2) {
+            r_search(&arg);
         }
     } else {
         help();

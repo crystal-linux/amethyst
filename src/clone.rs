@@ -1,36 +1,20 @@
 use git2::Repository;
-use std::{fs, path::Path, process::exit};
-use std::process::Command;
+use std::{fs, path::Path};
 
 pub fn clone(pkg: &str) {
-    let url = format!("https://aur.archlinux.org/{}.git", pkg);
-    let aurl = format!("https://aur.archlinux.org/packages/{}", pkg);
-    let homedir = std::env::var("HOME").unwrap();
-    let cachedir = format!("{}/.cache/ame/{}", homedir, pkg);
+    let cachedir = format!("{}/.cache/ame/{}", std::env::var("HOME").unwrap(), pkg);
+    let error = format!("Package {} not found.", &pkg);
     let path = Path::new(&cachedir);
-    let errcode = Command::new("pacman").arg("-Ss").arg(&pkg).status().unwrap();
+    let results = raur::search(&pkg).expect(&error);
+    let url = format!("https://aur.archlinux.org/{}.git", &pkg);
 
-    if errcode.success() {
-        println!("Found {} in repos...", &pkg);
-        Command::new("sudo").arg("pacman").arg("-S").arg(&pkg).spawn();
-        
-    } else {
-        println!("Error");
-
-        if path.exists() {
-            fs::remove_dir_all(path).unwrap();
-        }
-        
-        let aresp = ureq::get(&aurl).call().unwrap_or_else(|error| {
-            println!("{}", error);
-            exit(1);
-        });
-        
-        if aresp.status() == 200 {
-            println!("Cloning {} ...", pkg);
-            Repository::clone(&url, &path).unwrap();
-        } else {
-            println!("Error, repository {} not found", pkg);
-        }
+    if path.exists() {
+        fs::remove_dir_all(path).unwrap();
+    }
+              
+    for _res in results.first() {
+        println!("Cloning {} ...", pkg);
+        Repository::clone(&url, &path).unwrap();
     }
 }
+
