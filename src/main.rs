@@ -3,7 +3,8 @@ mod uninstall;
 mod help;
 mod upgrade;
 mod search;
-use crate::{clone::clone, help::help, uninstall::uninstall, upgrade::upgrade, search::a_search, search::r_search};
+mod clearcache;
+use crate::{clone::clone, help::help, uninstall::uninstall, upgrade::upgrade, search::a_search, search::r_search, clearcache::clearcache};
 use std::{env, process::exit};
 
 fn main() {
@@ -36,6 +37,8 @@ fn main() {
         for arg in env::args().skip(2) {
             r_search(&arg);
         }
+    } else if oper == "-Cc" {
+        clearcache();
     } else {
         help();
         exit(0);
