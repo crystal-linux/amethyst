@@ -1,5 +1,5 @@
 use git2::Repository;
-use std::{fs, path::Path, process::Command};
+use std::{fs, env, path::Path, process::Command};
 
 pub fn clone(pkg: &str) {
     let cachedir = format!("{}/.cache/ame/{}", std::env::var("HOME").unwrap(), pkg);
@@ -7,8 +7,6 @@ pub fn clone(pkg: &str) {
     let path = Path::new(&cachedir);
     let results = raur::search(&pkg).expect(&error);
     let url = format!("https://aur.archlinux.org/{}.git", &pkg);
-    let mkpkg = format!("{}{}/PKGBUILD", cachedir, pkg);
-
     if path.exists() {
         fs::remove_dir_all(path).unwrap();
     }
@@ -17,11 +15,10 @@ pub fn clone(pkg: &str) {
         println!("Cloning {} ...", pkg);
         Repository::clone(&url, &path).unwrap();
         println!("Installing {} ...", pkg);
+        env::set_current_dir(&cachedir);
         Command::new("makepkg")
-                    .arg(&mkpkg)
                     .spawn()
                     .expect(&error);
-        println!("{}", mkpkg);
     }
 }
 
