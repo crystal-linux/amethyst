@@ -6,20 +6,17 @@ pub fn clone(pkg: &str) {
     let error = format!("Couldn't install {}", &pkg);
     let path = Path::new(&cachedir);
     let results = raur::search(&pkg).expect(&error);
-    let url = format!("https://aur.archlinux.org/{}.git", &pkg);
+    let url = format!("https://aur.archlinux.org/{}.git", results[0].name);
     if path.exists() {
         fs::remove_dir_all(path).unwrap();
     }
-              
-    for _res in results.first() {
-        println!("Cloning {} ...", pkg);
-        Repository::clone(&url, &path).unwrap();
-        println!("Installing {} ...", pkg);
-        Command::new("makepkg")
-                    .current_dir(&cachedir)
-                    .arg("--noconfirm")
-                    .arg("-si")
-                    .output()
-                    .expect(&error);
-    }
+    println!("Cloning {} ...", pkg);
+    Repository::clone(&url, &path).unwrap();
+    println!("Installing {} ...", pkg);
+    Command::new("makepkg")
+                .current_dir(&cachedir)
+                .arg("--noconfirm")
+                .arg("-si")
+                .status()
+                .expect(&error);
 }

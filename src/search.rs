@@ -12,7 +12,6 @@ pub fn r_search(pkg: &str) {
     Command::new("pacman")
         .arg("-Ss")
         .arg(&pkg)
-        .spawn()
-        //.status() TODO: for some reason cant use both .spawn and .status at the same time, need fix
+        .status()
         .expect(&errstr);    
 }

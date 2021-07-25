@@ -1,14 +1,16 @@
-mod clone;
 mod uninstall;
 mod help;
 mod upgrade;
 mod search;
 mod clearcache;
-use crate::{clone::clone, help::help, uninstall::uninstall, upgrade::upgrade, search::a_search, search::r_search, clearcache::clearcache};
-use std::{env, process::exit};
+mod install;
+mod clone;
+use crate::{clone::clone, help::help, uninstall::uninstall, upgrade::upgrade, search::a_search, search::r_search, clearcache::clearcache, install::install};
+use std::{env, process::exit, process::Command};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
+
     if args.len() <= 1 {
         help();
         exit(1);
@@ -16,7 +18,12 @@ fn main() {
     let oper = &args[1];
     if oper == "-S" {
         for arg in env::args().skip(2) {
-            clone(&arg);
+            let out = Command::new("pacman").arg("-Ss").arg(&arg).status().unwrap();
+            if out.success() {
+                install(&arg);
+            } else {
+                clone(&arg);
+            }
         }
     } else if oper == "-R" {
         for arg in env::args().skip(2) {
