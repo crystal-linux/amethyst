@@ -1,11 +1,5 @@
-mod uninstall;
-mod help;
-mod upgrade;
-mod search;
-mod clearcache;
-mod install;
-mod clone;
-use crate::{clone::clone, help::help, uninstall::uninstall, upgrade::upgrade, search::a_search, search::r_search, clearcache::clearcache, install::install};
+mod mods;
+use mods::{clearcache::clearcache, clone::clone, help::help, install::install, search::{a_search, r_search}, uninstall::uninstall, upgrade::upgrade};
 use std::{env, process::exit, process::Command};
 
 fn main() {
@@ -15,6 +9,7 @@ fn main() {
         help();
         exit(1);
     }
+
     let oper = &args[1];
     if oper == "-S" {
         for arg in env::args().skip(2) {
