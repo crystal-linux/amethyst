@@ -14,7 +14,7 @@
 <a href="https://discord.gg/yp4xpZeAgW"><img alt="Discord" src="https://img.shields.io/discord/825473796227858482?color=blue&label=Discord&logo=Discord&logoColor=white"?link=https://discord.gg/yp4xpZeAgW&link=https://discord.gg/yp4xpZeAgW> </p></a>
 
 <p align="center"> Amethyst is a fast, efficient and lightweight aur helper and pacman wrapper. 
-Made for crystalux, compatible with any arch-based linux distribution. <b>NOW IN RUST!</b></p>
+Made for crystalux, compatible with any arch-based linux distribution.</p>
 
 ![](screenshot.png)
 
@@ -31,11 +31,11 @@ Made for crystalux, compatible with any arch-based linux distribution. <b>NOW IN
 
 ## How to build:
 
-for release
+For release:
   - `make clean release`
  
-for general debug/test
+For general debug/test:
   - `make clean debug`
 
-clean all builddirs
+Clean all build directories:
   - `make clean`
