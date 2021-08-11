@@ -22,6 +22,7 @@ Made for crystalux, compatible with any arch-based linux distribution.</p>
 | Action | Command | Shorthand alias | Supported pacman equivalent |
 | ------ | ------ | ------ | ------ |
 | Install a package | amethyst install | ame ins | -S |
+| Install a package via flatpak | amethyst flat | ame flat | -f |
 | Remove a package| amethyst remove | ame rm | -R |
 | Update repository | amethyst update | ame upd | -Sy |
 | Upgrade a package | amethyst upgrade | ame upg | -Syu |

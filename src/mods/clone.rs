@@ -15,7 +15,6 @@ pub fn clone(pkg: &str) {
     println!("Installing {} ...", pkg);
     Command::new("makepkg")
                 .current_dir(&cachedir)
-                .arg("--noconfirm")
                 .arg("-si")
                 .status()
                 .expect(&error);

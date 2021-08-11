@@ -1,5 +1,5 @@
 mod mods;
-use mods::{clearcache::clearcache, clone::clone, help::help, install::install, search::{a_search, r_search}, uninstall::uninstall, upgrade::upgrade};
+use mods::{clearcache::clearcache, clone::clone, help::help, install::install, search::{a_search, r_search}, uninstall::uninstall, upgrade::upgrade, flatpak::flatpak};
 use std::{env, process::exit, process::Command};
 
 fn main() {
@@ -41,6 +41,10 @@ fn main() {
         }
     } else if oper == "-Cc" {
         clearcache();
+    } else if oper == "-f" {
+        for arg in env::args().skip(2) {
+            flatpak(&arg);
+        }
     } else {
         help();
         exit(0);
