@@ -66,7 +66,7 @@ fn main() {
                     } else {
                         println!("ERROR: the package wasn't found in the repos and aur support is disabled");
                         println!("Please enable aur support if you wish to check if this package exists in the aur");
-                        exit(1)
+                        exit(1);
                     }
                 }
             } else if configfile.backends.aur.unwrap() == true {
