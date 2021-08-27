@@ -14,8 +14,8 @@ pub fn clone(pkg: &str) {
     Repository::clone(&url, &path).unwrap();
     println!("Installing {} ...", pkg);
     Command::new("makepkg")
-                .current_dir(&cachedir)
-                .arg("-si")
-                .status()
-                .expect(&error);
+        .current_dir(&cachedir)
+        .arg("-si")
+        .status()
+        .expect(&error);
 }

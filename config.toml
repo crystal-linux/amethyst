@@ -7,7 +7,7 @@ snap = false
 aur = true
 
 [pacman]
-noconfirm = true 
+noconfirm = false 
 
 [aur]
 clone_path = "/home/user/.cache/ame"

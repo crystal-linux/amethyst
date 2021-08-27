@@ -1,10 +1,8 @@
 mod mods;
 use toml;
 use serde;
-use std::fs::File;
-use std::io::prelude::*;
-use mods::{clearcache::clearcache, clone::clone, help::help, install::install, search::{a_search, r_search}, uninstall::uninstall, upgrade::upgrade, flatpak::flatpak, snap::snap};
-use std::{env, process::exit, process::Command};
+use mods::{clearcache::clearcache, clone::clone, help::help, install::install, search::{a_search, r_search}, uninstall::uninstall, upgrade::upgrade, flatpak::flatpak, snap::snap, config::printconfig};
+use std::{fs::File, io::prelude::*, env, process::exit, process::Command};
 
 #[derive(serde::Deserialize)]
 struct General {
@@ -37,7 +35,6 @@ fn main() {
     let mut file = File::open("config.toml").expect("Unable to open the Config file");
     let mut config = String::new();
     file.read_to_string(&mut config).expect("Unable to read the Config file");
-    println!("{}", config);
     let configfile: General = toml::from_str(&config).unwrap();
 
     if args.len() <= 1 {
@@ -114,7 +111,7 @@ fn main() {
             let b = std::path::Path::new("/usr/bin/snap").exists();
             if b == true {
                 for arg in env::args().skip(2) {
-                    snap(&arg)
+                    snap(&arg);
                 }
             } else {
                 println!("ERROR: snap not found, please install snap and try again!");
@@ -126,6 +123,8 @@ fn main() {
             println!("Enable snap support in your configuration and try again!");
             exit(1);
         }
+    } else if oper == "-Pc" {
+        printconfig();
     } else {
         help();
         exit(0);
