@@ -1,6 +1,8 @@
 mod mods;
 use toml;
 use serde;
+use std::fs::File;
+use std::io::prelude::*;
 use mods::{clearcache::clearcache, clone::clone, help::help, install::install, search::{a_search, r_search}, uninstall::uninstall, upgrade::upgrade, flatpak::flatpak, snap::snap};
 use std::{env, process::exit, process::Command};
 
@@ -32,22 +34,11 @@ struct AUR {
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-
-    let configfile: General = toml::from_str(r#"
-        cache = "/home/user/.cache/ame"    
-
-        [backends]
-        pacman = true
-        flatpak = true
-        snap = false
-        aur = true
-
-        [pacman]
-        noconfirm = false
-
-        [aur]
-        clone_path = "/home/user/.cache/ame"
-    "#).unwrap();
+    let mut file = File::open("config.toml").expect("Unable to open the Config file");
+    let mut config = String::new();
+    file.read_to_string(&mut config).expect("Unable to read the Config file");
+    println!("{}", config);
+    let configfile: General = toml::from_str(&config).unwrap();
 
     if args.len() <= 1 {
         help();
@@ -59,7 +50,8 @@ fn main() {
             if configfile.backends.pacman.unwrap() == true {
                 let out = Command::new("pacman").arg("-Ss").arg(&arg).status().unwrap();
                 if out.success() {
-                    install(&arg);
+                    let configoption_noconfirm = configfile.pacman.noconfirm.unwrap();
+                    install(configoption_noconfirm, &arg);
                 } else {
                     if configfile.backends.aur.unwrap() == true {
                         clone(&arg);
@@ -79,10 +71,12 @@ fn main() {
         } 
     } else if oper == "-R" {
         for arg in env::args().skip(2) {
-            uninstall(&arg);
+            let configoption_noconfirm = configfile.pacman.noconfirm.unwrap();
+            uninstall(configoption_noconfirm, &arg);
         }
     } else if oper == "-Syu" {
-        upgrade();
+        let configoption_noconfirm = configfile.pacman.noconfirm.unwrap();
+        upgrade(configoption_noconfirm);
     } else if oper == "-Ss" {
         for arg in env::args().skip(2) {
             r_search(&arg);

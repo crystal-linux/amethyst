@@ -1,9 +1,17 @@
-use std::process::Command;
+use runas::Command;
 
-pub fn upgrade() {
+pub fn upgrade(noconfirm: bool) {
     let errstr = format!("Something happened");
-    Command::new("pacman")
-        .arg("-Syu")
-        .status()
-        .expect(&errstr);
+    if (noconfirm == true) {
+        Command::new("pacman")
+            .arg("-Syu")
+            .arg("--noconfirm")
+            .status()
+            .expect(&errstr);
+    } else {
+        Command::new("pacman")
+            .arg("-Syu")
+            .status()
+            .expect(&errstr);
+    }
 }

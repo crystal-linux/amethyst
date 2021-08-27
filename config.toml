@@ -1,0 +1,13 @@
+cache = "/home/user/.cache/ame"    
+
+[backends]
+pacman = true
+flatpak = false
+snap = false
+aur = true
+
+[pacman]
+noconfirm = true 
+
+[aur]
+clone_path = "/home/user/.cache/ame"
