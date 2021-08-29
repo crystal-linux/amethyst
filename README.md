@@ -31,6 +31,7 @@ Made for crystalux, compatible with any arch-based linux distribution.</p>
 | Search for a package in aur | amethyst search -A | ame sear -A | -Ss -A |
 
 ## How to build:
+(Install cargo)
 
 For release:
   - `make clean release`
