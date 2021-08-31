@@ -32,7 +32,7 @@ struct AUR {
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let mut file = File::open("config.toml").expect("Unable to open the Config file");
+    let mut file = File::open(format!("{}/.config/ame/config.toml", std::env::var("HOME").unwrap())).expect("Unable to open the Config file");
     let mut config = String::new();
     file.read_to_string(&mut config).expect("Unable to read the Config file");
     let configfile: General = toml::from_str(&config).unwrap();
@@ -42,7 +42,7 @@ fn main() {
         exit(1);
     }
     let oper = &args[1];
-    if oper == "-S" {
+    if oper == "-S" || oper == "ins" || oper == "install" {
         for arg in env::args().skip(2) {
             if configfile.backends.pacman.unwrap() == true {
                 let out = Command::new("pacman").arg("-Ss").arg(&arg).status().unwrap();
@@ -66,30 +66,30 @@ fn main() {
                 exit(1);
             }
         } 
-    } else if oper == "-R" {
+    } else if oper == "-R" || oper=="rem" || oper=="remove" {
         for arg in env::args().skip(2) {
             let configoption_noconfirm = configfile.pacman.noconfirm.unwrap();
             uninstall(configoption_noconfirm, &arg);
         }
-    } else if oper == "-Syu" {
+    } else if oper == "-Syu" || oper=="upg" || oper=="upgrade" {
         let configoption_noconfirm = configfile.pacman.noconfirm.unwrap();
         upgrade(configoption_noconfirm);
-    } else if oper == "-Ss" {
+    } else if oper == "-Ss" || oper=="sear" || oper=="search" {
         for arg in env::args().skip(2) {
             r_search(&arg);
             a_search(&arg);
         }
-    } else if oper == "-Sa" {
+    } else if oper == "-Sa" || oper=="sera" || oper=="search-aur" {
         for arg in env::args().skip(2) {
             a_search(&arg);
         }
-    } else if oper == "-Sr" {
+    } else if oper == "-Sr" || oper=="serr" || oper=="search-rep" {
         for arg in env::args().skip(2) {
             r_search(&arg);
         }
-    } else if oper == "-Cc" {
+    } else if oper == "-Cc" || oper=="clrca" || oper=="clear-cache" {
         clearcache();
-    } else if oper == "-f" {
+    } else if oper == "-f" || oper=="flat" || oper=="flatpak" {
         if configfile.backends.flatpak.unwrap() == true {
             let b = std::path::Path::new("/usr/bin/flatpak").exists();
             if b == true {
@@ -106,7 +106,7 @@ fn main() {
             println!("Enable flatpak support in your configuration and try again!");
             exit(1);
         }
-    } else if oper == "-s" {
+    } else if oper == "-s" || oper=="snap" {
         if configfile.backends.snap.unwrap() == true {
             let b = std::path::Path::new("/usr/bin/snap").exists();
             if b == true {
@@ -123,7 +123,7 @@ fn main() {
             println!("Enable snap support in your configuration and try again!");
             exit(1);
         }
-    } else if oper == "-Pc" {
+    } else if oper == "-Pc" || oper=="pricon" || oper=="printconf" {
         printconfig();
     } else {
         help();

@@ -33,7 +33,7 @@ struct AUR {
 
 pub fn printconfig() {
     let args: Vec<String> = env::args().collect();
-    let mut file = File::open("config.toml").expect("Unable to open the Config file");
+    let mut file = File::open(format!("{}/.config/ame/config.toml", std::env::var("HOME").unwrap())).expect("Unable to open the Config file");
     let mut config = String::new();
     file.read_to_string(&mut config).expect("Unable to read the Config file");
     let configfile: General = toml::from_str(&config).unwrap();

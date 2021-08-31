@@ -23,12 +23,12 @@ Made for crystalux, compatible with any arch-based linux distribution.</p>
 | ------ | ------ | ------ | ------ |
 | Install a package | amethyst install | ame ins | -S |
 | Install a package via flatpak | amethyst flat | ame flat | -f |
-| Remove a package| amethyst remove | ame rm | -R |
+| Remove a package| amethyst remove | ame rem | -R |
 | Update repository | amethyst update | ame upd | -Sy |
 | Upgrade a package | amethyst upgrade | ame upg | -Syu |
 | Search for a package in repo and aur | amethyst search | ame sear | -Ss |
-| Search for a package in repo | amethyst search -R | ame sear -R | -Ss -R |
-| Search for a package in aur | amethyst search -A | ame sear -A | -Ss -A |
+| Search for a package in repo | amethyst search-repo | ame serr | -Sr|
+| Search for a package in aur | amethyst search-aur | ame sera | -Sa |
 
 ## How to build:
 
