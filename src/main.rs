@@ -35,8 +35,8 @@ fn main() {
     let mut confile = File::open("/etc/ame.toml").expect("Unable to open the Config file, did you delete ame.toml from /etc/??");
     let mut config = String::new();
     let conftostring = fs::read_to_string("/etc/ame.toml").expect("unable to open config file!");
-    let configfile: General = toml::from_str(r#"
-        cache = "/home/user/.cache/ame"  
+    let defaultconfig = format!(r#"
+        cache = "{}/.cache/ame"  
 
         [backends]
         pacman = true
@@ -48,8 +48,9 @@ fn main() {
         noconfirm = false
 
         [aur]
-        clone_path = "/home/user/.cache/ame"
-    "#).unwrap();
+        clone_path = "{}/.cache/ame"
+        "#, std::env::var("HOME").unwrap(), std::env::var("HOME").unwrap());
+    let configfile: General = toml::from_str(&defaultconfig).unwrap();
     if conftostring != "" {
         confile.read_to_string(&mut config).expect("Unable to read the Config file");
         let configfile: General = toml::from_str(&config).unwrap();
