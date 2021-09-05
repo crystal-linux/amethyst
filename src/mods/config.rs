@@ -1,6 +1,6 @@
 use toml;
 use serde;
-use std::{fs, fs::File, io::prelude::*, env};
+use std::{fs, fs::File, io::prelude::*};
 
 
 #[derive(serde::Deserialize)]
@@ -32,10 +32,8 @@ struct AUR {
 
 
 pub fn printconfig() {
-    let args: Vec<String> = env::args().collect();
     let mut confile = File::open("/etc/ame.toml").expect("Unable to open the Config file, did you delete ame.toml from /etc/??");
     let mut config = String::new();
-    let conftostring = fs::read_to_string("/etc/ame.toml").expect("unable to open config file!");
     let defaultconfig = format!(r#"
         cache = "{}/.cache/ame"  
 
@@ -51,10 +49,10 @@ pub fn printconfig() {
         [aur]
         clone_path = "{}/.cache/ame"
         "#, std::env::var("HOME").unwrap(), std::env::var("HOME").unwrap());
-    let configfile: General = toml::from_str(&defaultconfig).unwrap();
-    if conftostring != "" {
+    let mut configfile: General = toml::from_str(&defaultconfig).unwrap();
+    if fs::read_to_string("/etc/ame.toml").expect("unable to open config file!") != "" {
         confile.read_to_string(&mut config).expect("Unable to read the Config file");
-        let configfile: General = toml::from_str(&config).unwrap();
+        configfile = toml::from_str(&config).unwrap();
     }
     println!("\
 General:

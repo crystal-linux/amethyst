@@ -1,4 +1,4 @@
-cache = "/home/user/.cache/ame"    
+cache = "/home/ali/.ame"    
 
 [backends]
 pacman = true
@@ -10,4 +10,4 @@ aur = true
 noconfirm = false 
 
 [aur]
-clone_path = "/home/user/.cache/ame"
+clone_path = "/home/ali/.ame"

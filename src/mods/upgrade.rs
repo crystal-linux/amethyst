@@ -2,7 +2,7 @@ use runas::Command;
 
 pub fn upgrade(noconfirm: bool) {
     let errstr = format!("Something happened");
-    if (noconfirm == true) {
+    if noconfirm == true {
         Command::new("pacman")
             .arg("-Syu")
             .arg("--noconfirm")

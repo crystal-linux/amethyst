@@ -1,8 +1,8 @@
 use git2::Repository;
 use std::{fs, path::Path, process::Command};
 
-pub fn clone(pkg: &str) {
-    let cachedir = format!("{}/.cache/ame/{}", std::env::var("HOME").unwrap(), pkg);
+pub fn clone(pkg: &str, cachedir: &str) {
+    print!("{}", cachedir);
     let error = format!("Couldn't install {}", &pkg);
     let path = Path::new(&cachedir);
     let results = raur::search(&pkg).expect(&error);

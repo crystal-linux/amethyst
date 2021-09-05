@@ -34,7 +34,6 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let mut confile = File::open("/etc/ame.toml").expect("Unable to open the Config file, did you delete ame.toml from /etc/??");
     let mut config = String::new();
-    let conftostring = fs::read_to_string("/etc/ame.toml").expect("unable to open config file!");
     let defaultconfig = format!(r#"
         cache = "{}/.cache/ame"  
 
@@ -50,10 +49,11 @@ fn main() {
         [aur]
         clone_path = "{}/.cache/ame"
         "#, std::env::var("HOME").unwrap(), std::env::var("HOME").unwrap());
-    let configfile: General = toml::from_str(&defaultconfig).unwrap();
-    if conftostring != "" {
+    let mut configfile: General = toml::from_str(&defaultconfig).unwrap();
+
+    if fs::read_to_string("/etc/ame.toml").expect("unable to open config file!") != "" {
         confile.read_to_string(&mut config).expect("Unable to read the Config file");
-        let configfile: General = toml::from_str(&config).unwrap();
+        configfile = toml::from_str(&config).unwrap();
     }
     
     if args.len() <= 1 {
@@ -61,6 +61,7 @@ fn main() {
         exit(1);
     }
     let oper = &args[1];
+    let clone_path=configfile.aur.clone_path.unwrap();
     if oper == "-S" || oper == "ins" || oper == "install" {
         for arg in env::args().skip(2) {
             if configfile.backends.pacman.unwrap() == true {
@@ -70,7 +71,7 @@ fn main() {
                     install(configoption_noconfirm, &arg);
                 } else {
                     if configfile.backends.aur.unwrap() == true {
-                        clone(&arg);
+                        clone(&arg, &clone_path);
                     } else {
                         println!("ERROR: the package wasn't found in the repos and aur support is disabled");
                         println!("Please enable aur support if you wish to check if this package exists in the aur");
@@ -78,7 +79,7 @@ fn main() {
                     }
                 }
             } else if configfile.backends.aur.unwrap() == true {
-                clone(&arg)
+                clone(&arg, &clone_path)
             } else {
                 println!("ERROR: it seems like neither pacman, nor aur support is enabled!");
                 println!("Please enable either one of those option and try again");
