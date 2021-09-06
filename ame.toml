@@ -8,6 +8,3 @@ aur = true
 
 [pacman]
 noconfirm = false 
-
-[aur]
-clone_path = "/home/ali/.ame"

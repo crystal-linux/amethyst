@@ -8,7 +8,6 @@ struct General {
     cache: Option<String>,
     backends: Backends,
     pacman: Pacman,
-    aur: AUR,
 }
 
 #[derive(serde::Deserialize)]
@@ -22,11 +21,6 @@ struct Backends {
 #[derive(serde::Deserialize)]
 struct Pacman {
     noconfirm: Option<bool>,
-}
-
-#[derive(serde::Deserialize)]
-struct AUR {
-    clone_path: Option<String>,
 }
 
 
@@ -45,13 +39,10 @@ pub fn printconfig() {
 
         [pacman]
         noconfirm = false
-
-        [aur]
-        clone_path = "{}/.cache/ame"
-        "#, std::env::var("HOME").unwrap(), std::env::var("HOME").unwrap());
+    "#, std::env::var("HOME").unwrap());
     let mut configfile: General = toml::from_str(&defaultconfig).unwrap();
-    if fs::read_to_string("/etc/ame.toml").expect("unable to open config file!") != "" {
-        confile.read_to_string(&mut config).expect("Unable to read the Config file");
+    if fs::read_to_string("/etc/ame.toml").expect("unable to open config file! (/etc/ame.toml)") != "" {
+        confile.read_to_string(&mut config).expect("Unable to read the Config file (/etc/ame.toml)");
         configfile = toml::from_str(&config).unwrap();
     }
     println!("\
@@ -66,7 +57,5 @@ Backends:
 
 Pacman:
     noconfirm: {}
-
-aur:
-    Clone directory: {}", configfile.cache.unwrap(), configfile.backends.pacman.unwrap(), configfile.backends.aur.unwrap(), configfile.backends.flatpak.unwrap(), configfile.backends.snap.unwrap(), configfile.pacman.noconfirm.unwrap(), configfile.aur.clone_path.unwrap())
+", configfile.cache.unwrap(), configfile.backends.pacman.unwrap(), configfile.backends.aur.unwrap(), configfile.backends.flatpak.unwrap(), configfile.backends.snap.unwrap(), configfile.pacman.noconfirm.unwrap());
 }
