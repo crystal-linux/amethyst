@@ -39,7 +39,6 @@ fn main() {
 
         [pacman]
         noconfirm = false
-"
         "#, std::env::var("HOME").unwrap());
     let mut configfile: General = toml::from_str(&defaultconfig).unwrap();
 
