@@ -1,7 +1,7 @@
 mod mods;
 use toml;
 use serde;
-use mods::{clearcache::clearcache, clone::clone, help::help, install::install, search::{a_search, r_search}, uninstall::uninstall, upgrade::upgrade, flatpak::flatpak, snap::snap, config::printconfig};
+use mods::{clearcache::clearcache, clone::clone, help::help, install::install, search::{a_search, r_search}, uninstall::uninstall, upgrade::upgrade, flatpak::flatpak, config::printconfig};
 use std::{fs, fs::File, io::prelude::*, env, process::exit, process::Command};
 
 #[derive(serde::Deserialize)]
@@ -15,7 +15,6 @@ struct General {
 struct Backends {
     pacman: Option<bool>,
     flatpak: Option<bool>,
-    snap: Option<bool>,
     aur: Option<bool>,
 }
 
@@ -34,7 +33,6 @@ fn main() {
         [backends]
         pacman = true
         flatpak = true
-        snap = false
         aur = true
 
         [pacman]
@@ -115,23 +113,6 @@ fn main() {
         } else {
             println!("ERROR: flatpak support is disabled in your ame config!");
             println!("Enable flatpak support in your configuration and try again!");
-            exit(1);
-        }
-    } else if oper == "-s" || oper=="snap" {
-        if configfile.backends.snap.unwrap() == true {
-            let b = std::path::Path::new("/usr/bin/snap").exists();
-            if b == true {
-                for arg in env::args().skip(2) {
-                    snap(&arg);
-                }
-            } else {
-                println!("ERROR: snap not found, please install snap and try again!");
-                println!("If you do have snap installed, please open an issue on the ame github repo!");
-                exit(1);
-            }
-        } else {
-            println!("ERROR: snap support is disabled in your ame config!");
-            println!("Enable snap support in your configuration and try again!");
             exit(1);
         }
     } else if oper == "-Pc" || oper=="pricon" || oper=="printconf" {

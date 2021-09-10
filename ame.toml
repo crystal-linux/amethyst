@@ -3,7 +3,6 @@ cache = "/home/ali/.ame"
 [backends]
 pacman = true
 flatpak = false
-snap = false
 aur = true
 
 [pacman]

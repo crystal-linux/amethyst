@@ -6,5 +6,4 @@ pub mod search;
 pub mod uninstall;
 pub mod upgrade;
 pub mod flatpak;
-pub mod snap;
 pub mod config;

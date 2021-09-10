@@ -14,7 +14,6 @@ struct General {
 struct Backends {
     pacman: Option<bool>,
     flatpak: Option<bool>,
-    snap: Option<bool>,
     aur: Option<bool>,
 }
 
@@ -34,7 +33,6 @@ pub fn printconfig() {
         [backends]
         pacman = true
         flatpak = true
-        snap = false
         aur = true
 
         [pacman]
@@ -53,9 +51,8 @@ Backends:
     pacman support: {}
     aur support: {}
     flatpak support: {}
-    snap support: {}
 
 Pacman:
     noconfirm: {}
-", configfile.cache.unwrap(), configfile.backends.pacman.unwrap(), configfile.backends.aur.unwrap(), configfile.backends.flatpak.unwrap(), configfile.backends.snap.unwrap(), configfile.pacman.noconfirm.unwrap());
+", configfile.cache.unwrap(), configfile.backends.pacman.unwrap(), configfile.backends.aur.unwrap(), configfile.backends.flatpak.unwrap(), configfile.pacman.noconfirm.unwrap());
 }
