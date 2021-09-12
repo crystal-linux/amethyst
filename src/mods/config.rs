@@ -41,6 +41,8 @@ pub fn printconfig() {
     let mut configfile: General = toml::from_str(&defaultconfig).unwrap();
     if fs::read_to_string("/etc/ame.toml").expect("unable to open config file! (/etc/ame.toml)") != "" {
         confile.read_to_string(&mut config).expect("Unable to read the Config file (/etc/ame.toml)");
+        let homepath = std::env::var("HOME").unwrap();
+        config=config.replace("~", &homepath);
         configfile = toml::from_str(&config).unwrap();
     }
     println!("\
