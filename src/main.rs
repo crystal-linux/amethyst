@@ -51,8 +51,9 @@ fn main() {
         help();
         exit(1);
     }
+
     let oper = &args[1];
-    let clone_path=configfile.cache.unwrap();
+    let cache_path=configfile.cache.unwrap();
     if oper == "-S" || oper == "ins" || oper == "install" {
         for arg in env::args().skip(2) {
             if configfile.backends.pacman.unwrap() == true {
@@ -62,7 +63,7 @@ fn main() {
                     install(configoption_noconfirm, &arg);
                 } else {
                     if configfile.backends.aur.unwrap() == true {
-                        clone(&arg, &clone_path);
+                        clone(&arg, &cache_path);
                     } else {
                         println!("ERROR: the package wasn't found in the repos and aur support is disabled");
                         println!("Please enable aur support if you wish to check if this package exists in the aur");
@@ -70,7 +71,7 @@ fn main() {
                     }
                 }
             } else if configfile.backends.aur.unwrap() == true {
-                clone(&arg, &clone_path)
+                clone(&arg, &cache_path)
             } else {
                 println!("ERROR: it seems like neither pacman, nor aur support is enabled!");
                 println!("Please enable either one of those option and try again");
@@ -84,7 +85,7 @@ fn main() {
         }
     } else if oper == "-Syu" || oper=="upg" || oper=="upgrade" {
         let configoption_noconfirm = configfile.pacman.noconfirm.unwrap();
-        upgrade(configoption_noconfirm);
+        upgrade(configoption_noconfirm, &cache_path);
     } else if oper == "-Ss" || oper=="sear" || oper=="search" {
         for arg in env::args().skip(2) {
             r_search(&arg);
