@@ -39,7 +39,7 @@ pub fn printconfig() {
         noconfirm = false
     "#, std::env::var("HOME").unwrap());
     let mut configfile: General = toml::from_str(&defaultconfig).unwrap();
-    if fs::read_to_string("/etc/ame.toml").expect("unable to open config file! (/etc/ame.toml)") != "" {
+    if fs::read_to_string("/etc/ame.toml").expect("unable to open config file! (/etc/ame.toml)") != "" { //maybe print out a warning when the config file is empty so that the user knows the hardcoded one is being used
         confile.read_to_string(&mut config).expect("Unable to read the Config file (/etc/ame.toml)");
         let homepath = std::env::var("HOME").unwrap();
         config=config.replace("~", &homepath);

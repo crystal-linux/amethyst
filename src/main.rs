@@ -4,6 +4,27 @@ use serde;
 use mods::{clearcache::clearcache, clone::clone, help::help, install::install, search::{a_search, r_search}, uninstall::uninstall, upgrade::upgrade, flatpak::flatpak, config::printconfig};
 use std::{fs, fs::File, io::prelude::*, env, process::exit, process::Command};
 
+// Code audit notes from axtlos: 
+/* Maybe we could change the code style for the if..elif..else structure so that it isnt
+if <condition> {
+
+} elif <condition> {
+
+}
+
+but rather
+if <condition>
+{
+
+} elif <condition> 
+{   
+
+}
+So that the code is a bit more readable
+
+We should also check where we can "merge" variables or create new ones
+
+*/ 
 #[derive(serde::Deserialize)]
 struct General {
     cache: Option<String>,
@@ -25,7 +46,7 @@ struct Pacman {
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let mut confile = File::open("/etc/ame.toml").expect("Unable to open the Config file, did you delete ame.toml from /etc/??");
+    let mut confile = File::open("/etc/ame.toml").expect("Unable to open the Config file, did you delete ame.toml from /etc/");
     let mut config = String::new();
     let defaultconfig = format!(r#"
         cache = "{}/.cache/ame"  
@@ -40,7 +61,7 @@ fn main() {
         "#, std::env::var("HOME").unwrap());
     let mut configfile: General = toml::from_str(&defaultconfig).unwrap();
 
-    if fs::read_to_string("/etc/ame.toml").expect("unable to open config file! (/etc/ame.toml)") != "" {
+    if fs::read_to_string("/etc/ame.toml").expect("unable to open config file! (/etc/ame.toml)") != "" { //maybe print out a warning when the config file is empty so that the user knows the hardcoded one is being used
         confile.read_to_string(&mut config).expect("Unable to read the Config file (/etc/ame.toml)");
         let homepath = std::env::var("HOME").unwrap();
         config=config.replace("~", &homepath);
@@ -57,7 +78,7 @@ fn main() {
     if oper == "-S" || oper == "ins" || oper == "install" {
         for arg in env::args().skip(2) {
             if configfile.backends.pacman.unwrap() == true {
-                let out = Command::new("pacman").arg("-Ss").arg(&arg).status().unwrap();
+                let out = Command::new("pacman").arg("-Ss").arg(&arg).status().unwrap(); // How do we silence this command?? using > /dev/null seems to also silence the returncode which is needed here
                 if out.success() {
                     let configoption_noconfirm = configfile.pacman.noconfirm.unwrap();
                     install(configoption_noconfirm, &arg);

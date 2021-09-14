@@ -1,11 +1,19 @@
 use git2::Repository;
 use std::{env, fs, path::Path, process::Command};
 
+// Code audit notes from axtlos: 
+/*
+    try to resolve the warning because of unused std::result::Result, no idea how to do that
+*/
+
 pub fn clone(pkg: &str, cachedir: &str) {
     let error = format!("Couldn't install {}", &pkg);
     let path = Path::new(&cachedir);
     let pkgdir=format!("{}/{}", &cachedir, &pkg);
     let pkgpath = Path::new(&pkgdir);
+    if !path.is_dir() {
+        fs::create_dir(&path);
+    }
     env::set_current_dir(&pkgdir);
     fs::create_dir(&pkg);
     let results = raur::search(&pkg).expect(&error);

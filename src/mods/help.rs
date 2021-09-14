@@ -1,4 +1,4 @@
-pub fn help() {
+pub fn help() { // work on a proper error message, the python ame one isnt really better in my opinion
     println!("\
 Usage:\n
 ame -S <pkg>  - install a package
