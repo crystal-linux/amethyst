@@ -1,11 +1,13 @@
 use runas::Command;
+use crate::mods::strs::{inf, err_unrec};
 
-pub fn install(noconfirm: bool, pkg: &str) {
-    println!("{}",noconfirm);
-    let errstr = format!("Oops.. Something went wrong!"); // we should make one set way of how error messages are written
-    if noconfirm == false {
-        Command::new("pacman").arg("-S").arg(&pkg).status().expect(&errstr);
-    } else {
-        Command::new("pacman").arg("-S").arg("--noconfirm").arg(&pkg).status().expect(&errstr);
+pub fn install(pkg: &str) {
+    let result = Command::new("pacman").arg("-Sy").arg(&pkg).status();
+    match result {
+    Ok(_) => {
+        inf(format!("Succesfully installed {}", pkg))
     }
+    Err(_) => {
+        err_unrec(format!("Couldn't install {}", pkg))
+    }};
 }

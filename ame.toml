@@ -1,9 +1,0 @@
-cache = "~/.cache/ame"    
-
-[backends]
-pacman = true
-flatpak = false
-aur = true
-
-[pacman]
-noconfirm = false 

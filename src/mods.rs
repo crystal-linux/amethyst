@@ -5,5 +5,5 @@ pub mod install;
 pub mod search;
 pub mod uninstall;
 pub mod upgrade;
-pub mod flatpak;
-pub mod config;
+pub mod strs;
+pub mod ver;

@@ -1,11 +1,14 @@
 use runas::Command;
+use crate::mods::strs::{inf, err_unrec};
 
-pub fn uninstall(noconfirm: bool, pkg: &str) {
-    let errstr = format!("Could not remove package {}", pkg); //again, we should choose one way to do error messages
-
-    if noconfirm == false {
-        Command::new("pacman").arg("-R").arg(&pkg).status().expect(&errstr);
-    } else {
-        Command::new("pacman").arg("-R").arg("--noconfirm").arg(&pkg).status().expect(&errstr);
-    }
+pub fn uninstall(pkg: &str) {
+        inf(format!("Attempting to uninstall {}", pkg));
+        let result = Command::new("pacman").arg("-Rs").arg(&pkg).status();
+        match result {
+        Ok(_) => {
+            println!("")
+        }
+        Err(_) => {
+            err_unrec(format!("Couldn't uninstall {}", pkg))
+        }};
 }

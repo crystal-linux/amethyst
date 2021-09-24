@@ -1,13 +1,15 @@
+use crate::mods::strs::inf;
+
 pub fn help() { // work on a proper error message, the python ame one isnt really better in my opinion
-    println!("\
-Usage:\n
-ame -S <pkg>  - install a package
-ame -f <pkg>  - install a package via flatpak
-ame -s <pkg>  - install a package via snap
-ame -R <pkg>  - remove  a package
-ame -Syu      - system upgrade
-ame -Ss <pkg> - search for a package
-ame -Sa <pkg> - search for a package over the aur
-ame -Sr <pkg> - search for a package over the repos 
-ame -Cc       - clear package cache")
+    inf(format!("Usage:"));
+    println!("
+ame -S   / -Sy / ins <pkg> - install a package
+ame -R   / -Rs / rem <pkg> - remove  a package
+ame -Syu / upg             - upgrade all packages to latest version
+ame -Ss  / sea       <pkg> - search for a package
+ame -Sa  / aursea    <pkg> - search for a package in the aur
+ame -Sr  / repsea    <pkg> - search for a package in the repos
+ame -v   / -V  / ver       - contributors and version info
+"
+);
 }

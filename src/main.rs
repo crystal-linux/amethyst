@@ -1,146 +1,73 @@
 mod mods;
-use toml;
-use serde;
-use mods::{clearcache::clearcache, clone::clone, help::help, install::install, search::{a_search, r_search}, uninstall::uninstall, upgrade::upgrade, flatpak::flatpak, config::printconfig};
-use std::{fs, fs::File, io::prelude::*, env, process::exit, process::Command};
-
-// Code audit notes from axtlos: 
-/* Maybe we could change the code style for the if..elif..else structure so that it isnt
-if <condition> {
-
-} elif <condition> {
-
-}
-
-but rather
-if <condition>
-{
-
-} elif <condition> 
-{   
-
-}
-So that the code is a bit more readable
-
-We should also check where we can "merge" variables or create new ones
-
-*/ 
-#[derive(serde::Deserialize)]
-struct General {
-    cache: Option<String>,
-    backends: Backends,
-    pacman: Pacman,
-}
-
-#[derive(serde::Deserialize)]
-struct Backends {
-    pacman: Option<bool>,
-    flatpak: Option<bool>,
-    aur: Option<bool>,
-}
-
-#[derive(serde::Deserialize)]
-struct Pacman {
-    noconfirm: Option<bool>,
-}
+use mods::{clearcache::clearcache, clone::clone, help::help, install::install, search::{a_search, r_search}, uninstall::uninstall, upgrade::upgrade, ver::ver};
+use std::{env, process::exit, process::Command};
 
 fn main() {
+    // let statements
     let args: Vec<String> = env::args().collect();
-    let mut confile = File::open("/etc/ame.toml").expect("Unable to open the Config file, did you delete ame.toml from /etc/");
-    let mut config = String::new();
-    let defaultconfig = format!(r#"
-        cache = "{}/.cache/ame"  
-
-        [backends]
-        pacman = true
-        flatpak = true
-        aur = true
-
-        [pacman]
-        noconfirm = false
-        "#, std::env::var("HOME").unwrap());
-    let mut configfile: General = toml::from_str(&defaultconfig).unwrap();
-
-    if fs::read_to_string("/etc/ame.toml").expect("unable to open config file! (/etc/ame.toml)") != "" { //maybe print out a warning when the config file is empty so that the user knows the hardcoded one is being used
-        confile.read_to_string(&mut config).expect("Unable to read the Config file (/etc/ame.toml)");
-        let homepath = std::env::var("HOME").unwrap();
-        config=config.replace("~", &homepath);
-        configfile = toml::from_str(&config).unwrap();
-    }
+    let homepath = std::env::var("HOME").unwrap();
+    let cache_path = format!("/{}/.cache/ame/", homepath);
     
+    // args catch
     if args.len() <= 1 {
         help();
         exit(1);
     }
 
     let oper = &args[1];
-    let cache_path=configfile.cache.unwrap();
+
+    // install
     if oper == "-S" || oper == "ins" || oper == "install" {
         for arg in env::args().skip(2) {
-            if configfile.backends.pacman.unwrap() == true {
-                let out = Command::new("pacman").arg("-Ss").arg(&arg).status().unwrap(); // How do we silence this command?? using > /dev/null seems to also silence the returncode which is needed here
-                if out.success() {
-                    let configoption_noconfirm = configfile.pacman.noconfirm.unwrap();
-                    install(configoption_noconfirm, &arg);
-                } else {
-                    if configfile.backends.aur.unwrap() == true {
-                        clone(&arg, &cache_path);
-                    } else {
-                        println!("ERROR: the package wasn't found in the repos and aur support is disabled");
-                        println!("Please enable aur support if you wish to check if this package exists in the aur");
-                        exit(1);
-                    }
-                }
-            } else if configfile.backends.aur.unwrap() == true {
-                clone(&arg, &cache_path)
+            let out = Command::new("pacman")
+                              .arg("-Ss")
+                              .arg(&arg)
+                              .arg(" > /dev/null && return ${PIPESTATUS}")
+                              .status()
+                              .unwrap();
+            if out.success() {
+                install(&arg);
             } else {
-                println!("ERROR: it seems like neither pacman, nor aur support is enabled!");
-                println!("Please enable either one of those option and try again");
-                exit(1);
+                clone(&arg);
             }
-        } 
-    } else if oper == "-R" || oper=="rem" || oper=="remove" {
-        for arg in env::args().skip(2) {
-            let configoption_noconfirm = configfile.pacman.noconfirm.unwrap();
-            uninstall(configoption_noconfirm, &arg);
         }
+
+    // remove
+    } else if oper == "-R" || oper == "-Rs" || oper=="rem" || oper=="remove" {
+        for arg in env::args().skip(2) {
+            uninstall(&arg);
+        }
+
+    // upgrade
     } else if oper == "-Syu" || oper=="upg" || oper=="upgrade" {
-        let configoption_noconfirm = configfile.pacman.noconfirm.unwrap();
-        upgrade(configoption_noconfirm, &cache_path);
-    } else if oper == "-Ss" || oper=="sear" || oper=="search" {
+        upgrade(&cache_path);
+    } else if oper == "-Ss" || oper=="sea" || oper=="search" {
         for arg in env::args().skip(2) {
             r_search(&arg);
             a_search(&arg);
         }
-    } else if oper == "-Sa" || oper=="sera" || oper=="search-aur" {
+
+    // aur search
+    } else if oper == "-Sa" || oper=="aursea" || oper=="aursearch" {
         for arg in env::args().skip(2) {
             a_search(&arg);
         }
-    } else if oper == "-Sr" || oper=="serr" || oper=="search-rep" {
+
+    // repo search
+    } else if oper == "-Sr" || oper=="repsea" || oper=="reposearch" {
         for arg in env::args().skip(2) {
             r_search(&arg);
         }
-    } else if oper == "-Cc" || oper=="clrca" || oper=="clear-cache" {
+
+    // clear cache
+    } else if oper == "-Cc" || oper=="clr" || oper=="clear-cache" {
         clearcache();
-    } else if oper == "-f" || oper=="flat" || oper=="flatpak" {
-        if configfile.backends.flatpak.unwrap() == true {
-            let b = std::path::Path::new("/usr/bin/flatpak").exists();
-            if b == true {
-                for arg in env::args().skip(2) {
-                    flatpak(&arg);
-                }
-            } else {
-                println!("ERROR: flatpak not found, please install flatpak and try again!");
-                println!("If you do have flatpak installed, please open an issue on the ame github repo!");
-                exit(1);
-            }
-        } else {
-            println!("ERROR: flatpak support is disabled in your ame config!");
-            println!("Enable flatpak support in your configuration and try again!");
-            exit(1);
-        }
-    } else if oper == "-Pc" || oper=="pricon" || oper=="printconf" {
-        printconfig();
+
+    // version / contrib
+    } else if oper == "-v" || oper == "-V" || oper == "ver" {
+        ver();
+
+    // help
     } else {
         help();
         exit(0);
