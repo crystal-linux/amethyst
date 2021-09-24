@@ -7,7 +7,12 @@ pub fn clone(pkg: &str) {
     let path = Path::new(&cachedir);
     let pkgdir = format!("{}/{}", &cachedir, &pkg);
     let pkgpath = Path::new(&pkgdir);
-    let results = raur::search(&pkg).expect("a");
+    let results = raur::search(&pkg).unwrap();
+
+    if results.len() <= 1 {
+        err_unrec(format!("No matching packages found"));
+    }
+
     let url = format!("https://aur.archlinux.org/{}.git", results[0].name);
 
     if !path.is_dir() {

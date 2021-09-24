@@ -1,6 +1,6 @@
 mod mods;
-use mods::{clearcache::clearcache, clone::clone, help::help, install::install, search::{a_search, r_search}, uninstall::uninstall, upgrade::upgrade, ver::ver};
-use std::{env, process::exit, process::Command};
+use mods::{clearcache::clearcache, clone::clone, help::help, install::install, search::{a_search, r_search}, uninstall::uninstall, upgrade::upgrade, update::update, ver::ver};
+use std::{env, process::exit, process::Command, process::Stdio};
 
 fn main() {
     // let statements
@@ -17,12 +17,12 @@ fn main() {
     let oper = &args[1];
 
     // install
-    if oper == "-S" || oper == "ins" || oper == "install" {
+    if oper == "-S" || oper == "ins" {
         for arg in env::args().skip(2) {
             let out = Command::new("pacman")
                               .arg("-Ss")
                               .arg(&arg)
-                              .arg(" > /dev/null && return ${PIPESTATUS}")
+                              .stdout(Stdio::null())
                               .status()
                               .unwrap();
             if out.success() {
@@ -33,34 +33,40 @@ fn main() {
         }
 
     // remove
-    } else if oper == "-R" || oper == "-Rs" || oper=="rem" || oper=="remove" {
+    } else if oper == "-R" || oper == "-Rs" || oper=="rem" {
         for arg in env::args().skip(2) {
             uninstall(&arg);
         }
 
     // upgrade
-    } else if oper == "-Syu" || oper=="upg" || oper=="upgrade" {
+    } else if oper == "-Syu" || oper=="upg" {
         upgrade(&cache_path);
-    } else if oper == "-Ss" || oper=="sea" || oper=="search" {
+
+    // update
+    } else if oper == "-Sy" || oper == "upd" {
+        update();
+
+    // general search
+    } else if oper == "-Ss" || oper=="sea" {
         for arg in env::args().skip(2) {
             r_search(&arg);
             a_search(&arg);
         }
 
     // aur search
-    } else if oper == "-Sa" || oper=="aursea" || oper=="aursearch" {
+    } else if oper == "-Sa" || oper=="aursea" {
         for arg in env::args().skip(2) {
             a_search(&arg);
         }
 
     // repo search
-    } else if oper == "-Sr" || oper=="repsea" || oper=="reposearch" {
+    } else if oper == "-Sr" || oper=="repsea" {
         for arg in env::args().skip(2) {
             r_search(&arg);
         }
 
-    // clear cache
-    } else if oper == "-Cc" || oper=="clr" || oper=="clear-cache" {
+    // clear cache !! DEBUG ONLY !! DO NOT DO THIS IF YOU DONT KNOW WHAT YOURE DOING !!
+    } else if oper == "-Cc" || oper=="clr" {
         clearcache();
 
     // version / contrib
