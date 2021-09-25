@@ -4,7 +4,7 @@ use std::process;
 pub fn inf(a: std::string::String){
     println!("{} {}",
              Colour::Purple.bold().paint("❖"),
-             Colour::White.paint(a));
+             Colour::White.bold().paint(a));
 }
 
 pub fn err_unrec(a: std::string::String) {
@@ -17,8 +17,8 @@ pub fn err_unrec(a: std::string::String) {
 
 // we havent actually used this one yet
 
-/*pub fn err_rec(a: std::string::String) {
+pub fn err_rec(a: std::string::String) {
     println!("{} {}",
-             Colour::Yellow.bold().paint("! Warning:"),
+             Colour::Yellow.bold().paint("⚠ WARNING:"),
              Colour::Yellow.paint(a));
-}*/
+}

@@ -1,7 +1,9 @@
 use crate::mods::strs::inf;
+use ansi_term::Colour;
 
 pub fn ver() {
-    inf(format!("ame - v3.0.0"));
+    println!("");
+    inf(format!("ame - v2.1.0"));
     println!("");
     inf(format!("Contributors:"));
     println!("- axtlos <axtlos@salyut.one>");
@@ -11,6 +13,7 @@ pub fn ver() {
     println!("");
     inf(format!("This software is licensed under the BSD 3-Clause license."));
     inf(format!("All source code is available at:"));
-    println!("https://github.com/crystal-linux/ame");
+    println!("");
+    println!("{}", Colour::Purple.bold().paint("https://github.com/crystal-linux/ame"));
     println!("");
 }
