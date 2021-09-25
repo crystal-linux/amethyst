@@ -2,7 +2,7 @@ use git2::Repository;
 use std::{env, fs, path::Path, process::Command};
 use crate::mods::strs::{err_unrec, inf};
 
-pub fn clone(pkg: &str) {
+pub fn clone(noconfirm: bool, pkg: &str) {
     let cachedir = format!("{}/.cache/ame", std::env::var("HOME").unwrap());
     let path = Path::new(&cachedir);
     let pkgdir = format!("{}/{}", &cachedir, &pkg);
@@ -68,15 +68,30 @@ pub fn clone(pkg: &str) {
         err_unrec(format!("Couldn't enter package directory for {}", pkg))
     }}
 
-    inf(format!("Installing {} ...", pkg));
-    let install_result = Command::new("makepkg")
-                         .arg("-si")
-                         .status();
-    match install_result {
-    Ok(_) => {
-        inf(format!("Succesfully installed {}", pkg));
+    if noconfirm == true {
+        inf(format!("Installing {} ...", pkg));
+        let install_result = Command::new("makepkg")
+                             .arg("-si")
+                             .arg("--noconfirm")
+                             .status();
+        match install_result {
+        Ok(_) => {
+            inf(format!("Succesfully installed {}", pkg));
+        }
+        Err(_) => {
+            err_unrec(format!("Couldn't install {}", pkg));
+        }};
+    } else {
+        inf(format!("Installing {} ...", pkg));
+        let install_result = Command::new("makepkg")
+                             .arg("-si")
+                             .status();
+        match install_result {
+        Ok(_) => {
+            inf(format!("Succesfully installed {}", pkg));
+        }
+        Err(_) => {
+            err_unrec(format!("Couldn't install {}", pkg));
+        }};
     }
-    Err(_) => {
-        err_unrec(format!("Couldn't install {}", pkg));
-    }};
 }

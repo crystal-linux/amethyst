@@ -2,17 +2,31 @@ use runas::Command;
 use std::env;
 use crate::mods::strs::{err_unrec, inf};
 
-pub fn upgrade(cachedir: &str){
-    let result = Command::new("pacman")
-                         .arg("-Syu")
-                         .status();
-    match result {
-    Ok(_) => {
-        inf(format!("All repo packages upgraded"))
+pub fn upgrade(noconfirm: bool, cachedir: &str){
+    if noconfirm == true {
+        let result = Command::new("pacman")
+                             .arg("-Syu")
+                             .arg("--noconfirm")
+                             .status();
+        match result {
+        Ok(_) => {
+            inf(format!("All repo packages upgraded"))
+        }
+        Err(_) => {
+            err_unrec(format!("Couldn't upgrade packages"))
+        }};
+    } else {
+        let result = Command::new("pacman")
+                             .arg("-Syu")
+                             .status();
+        match result {
+        Ok(_) => {
+            inf(format!("All repo packages upgraded"))
+        }
+        Err(_) => {
+            err_unrec(format!("Couldn't upgrade packages"))
+        }};
     }
-    Err(_) => {
-        err_unrec(format!("Couldn't upgrade packages"))
-    }};
 
     for file in std::fs::read_dir(&cachedir).unwrap() {
         let dir = &file.unwrap().path();
