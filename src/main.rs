@@ -35,7 +35,7 @@ fn main() {
         }
 
     // remove
-    } else if oper == "-R" || oper == "-Rs" || oper == "rem" {
+    } else if oper == "-R" || oper == "-Rs" || oper == "rm" {
         for arg in env::args().skip(2) {
             uninstall(&arg);
         }

@@ -22,7 +22,7 @@ Made for crystalux, compatible with any arch-based linux distribution.</p>
 | Action | FreeBSD pkg-style alias | Pacman-style flag(s) |
 | ------ | ------ | ------ |
 | Install a package | ame ins | ame -S |
-| Remove a package | ame rem | ame -R / -Rs |
+| Remove a package | ame rm | ame -R / -Rs |
 | Update repository | ame upd | ame -Sy |
 | Upgrade a package | ame upg | ame -Syu |
 | Search for a package in general | ame sea | ame -Ss |
