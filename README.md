@@ -18,17 +18,16 @@ Made for crystalux, compatible with any arch-based linux distribution.</p>
 
 ![](screenshot.png)
 
-## Basic usage - <b>NOT COMPLETE!</b>
-| Action | Command | Shorthand alias | Supported pacman equivalent |
-| ------ | ------ | ------ | ------ |
-| Install a package | amethyst install | ame ins | -S |
-| Install a package via flatpak | amethyst flat | ame flat | -f |
-| Remove a package| amethyst remove | ame rem | -R |
-| Update repository | amethyst update | ame upd | -Sy |
-| Upgrade a package | amethyst upgrade | ame upg | -Syu |
-| Search for a package in repo and aur | amethyst search | ame sear | -Ss |
-| Search for a package in repo | amethyst search-repo | ame serr | -Sr|
-| Search for a package in aur | amethyst search-aur | ame sera | -Sa |
+## Basic usage
+| Action | FreeBSD pkg-style alias | Pacman-style flag(s) |
+| ------ | ------ | ------ |
+| Install a package | ame ins | ame -S |
+| Remove a package | ame rem | ame -R / -Rs |
+| Update repository | ame upd | ame -Sy |
+| Upgrade a package | ame upg | ame -Syu |
+| Search for a package in general | ame sea | ame -Ss |
+| Search for a package in the repos | ame repsea | ame -Sr |
+| Search for a package in aur | ame aursea | ame -S |
 
 ## How to build:
 (Install cargo)
