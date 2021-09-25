@@ -1,5 +1,5 @@
 mod mods;
-use mods::{clearcache::clearcache, clone::clone, help::help, install::install, search::{a_search, r_search}, uninstall::uninstall, upgrade::upgrade, update::update, ver::ver};
+use mods::{clearcache::clearcache, clone::clone, help::help, install::install, search::{a_search, r_search}, uninstall::uninstall, upgrade::upgrade, update::update, ver::ver, strs::inf};
 use std::{env, process::exit, process::Command, process::Stdio};
 
 fn main() {
@@ -24,22 +24,24 @@ fn main() {
                               .arg(&arg)
                               .stdout(Stdio::null())
                               .status()
-                              .unwrap();
-            if out.success() {
+                              .expect("");
+            if out.code() == Some(0) {
+                inf(format!("Installing {}", arg));
                 install(&arg);
             } else {
+                inf(format!("Cloning {} from the AUR", arg));
                 clone(&arg);
             }
         }
 
     // remove
-    } else if oper == "-R" || oper == "-Rs" || oper=="rem" {
+    } else if oper == "-R" || oper == "-Rs" || oper == "rem" {
         for arg in env::args().skip(2) {
             uninstall(&arg);
         }
 
     // upgrade
-    } else if oper == "-Syu" || oper=="upg" {
+    } else if oper == "-Syu" || oper == "upg" {
         upgrade(&cache_path);
 
     // update
@@ -47,26 +49,26 @@ fn main() {
         update();
 
     // general search
-    } else if oper == "-Ss" || oper=="sea" {
+    } else if oper == "-Ss" || oper == "sea" {
         for arg in env::args().skip(2) {
             r_search(&arg);
             a_search(&arg);
         }
 
     // aur search
-    } else if oper == "-Sa" || oper=="aursea" {
+    } else if oper == "-Sa" || oper == "aursea" {
         for arg in env::args().skip(2) {
             a_search(&arg);
         }
 
     // repo search
-    } else if oper == "-Sr" || oper=="repsea" {
+    } else if oper == "-Sr" || oper == "repsea" {
         for arg in env::args().skip(2) {
             r_search(&arg);
         }
 
     // clear cache !! DEBUG ONLY !! DO NOT DO THIS IF YOU DONT KNOW WHAT YOURE DOING !!
-    } else if oper == "-Cc" || oper=="clr" {
+    } else if oper == "-Cc" || oper == "clr" {
         clearcache();
 
     // version / contrib

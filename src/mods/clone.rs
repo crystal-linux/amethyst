@@ -9,8 +9,8 @@ pub fn clone(pkg: &str) {
     let pkgpath = Path::new(&pkgdir);
     let results = raur::search(&pkg).unwrap();
 
-    if results.len() <= 1 {
-        err_unrec(format!("No matching packages found"));
+    if results.len() == 0 {
+        err_unrec(format!("No matching AUR packages found"));
     }
 
     let url = format!("https://aur.archlinux.org/{}.git", results[0].name);
@@ -28,22 +28,33 @@ pub fn clone(pkg: &str) {
 
     inf(format!("Cloning {} ...", pkg));
 
-    let cd_result = env::set_current_dir(&pkgdir);
-    match cd_result {
-    Ok(_) => {
-        inf(format!("Entered cache directory"))
+    if pkgpath.is_dir() {
+        let rm_result = fs::remove_dir_all(&pkgpath);
+        match rm_result {
+        Ok(_) => {
+            inf(format!("Package path for {} already found. Removing to reinstall", pkg))
+        }
+        Err(_) => {
+            err_unrec(format!("Package path for {} already found, but could not remove to reinstall", pkg))
+        }}
     }
-    Err(_) => {
-        err_unrec(format!(""))
-    }}
 
-    let dir_result = fs::create_dir(&pkg);
+    let dir_result = fs::create_dir(&pkgdir);
     match dir_result {
     Ok(_) => {
         inf(format!("Cloned {} to package directory", pkg))
     }
     Err(_) => {
         err_unrec(format!("Couldn't create package directory for {}", pkg))
+    }}
+
+    let cd_result = env::set_current_dir(&pkgdir);
+    match cd_result {
+    Ok(_) => {
+        inf(format!("Entered package directory"))
+    }
+    Err(_) => {
+        err_unrec(format!("Could not enter package directory"))
     }}
 
     Repository::clone(&url, &pkgpath).unwrap();
@@ -54,7 +65,7 @@ pub fn clone(pkg: &str) {
         inf(format!("Entering package directory for {}", pkg))
     }
     Err(_) => {
-        err_unrec(format!("Couldn't enter cache directory for {}", pkg))
+        err_unrec(format!("Couldn't enter package directory for {}", pkg))
     }}
 
     inf(format!("Installing {} ...", pkg));
