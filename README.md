@@ -7,10 +7,10 @@
 <h2 align="center"> Amethyst</h2>
 </p>
 <p align="center">
-<img src=https://img.shields.io/github/stars/crystalux-project/ame?style=flat&color=a900ff />
-<img src=https://img.shields.io/github/forks/crystalux-project/ame?style=flat&color=a900ff />
-<img src=https://img.shields.io/github/issues/crystalux-project/ame?style=flat&color=a900ff />
-<img src=https://img.shields.io/github/issues-pr/crystalux-project/ame?style=flat&color=a900ff />
+<img src=https://img.shields.io/github/stars/crystal-project/ame?style=flat&color=a900ff />
+<img src=https://img.shields.io/github/forks/crystalux-linux/ame?style=flat&color=a900ff />
+<img src=https://img.shields.io/github/issues/crystalux-linux/ame?style=flat&color=a900ff />
+<img src=https://img.shields.io/github/issues-pr/crystalux-linux/ame?style=flat&color=a900ff />
 <a href="https://discord.gg/yp4xpZeAgW"><img alt="Discord" src="https://img.shields.io/discord/825473796227858482?color=blue&label=Discord&logo=Discord&logoColor=white"?link=https://discord.gg/yp4xpZeAgW&link=https://discord.gg/yp4xpZeAgW> </p></a>
 
 <p align="center"> Amethyst is a fast, efficient and lightweight aur helper and pacman wrapper. 
