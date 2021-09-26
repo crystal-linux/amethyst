@@ -7,7 +7,7 @@
 <h2 align="center"> Amethyst</h2>
 </p>
 <p align="center">
-<img src=https://img.shields.io/github/stars/crystal-project/ame?style=flat&color=a900ff />
+<img src=https://img.shields.io/github/stars/crystal-linux/ame?style=flat&color=a900ff />
 <img src=https://img.shields.io/github/forks/crystalux-linux/ame?style=flat&color=a900ff />
 <img src=https://img.shields.io/github/issues/crystalux-linux/ame?style=flat&color=a900ff />
 <img src=https://img.shields.io/github/issues-pr/crystalux-linux/ame?style=flat&color=a900ff />
