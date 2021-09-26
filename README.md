@@ -7,10 +7,10 @@
 <h2 align="center"> Amethyst</h2>
 </p>
 <p align="center">
-<img src=https://img.shields.io/github/stars/crystal-linux/ame?style=flat&color=a900ff&logo=Discord />
-<img src=https://img.shields.io/github/forks/crystal-linux/ame?style=flat&color=a900ff&logo=Discord />
-<img src=https://img.shields.io/github/issues/crystal-linux/ame?style=flat&color=a900ff&logo=Discord />
-<img src=https://img.shields.io/github/issues-pr/crystal-linux/ame?style=flat&color=a900f&logo=Discordf />
+<img src=https://img.shields.io/github/stars/crystal-linux/ame?style=flat&color=a900ff&logo=Github />
+<img src=https://img.shields.io/github/forks/crystal-linux/ame?style=flat&color=a900ff&logo=Github />
+<img src=https://img.shields.io/github/issues/crystal-linux/ame?style=flat&color=a900ff&logo=Github />
+<img src=https://img.shields.io/github/issues-pr/crystal-linux/ame?style=flat&color=a900f&logo=Github />
 <a href="https://discord.gg/yp4xpZeAgW"><img alt="Discord" src="https://img.shields.io/discord/825473796227858482?color=blue&label=Discord&logo=Discord&logoColor=white"?link=https://discord.gg/yp4xpZeAgW&link=https://discord.gg/yp4xpZeAgW> </p></a>
 
 <p align="center"> Amethyst is a fast, efficient and lightweight aur helper and pacman wrapper. 
