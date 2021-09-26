@@ -9,8 +9,8 @@
 <p align="center">
 <img src=https://img.shields.io/github/stars/crystal-linux/ame?style=flat&color=a900ff />
 <img src=https://img.shields.io/github/forks/crystal-linux/ame?style=flat&color=a900ff />
-<img src=https://img.shields.io/github/issues/crystal-linux/ame?style=flat&color=a900ff />
-<img src=https://img.shields.io/github/issues-pr/crystal-linux/ame?style=flat&color=a900ff />
+<img alt="Discord" src=https://img.shields.io/github/issues/crystal-linux/ame?style=flat&color=a900ff />
+<img alt="Discord" src=https://img.shields.io/github/issues-pr/crystal-linux/ame?style=flat&color=a900ff />
 <a href="https://discord.gg/yp4xpZeAgW"><img alt="Discord" src="https://img.shields.io/discord/825473796227858482?color=blue&label=Discord&logo=Discord&logoColor=white"?link=https://discord.gg/yp4xpZeAgW&link=https://discord.gg/yp4xpZeAgW> </p></a>
 
 <p align="center"> Amethyst is a fast, efficient and lightweight aur helper and pacman wrapper. 
