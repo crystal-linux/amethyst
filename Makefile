@@ -7,6 +7,4 @@ release:
 clean:
 	rm -rf target/ Cargo.lock ame
 install:
-	sudo cp ame.toml /etc/ame.toml
 	sudo cp target/release/ame /usr/bin/ame
-	mkdir ~/.cache/ame
