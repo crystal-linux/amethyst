@@ -1,6 +1,6 @@
 [package]
 name = "ame"
-version = "2.1.0"
+version = "2.1.2"
 authors = [ "jnats <jnats@salyut.one>", "axtlos <axtlos@salyut.one>" ]
 edition = "2018"
 description = "a fast and efficient aur helper."
@@ -15,3 +15,4 @@ toml = "*"
 serde = "*"
 walkdir = "*"
 ansi_term = "*"
+uwuizer = "*"
