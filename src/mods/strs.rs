@@ -34,7 +34,7 @@ pub fn succ(a: std::string::String) {
     } else {
         println!("{} {}",
                  Colour::Green.bold().paint("✓"),
-                 Colour::Green.paint(uwuize!(&a)));
+                 Colour::Green.paint(&a));
     }
 }
 
