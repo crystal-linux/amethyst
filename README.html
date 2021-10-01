@@ -1,0 +1,80 @@
+<p align="center">
+  <a href="https://github.com/crystal-linux">
+    <img src="https://raw.githubusercontent.com/crystal-linux/branding/main/logos/crystal-logo-minimal.png" alt="Logo" width="150" height="150">
+  </a>
+</p>
+<p align="center"> 
+<h2 align="center"> Amethyst</h2>
+</p>
+<p align="center">
+<img src=https://img.shields.io/github/stars/crystal-linux/ame?style=flat&color=a900ff&logo=Github />
+<img src=https://img.shields.io/github/forks/crystal-linux/ame?style=flat&color=a900ff&logo=Github />
+<img src=https://img.shields.io/github/issues/crystal-linux/ame?style=flat&color=a900ff&logo=Github />
+<img src=https://img.shields.io/github/issues-pr/crystal-linux/ame?style=flat&color=a900f&logo=Github />
+<a href="https://discord.gg/yp4xpZeAgW"><img alt="Discord" src="https://img.shields.io/discord/825473796227858482?color=blue&label=Discord&logo=Discord&logoColor=white"?link=https://discord.gg/yp4xpZeAgW&link=https://discord.gg/yp4xpZeAgW> </p></a>
+
+<p align="center"> Amethyst is a fast, efficient and lightweight aur helper and pacman wrapper. 
+Made for crystalux, compatible with any arch-based linux distribution.</p>
+
+<p><img src="screenshot.png" alt=""></p>
+<h2 id="basic-usage">Basic usage</h2>
+<table>
+<thead>
+<tr>
+<th>Action</th>
+<th>FreeBSD pkg-style alias</th>
+<th>Pacman-style flag(s)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Install a package</td>
+<td>ame ins</td>
+<td>ame -S</td>
+</tr>
+<tr>
+<td>Remove a package</td>
+<td>ame rm</td>
+<td>ame -R / -Rs</td>
+</tr>
+<tr>
+<td>Update repository</td>
+<td>ame upd</td>
+<td>ame -Sy</td>
+</tr>
+<tr>
+<td>Upgrade a package</td>
+<td>ame upg</td>
+<td>ame -Syu</td>
+</tr>
+<tr>
+<td>Search for a package in general</td>
+<td>ame sea</td>
+<td>ame -Ss</td>
+</tr>
+<tr>
+<td>Search for a package in the repos</td>
+<td>ame repsea</td>
+<td>ame -Sr</td>
+</tr>
+<tr>
+<td>Search for a package in aur</td>
+<td>ame aursea</td>
+<td>ame -S</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-build-">How to build:</h2>
+<p>(Install cargo)</p>
+<p>For release:</p>
+<ul>
+<li><code>make clean release</code></li>
+</ul>
+<p>For general debug/test:</p>
+<ul>
+<li><code>make clean debug</code></li>
+</ul>
+<p>Clean all build directories:</p>
+<ul>
+<li><code>make clean</code></li>
+</ul>
