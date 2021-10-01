@@ -8,6 +8,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let homepath = std::env::var("HOME").unwrap();
     let cache_path = format!("/{}/.cache/ame/", homepath);
+    let pkgs = env::args().skip(2).collect();
     
     // args catch
     if args.len() <= 1 {
@@ -19,7 +20,6 @@ fn main() {
 
     // install
     if oper == "-S" || oper == "-Sn" || oper == "ins" {
-        let pkgs = env::args().skip(2).collect();
         if oper == "-Sn" {
             inssort(true, pkgs);
         } else {
@@ -29,13 +29,9 @@ fn main() {
     // remove
     } else if oper == "-R" || oper == "-Rn " || oper == "-Rsn" || oper == "-Rs" || oper == "rm" {
         if oper == "-Rn" || oper == "-Rsn" {
-            for arg in env::args().skip(2) {
-                uninstall(true, &arg);
-            }
+            uninstall(true, pkgs);
         } else {
-            for arg in env::args().skip(2) {
-                uninstall(false, &arg);
-            }
+            uninstall(false, pkgs);
         }
 
     // upgrade
