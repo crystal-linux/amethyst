@@ -6,12 +6,16 @@ pub fn update() {
 
     let result = Command::new("pacman")
                          .arg("-Sy")
-                         .status();
-    match result {
-    Ok(_) => {
+                         .status()
+                         .expect("Couldn't call pacman");
+    match result.code() {
+    Some(0) => {
         succ(format!("Repos succesfully synced"))
     }
-    Err(_) => {
-        err_unrec(format!("Couldn't sync package repos (how?)"))
+    Some(_) => {
+        err_unrec(format!("Couldn't sync package repos"))
+    }
+    None => {
+        err_unrec(format!("Couldn't sync package repos"))
     }}
 }

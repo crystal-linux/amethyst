@@ -8,23 +8,31 @@ pub fn upgrade(noconfirm: bool, cachedir: &str){
         let result = Command::new("pacman")
                              .arg("-Syu")
                              .arg("--noconfirm")
-                             .status();
-        match result {
-        Ok(_) => {
+                             .status()
+                             .expect("Couldn't call pacman");
+        match result.code() {
+        Some(0) => {
             succ(format!("All repo packages upgraded"))
         }
-        Err(_) => {
+        Some(_) => {
+            err_unrec(format!("Couldn't upgrade packages"))
+        }
+        None => {
             err_unrec(format!("Couldn't upgrade packages"))
         }};
     } else {
         let result = Command::new("pacman")
                              .arg("-Syu")
-                             .status();
-        match result {
-        Ok(_) => {
+                             .status()
+                             .expect("Couldn't call pacman");
+        match result.code() {
+        Some(0) => {
             succ(format!("All repo packages upgraded"))
         }
-        Err(_) => {
+        Some(_) => {
+            err_unrec(format!("Couldn't upgrade packages"))
+        }
+        None => {
             err_unrec(format!("Couldn't upgrade packages"))
         }};
     }
@@ -58,14 +66,17 @@ pub fn upgrade(noconfirm: bool, cachedir: &str){
                 err_unrec(format!("Couldn't enter AUR package directory to install new version"))
             }}
 
-            let makepkg_result = std::process::Command::new("makepkg").arg("-si").status();
-            match makepkg_result {
-            Ok(_) => {
+            let makepkg_result = std::process::Command::new("makepkg").arg("-si").status().expect("Couldn't call makepkg");
+            match makepkg_result.code() {
+            Some(0) => {
                 succ(format!("New AUR package version installed"))
             }
-            Err(_) => {
+            Some(_) => {
                 err_unrec(format!("Couldn't install new AUR package version"))
-            }}
+            }
+            None => {
+                err_unrec(format!("Couldn't install new AUR package version"))
+            }};
         }
     }
 }
