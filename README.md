@@ -40,3 +40,6 @@ For general debug/test:
 
 Clean all build directories:
   - `make clean`
+
+
+`echo "AME_UWU=YES" >> ~/.zshrc`, self explanatory 
