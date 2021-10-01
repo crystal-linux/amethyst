@@ -10,7 +10,9 @@ ame -Syu(n) / upg               - upgrade all packages to latest version
 ame -Ss     / sea         <pkg> - search for a package
 ame -Sa     / aursea      <pkg> - search for a package in the aur
 ame -Sr     / repsea      <pkg> - search for a package in the repos
-ame -v      / ver               - contributors and version info");
+ame -v      / ver               - contributors and version info
+
+ame <any valid pacman flags>    - passes said flags to be processed by pacman");
     println!("");
     err_rec(format!("Appending 'n' where (n) is present passes '--noconfirm' to pacman. Use at your own risk."));
     println!("");

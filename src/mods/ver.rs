@@ -3,7 +3,7 @@ use ansi_term::Colour;
 
 pub fn ver() {
     println!("");
-    inf(format!("ame - v2.1.0"));
+    inf(format!("ame - v2.2.0"));
     println!("");
     inf(format!("Contributors:"));
     println!("- axtlos <axtlos@salyut.one>");

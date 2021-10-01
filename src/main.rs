@@ -1,6 +1,6 @@
 
 mod mods;
-use mods::{clearcache::clearcache, clone::clone, help::help, install::install, search::{a_search, r_search}, uninstall::uninstall, upgrade::upgrade, update::update, ver::ver, strs::inf, strs::err_unrec};
+use mods::{clearcache::clearcache, clone::clone, help::help, install::install, search::{a_search, r_search}, uninstall::uninstall, upgrade::upgrade, update::update, ver::ver, strs::inf, strs::err_unrec, strs::err_rec};
 use std::{env, process::exit, process::Command, process::Stdio};
 
 fn main() {
@@ -114,8 +114,24 @@ fn main() {
         ver();
 
     // help
-    } else {
+    } else if oper == "-h" || oper == "help" {
         help();
-        exit(0);
+
+    // pacman passthrough
+    } else {
+        let pass = Command::new("pacman")
+            .args(env::args().skip(1))
+            .status()
+            .expect("Something has gone wrong.");
+
+        match pass.code() {
+        Some(1) => {
+            err_rec(format!("No such operation \"{}\"", args.join(" ")));
+            inf(format!("Try running \"ame help\" for an overview of how to use ame"))
+        }
+        Some(_) => {}
+        None => {
+            err_unrec(format!("Something has gone terribly wrong."))
+        }}
     }
 }
