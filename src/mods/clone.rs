@@ -1,6 +1,6 @@
 use git2::Repository;
 use std::{env, fs, path::Path, process::Command};
-use crate::{err_unrec, inf, inssort};
+use crate::{err_unrec, inf, inssort, mods::strs::succ, mods::strs::sec};
 
 pub fn clone(noconfirm: bool, pkg: &str) {
     let cachedir = format!("{}/.cache/ame", std::env::var("HOME").unwrap());
@@ -56,7 +56,11 @@ pub fn clone(noconfirm: bool, pkg: &str) {
         err_unrec(format!("Could not enter package directory"))
     }}
 
-    let aurpkgname = results[0].name.to_string();
+    sec(format!("Installing AUR package depends"));
+
+    // you can use this to get the makedepends too - just use the make_depends field instead of the depends field
+                                                  //     | riiiiight
+    let aurpkgname = results[0].name.to_string(); //     v here
     let depends = raur::info(&[&aurpkgname]).unwrap()[0].depends.clone();
     if noconfirm == true {
         inssort(true, depends);
@@ -67,28 +71,32 @@ pub fn clone(noconfirm: bool, pkg: &str) {
     Repository::clone(&url, Path::new(&pkgdir)).unwrap();
 
     if noconfirm == true {
-        inf(format!("Installing {} ...", pkg));
+        sec(format!("Installing {} ...", pkg));
         let install_result = Command::new("makepkg")
                              .arg("-si")
                              .arg("--noconfirm")
                              .status();
         match install_result {
         Ok(_) => {
-            inf(format!("Succesfully installed {}", pkg));
+            succ(format!("Succesfully installed {}", pkg));
         }
         Err(_) => {
             err_unrec(format!("Couldn't install {}", pkg));
         }};
     } else {
-        inf(format!("Installing {} ...", pkg));
+        sec(format!("Installing {} ...", pkg));
         let install_result = Command::new("makepkg")
                              .arg("-si")
-                             .status();
-        match install_result {
-        Ok(_) => {
-            inf(format!("Succesfully installed {}", pkg));
+                             .status()
+                             .expect("Couldn't call makepkg");
+        match install_result.code() {
+        Some(0) => {
+            succ(format!("Succesfully installed {}", pkg));
         }
-        Err(_) => {
+        Some(_) => {
+            err_unrec(format!("Couldn't install {}", pkg));
+        }
+        None => {
             err_unrec(format!("Couldn't install {}", pkg));
         }};
     }

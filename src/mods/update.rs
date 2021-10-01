@@ -1,15 +1,15 @@
 use runas::Command;
-use crate::mods::strs::{inf, err_unrec};
+use crate::mods::strs::{err_unrec, sec, succ};
 
 pub fn update() {
-    inf(format!("Syncing package repos"));
+    sec(format!("Syncing package repos"));
 
     let result = Command::new("pacman")
                          .arg("-Sy")
                          .status();
     match result {
     Ok(_) => {
-        inf(format!("Repos succesfully synced"))
+        succ(format!("Repos succesfully synced"))
     }
     Err(_) => {
         err_unrec(format!("Couldn't sync package repos (how?)"))

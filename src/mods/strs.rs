@@ -5,6 +5,18 @@ use uwuizer::*;
 pub fn inf(a: std::string::String){
     if env::var("AME_UWU").unwrap_or("n/a".to_string()) == "YES" {
         println!("{} {}",
+                 Colour::Purple.paint("❖"),
+                 Colour::White.paint(uwuize!(&a)));
+    } else {
+        println!("{} {}",
+                 Colour::Purple.paint("❖"),
+                 Colour::White.paint(a));
+    }
+}
+
+pub fn sec(a: std::string::String){
+    if env::var("AME_UWU").unwrap_or("n/a".to_string()) == "YES" {
+        println!("{} {}",
                  Colour::Purple.bold().paint("❖"),
                  Colour::White.bold().paint(uwuize!(&a)));
     } else {
@@ -13,6 +25,19 @@ pub fn inf(a: std::string::String){
                  Colour::White.bold().paint(a));
     }
 }
+
+pub fn succ(a: std::string::String) {
+    if env::var("AME_UWU").unwrap_or("n/a".to_string()) == "YES" {
+        println!("{} {}",
+                 Colour::Green.bold().paint("✓"),
+                 Colour::Green.paint(uwuize!(&a)));
+    } else {
+        println!("{} {}",
+                 Colour::Green.bold().paint("✓"),
+                 Colour::Green.paint(uwuize!(&a)));
+    }
+}
+
 
 pub fn err_unrec(a: std::string::String) {
     if env::var("AME_UWU").unwrap_or("n/a".to_string()) == "YES" {
@@ -29,8 +54,6 @@ pub fn err_unrec(a: std::string::String) {
         process::exit(1);
     }
 }
-
-// we havent actually used this one yet
 
 pub fn err_rec(a: std::string::String) {
     if env::var("AME_UWU").unwrap_or("n/a".to_string()) == "YES" {

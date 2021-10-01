@@ -1,8 +1,9 @@
 use runas::Command;
 use std::env;
-use crate::mods::strs::{err_unrec, inf};
+use crate::mods::strs::{err_unrec, inf, sec, succ};
 
 pub fn upgrade(noconfirm: bool, cachedir: &str){
+    sec(format!("Performing system upgrade"));
     if noconfirm == true {
         let result = Command::new("pacman")
                              .arg("-Syu")
@@ -10,7 +11,7 @@ pub fn upgrade(noconfirm: bool, cachedir: &str){
                              .status();
         match result {
         Ok(_) => {
-            inf(format!("All repo packages upgraded"))
+            succ(format!("All repo packages upgraded"))
         }
         Err(_) => {
             err_unrec(format!("Couldn't upgrade packages"))
@@ -21,7 +22,7 @@ pub fn upgrade(noconfirm: bool, cachedir: &str){
                              .status();
         match result {
         Ok(_) => {
-            inf(format!("All repo packages upgraded"))
+            succ(format!("All repo packages upgraded"))
         }
         Err(_) => {
             err_unrec(format!("Couldn't upgrade packages"))
@@ -60,7 +61,7 @@ pub fn upgrade(noconfirm: bool, cachedir: &str){
             let makepkg_result = std::process::Command::new("makepkg").arg("-si").status();
             match makepkg_result {
             Ok(_) => {
-                inf(format!("New AUR package version installed"))
+                succ(format!("New AUR package version installed"))
             }
             Err(_) => {
                 err_unrec(format!("Couldn't install new AUR package version"))

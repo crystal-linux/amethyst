@@ -1,4 +1,4 @@
-use crate::{clone, install, inf, err_unrec};
+use crate::{clone, install, err_unrec, mods::strs::sec};
 use std::process::{Stdio, Command};
 
 pub fn inssort(noconfirm: bool, pkgs: Vec<String>) {
@@ -26,7 +26,7 @@ pub fn inssort(noconfirm: bool, pkgs: Vec<String>) {
         }}}
 
     if repo.len() != 0 {
-        inf(format!("Installing repo packages: {}", &repo.join(", ")));
+        sec(format!("Installing repo packages: {}", &repo.join(", ")));
         if noconfirm == true {
             install(true, &repo.join(" "));
         } else {
@@ -35,7 +35,7 @@ pub fn inssort(noconfirm: bool, pkgs: Vec<String>) {
     }
 
     for a in aur {
-       inf(format!("Installing AUR package: {}", a));
+       sec(format!("Installing AUR package: {}", a));
        if noconfirm == true {
            clone(true, &a);
        } else {

@@ -40,7 +40,6 @@ fn main() {
 
     // upgrade
     } else if oper == "-Syu" || oper == "-Syun" || oper == "upg" {
-        inf(format!("Performing system upgrade"));
         if oper == ("-Syun") {
             upgrade(true, &cache_path);
         } else {

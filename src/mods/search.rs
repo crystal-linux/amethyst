@@ -1,6 +1,6 @@
 use std::{ops::Deref, process::Command};
 use ansi_term::Colour;
-use crate::mods::strs::{err_unrec, err_rec, inf};
+use crate::mods::strs::{err_unrec, err_rec, succ};
 
 pub fn a_search(pkg: &str) {
     let results = raur::search(&pkg);
@@ -27,7 +27,7 @@ pub fn r_search(pkg: &str) {
                          .unwrap();
     match result.code() {
     Some(0) => {
-        inf(format!("Repo search successful"))
+        succ(format!("Repo search successful"))
     }
     Some(1) => {
         err_rec(format!("No matching repo packages found"))
