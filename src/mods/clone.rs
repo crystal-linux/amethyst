@@ -1,12 +1,11 @@
 use git2::Repository;
 use std::{env, fs, path::Path, process::Command};
-use crate::mods::strs::{err_unrec, inf};
+use crate::{err_unrec, inf, inssort};
 
 pub fn clone(noconfirm: bool, pkg: &str) {
     let cachedir = format!("{}/.cache/ame", std::env::var("HOME").unwrap());
     let path = Path::new(&cachedir);
     let pkgdir = format!("{}/{}", &cachedir, &pkg);
-    let pkgpath = Path::new(&pkgdir);
     let results = raur::search(&pkg).unwrap();
 
     if results.len() == 0 {
@@ -28,8 +27,8 @@ pub fn clone(noconfirm: bool, pkg: &str) {
 
     inf(format!("Cloning {} ...", pkg));
 
-    if pkgpath.is_dir() {
-        let rm_result = fs::remove_dir_all(&pkgpath);
+    if Path::new(&pkgdir).is_dir() {
+        let rm_result = fs::remove_dir_all(&pkgdir);
         match rm_result {
         Ok(_) => {
             inf(format!("Package path for {} already found. Removing to reinstall", pkg))
@@ -57,16 +56,15 @@ pub fn clone(noconfirm: bool, pkg: &str) {
         err_unrec(format!("Could not enter package directory"))
     }}
 
-    Repository::clone(&url, &pkgpath).unwrap();
-
-    let cd2_result = env::set_current_dir(&pkgpath);
-    match cd2_result {
-    Ok(_) => {
-        inf(format!("Entering package directory for {}", pkg))
+    let aurpkgname = results[0].name.to_string();
+    let depends = raur::info(&[&aurpkgname]).unwrap()[0].depends.clone();
+    if noconfirm == true {
+        inssort(true, depends);
+    } else {
+        inssort(false, depends);
     }
-    Err(_) => {
-        err_unrec(format!("Couldn't enter package directory for {}", pkg))
-    }}
+
+    Repository::clone(&url, Path::new(&pkgdir)).unwrap();
 
     if noconfirm == true {
         inf(format!("Installing {} ...", pkg));

@@ -8,3 +8,4 @@ pub mod upgrade;
 pub mod update;
 pub mod strs;
 pub mod ver;
+pub mod inssort;

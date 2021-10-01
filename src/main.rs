@@ -1,7 +1,7 @@
 
 mod mods;
-use mods::{clearcache::clearcache, clone::clone, help::help, install::install, search::{a_search, r_search}, uninstall::uninstall, upgrade::upgrade, update::update, ver::ver, strs::inf, strs::err_unrec, strs::err_rec};
-use std::{env, process::exit, process::Command, process::Stdio};
+use mods::{clearcache::clearcache, clone::clone, help::help, install::install, inssort::inssort, search::{a_search, r_search}, uninstall::uninstall, upgrade::upgrade, update::update, ver::ver, strs::inf, strs::err_unrec, strs::err_rec};
+use std::{env, process::exit, process::Command};
 
 fn main() {
     // let statements
@@ -19,47 +19,12 @@ fn main() {
 
     // install
     if oper == "-S" || oper == "-Sn" || oper == "ins" {
-        let pkgs = env::args().skip(2);
-        let mut repo = vec![];
-        let mut aur = vec![];
-        for pkg in pkgs {
-            let out = Command::new("pacman")
-                              .arg("-Ss")
-                              .arg(&pkg)
-                              .stdout(Stdio::null())
-                              .status()
-                              .expect("Something has gone wrong.");
-            match out.code() {
-            Some(0) => {
-                repo.push(pkg)
-            }
-            Some(1) => {
-                aur.push(pkg)
-            }
-            Some(_) => {
-                err_unrec(format!("Something has gone terribly wrong"))
-            }
-            None => {
-                err_unrec(format!("Process terminated"))
-            }}}
-
-            if repo.len() != 0 {
-                inf(format!("Installing repo packages: {}", &repo.join(", ")));
-                if oper == "-Sn" {
-                    install(true, &repo.join(" "));
-                } else {
-                    install(false, &repo.join(" "));
-                }
-            }
-
-            for a in aur {
-                inf(format!("Installing AUR package: {}", a));
-                if oper == "-Sn" {
-                    clone(true, &a);
-                } else {
-                    clone(false, &a);
-                }
-            }
+        let pkgs = env::args().skip(2).collect();
+        if oper == "-Sn" {
+            inssort(true, pkgs);
+        } else {
+            inssort(false, pkgs);
+        }
 
     // remove
     } else if oper == "-R" || oper == "-Rn " || oper == "-Rsn" || oper == "-Rs" || oper == "rm" {
