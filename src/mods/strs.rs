@@ -1,6 +1,7 @@
 use ansi_term::Colour;
 use std::{process, env};
 use uwuizer::*;
+use text_io::read;
 
 pub fn inf(a: std::string::String){
     if env::var("AME_UWU").unwrap_or("n/a".to_string()) == "YES" {
@@ -35,6 +36,32 @@ pub fn succ(a: std::string::String) {
         println!("{} {}",
                  Colour::Green.bold().paint("✓"),
                  Colour::Green.paint(&a));
+    }
+}
+
+pub fn prompt(a: std::string::String) -> bool {
+    if env::var("AME_UWU").unwrap_or("n/a".to_string()) == "YES" {
+        println!("{} {} {}",
+                 Colour::Purple.bold().paint("❖"),
+                 Colour::White.bold().paint(uwuize!(&a)),
+                 Colour::White.bold().paint("(Y/n): "));
+        let yn: String = read!();
+        if yn == "n" || yn == "N" || yn == "no" || yn == "No" {
+            false
+        } else {
+            true
+        }
+    } else {
+        println!("{} {} {}",
+                 Colour::Purple.bold().paint("❖"),
+                 Colour::White.bold().paint(&a),
+                 Colour::White.bold().paint("(Y/n): "));
+        let yn: String = read!();
+        if yn == "n" || yn == "N" || yn == "no" || yn == "No" {
+            false
+        } else {
+            true
+        }
     }
 }
 

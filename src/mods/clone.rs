@@ -1,6 +1,7 @@
 use git2::Repository;
+use moins::Moins;
 use std::{env, fs, path::Path, process::Command};
-use crate::{err_unrec, inf, inssort, mods::strs::succ, mods::strs::sec};
+use crate::{err_unrec, inf, inssort, mods::strs::succ, mods::strs::sec, mods::strs::prompt};
 
 pub fn clone(noconfirm: bool, pkg: &str) {
     let cachedir = format!("{}/.cache/ame", std::env::var("HOME").unwrap());
@@ -62,13 +63,18 @@ pub fn clone(noconfirm: bool, pkg: &str) {
                                                   //     | riiiiight
     let aurpkgname = results[0].name.to_string(); //     v here
     let depends = raur::info(&[&aurpkgname]).unwrap()[0].depends.clone();
-    if noconfirm == true {
-        inssort(true, depends);
-    } else {
-        inssort(false, depends);
-    }
 
+    inssort(noconfirm, depends);
     Repository::clone(&url, Path::new(&pkgdir)).unwrap();
+
+    if noconfirm == false {
+        let pkgbuild = prompt(format!("View PKGBUILD?"));
+
+        if pkgbuild == true {
+            let mut pkgbld = fs::read_to_string(format!("{}/PKGBUILD", &pkgdir)).unwrap();
+            Moins::run(&mut pkgbld, None);
+        }
+    }
 
     if noconfirm == true {
         sec(format!("Installing {} ...", pkg));

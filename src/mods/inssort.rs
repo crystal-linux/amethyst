@@ -27,19 +27,11 @@ pub fn inssort(noconfirm: bool, pkgs: Vec<String>) {
 
     if repo.len() != 0 {
         sec(format!("Installing repo packages: {}", &repo.join(", ")));
-        if noconfirm == true {
-            install(true, &repo.join(" "));
-        } else {
-           install(false, &repo.join(" "));
-       }
+        install(noconfirm, &repo.join(" "));
     }
 
     for a in aur {
-       sec(format!("Installing AUR package: {}", a));
-       if noconfirm == true {
-           clone(true, &a);
-       } else {
-           clone(false, &a);
-        }
+        sec(format!("Installing AUR package: {}", a));
+        clone(noconfirm, &a);
     }
 }

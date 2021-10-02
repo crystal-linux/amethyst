@@ -2,7 +2,9 @@ use runas::Command;
 use std::env;
 use crate::mods::strs::{err_unrec, inf, sec, succ};
 
-pub fn upgrade(noconfirm: bool, cachedir: &str){
+pub fn upgrade(noconfirm: bool){
+    let homepath = std::env::var("HOME").unwrap();
+    let cachedir = format!("/{}/.cache/ame/", homepath);
     sec(format!("Performing system upgrade"));
     if noconfirm == true {
         let result = Command::new("pacman")
