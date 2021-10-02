@@ -1,7 +1,6 @@
 use ansi_term::Colour;
-use std::{process, env};
+use std::{process, env, io, io::Write};
 use uwuizer::*;
-use text_io::read;
 
 pub fn inf(a: std::string::String){
     if env::var("AME_UWU").unwrap_or("n/a".to_string()) == "YES" {
@@ -41,23 +40,27 @@ pub fn succ(a: std::string::String) {
 
 pub fn prompt(a: std::string::String) -> bool {
     if env::var("AME_UWU").unwrap_or("n/a".to_string()) == "YES" {
-        println!("{} {} {}",
+        print!("{} {} {}",
                  Colour::Purple.bold().paint("❖"),
                  Colour::White.bold().paint(uwuize!(&a)),
                  Colour::White.bold().paint("(Y/n): "));
-        let yn: String = read!();
-        if yn == "n" || yn == "N" || yn == "no" || yn == "No" {
+        io::stdout().flush().ok().expect("Couldn't flush stdout");
+        let mut yn: String = String::new();
+        let _ = std::io::stdin().read_line(&mut yn);
+        if yn.trim() == "n" || yn.trim() == "N" || yn.trim() == "no" || yn.trim() == "No" {
             false
         } else {
             true
         }
     } else {
-        println!("{} {} {}",
+        print!("{} {} {}",
                  Colour::Purple.bold().paint("❖"),
                  Colour::White.bold().paint(&a),
                  Colour::White.bold().paint("(Y/n): "));
-        let yn: String = read!();
-        if yn == "n" || yn == "N" || yn == "no" || yn == "No" {
+        io::stdout().flush().ok().expect("Couldn't flush stdout");
+        let mut yn: String = String::new();
+        let _ = std::io::stdin().read_line(&mut yn);
+        if yn.trim() == "n" || yn.trim() == "N" || yn.trim() == "no" || yn.trim() == "No" {
             false
         } else {
             true

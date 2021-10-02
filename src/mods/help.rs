@@ -14,7 +14,7 @@ ame -v      / ver               - contributors and version info
 
 ame <any valid pacman flags>    - passes said flags to be processed by pacman");
     println!("");
-    err_rec(format!("Appending 'n' where (n) is present passes '--noconfirm' to pacman. Use at your own risk."));
+    err_rec(format!("Appending 'n' where (n) is present passes '--noconfirm' to pacman. Use at your own risk. (alternatively, using '--noconfirm' as a flag works too.)"));
     println!("");
 
 }

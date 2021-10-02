@@ -4,15 +4,11 @@ use std::{env, fs, path::Path, process::Command};
 use crate::{err_unrec, inf, inssort, mods::strs::succ, mods::strs::sec, mods::strs::prompt, mods::uninstall::uninstall};
 
 fn uninstall_make_depend(results: Vec<raur::Package>, pkg: &str) {
-    let aurpkgname = results[0].name.to_string(); //     v here
+    let aurpkgname = results[0].name.to_string();
         let make_depends = raur::info(&[&aurpkgname]).unwrap()[0].make_depends.clone();
 
         if make_depends.len() != 0 {
-            inf(format!("{} installed following make dependencies:", pkg));
-            for make_depend in &make_depends {
-                print!("{} ", make_depend);
-            }
-            println!("");
+            inf(format!("{} installed following make dependencies: {}", pkg, make_depends.join(", ")));
             let remove = prompt(format!("Would you like to remove them?"));
             if remove == true {
                 uninstall(true, make_depends);
@@ -26,7 +22,6 @@ pub fn clone(noconfirm: bool, pkg: &str) {
     let path = Path::new(&cachedir);
     let pkgdir = format!("{}/{}", &cachedir, &pkg);
     let results = raur::search(&pkg).unwrap();
-    let mut succ_install: bool = false;
 
     if results.len() == 0 {
         err_unrec(format!("No matching AUR packages found"));
@@ -110,8 +105,6 @@ pub fn clone(noconfirm: bool, pkg: &str) {
                              .status();
         match install_result {
         Ok(_) => {
-            //succ(format!("Succesfully installed {}", pkg));
-            //succ_install = true;
             uninstall_make_depend(results, pkg);
         }
         Err(_) => {
