@@ -33,35 +33,25 @@ fn main() {
 
     if oper == "-S" || oper == "-Sn" || oper == "ins" {
         inssort(noconfirm, pkgs);
-
     } else if oper == "-R" || oper == "-Rn " || oper == "-Rsn" || oper == "-Rs" || oper == "rm" {
         uninstall(noconfirm, pkgs);
-
     } else if oper == "-Syu" || oper == "-Syun" || oper == "upg" {
         upgrade(noconfirm);
-
     } else if oper == "-Sy" || oper == "upd" {
         update();
-
     } else if oper == "-Ss" || oper == "sea" {
         r_search(&args[2]);
         a_search(&args[2]);
-
     } else if oper == "-Sa" || oper == "aursea" {
         a_search(&args[2]);
-
     } else if oper == "-Sr" || oper == "repsea" {
         r_search(&args[2]);
-
     } else if oper == "-Cc" || oper == "clr" {
         clearcache();
-
     } else if oper == "-v" || oper == "-V" || oper == "ver" {
         ver();
-
     } else if oper == "-h" || oper == "help" {
         help();
-
     } else {
         let pass = Command::new("pacman")
             .args(env::args().skip(1))

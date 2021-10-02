@@ -74,9 +74,7 @@ pub fn clone(noconfirm: bool, pkg: &str) {
 
     sec(format!("Installing AUR package depends"));
 
-    // you can use this to get the makedepends too - just use the make_depends field instead of the depends field
-    //     | riiiiight
-    let aurpkgname = results[0].name.to_string(); //     v here
+    let aurpkgname = results[0].name.to_string();
     let depends = raur::info(&[&aurpkgname]).unwrap()[0].depends.clone();
 
     inssort(noconfirm, depends);
