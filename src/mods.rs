@@ -1,12 +1,12 @@
 pub mod clearcache;
 pub mod clone;
 pub mod help;
+pub mod inssort;
 pub mod install;
 pub mod search;
-pub mod uninstall;
-pub mod upgrade;
-pub mod update;
 pub mod strs;
+pub mod uninstall;
+pub mod update;
+pub mod upgrade;
 pub mod ver;
-pub mod inssort;
 pub mod xargs;

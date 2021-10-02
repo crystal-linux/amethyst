@@ -1,19 +1,26 @@
+use crate::{
+    err_unrec, inf, inssort, mods::strs::prompt, mods::strs::sec, mods::strs::succ,
+    mods::uninstall::uninstall,
+};
 use git2::Repository;
 use moins::Moins;
 use std::{env, fs, path::Path, process::Command};
-use crate::{err_unrec, inf, inssort, mods::strs::succ, mods::strs::sec, mods::strs::prompt, mods::uninstall::uninstall};
 
 fn uninstall_make_depend(results: Vec<raur::Package>, pkg: &str) {
     let aurpkgname = results[0].name.to_string();
-        let make_depends = raur::info(&[&aurpkgname]).unwrap()[0].make_depends.clone();
+    let make_depends = raur::info(&[&aurpkgname]).unwrap()[0].make_depends.clone();
 
-        if make_depends.len() != 0 {
-            inf(format!("{} installed following make dependencies: {}", pkg, make_depends.join(", ")));
-            let remove = prompt(format!("Would you like to remove them?"));
-            if remove == true {
-                uninstall(true, make_depends);
-            }
+    if make_depends.len() != 0 {
+        inf(format!(
+            "{} installed following make dependencies: {}",
+            pkg,
+            make_depends.join(", ")
+        ));
+        let remove = prompt(format!("Would you like to remove them?"));
+        if remove == true {
+            uninstall(true, make_depends);
         }
+    }
     succ(format!("Succesfully installed {}", pkg));
 }
 
@@ -32,12 +39,9 @@ pub fn clone(noconfirm: bool, pkg: &str) {
     if !path.is_dir() {
         let cache_result = fs::create_dir(&path);
         match cache_result {
-        Ok(_) => {
-            inf(format!("Created cache path (first run)"))
+            Ok(_) => inf(format!("Created cache path (first run)")),
+            Err(_) => err_unrec(format!("Could not create cache path")),
         }
-        Err(_) => {
-            err_unrec(format!("Could not create cache path"))
-        }}
     }
 
     inf(format!("Cloning {} ...", pkg));
@@ -45,48 +49,44 @@ pub fn clone(noconfirm: bool, pkg: &str) {
     if Path::new(&pkgdir).is_dir() {
         let rm_result = fs::remove_dir_all(&pkgdir);
         match rm_result {
-        Ok(_) => {
-            inf(format!("Package path for {} already found. Removing to reinstall", pkg))
+            Ok(_) => inf(format!(
+                "Package path for {} already found. Removing to reinstall",
+                pkg
+            )),
+            Err(_) => err_unrec(format!(
+                "Package path for {} already found, but could not remove to reinstall",
+                pkg
+            )),
         }
-        Err(_) => {
-            err_unrec(format!("Package path for {} already found, but could not remove to reinstall", pkg))
-        }}
     }
 
     let dir_result = fs::create_dir(&pkgdir);
     match dir_result {
-    Ok(_) => {
-        inf(format!("Cloned {} to package directory", pkg))
+        Ok(_) => inf(format!("Cloned {} to package directory", pkg)),
+        Err(_) => err_unrec(format!("Couldn't create package directory for {}", pkg)),
     }
-    Err(_) => {
-        err_unrec(format!("Couldn't create package directory for {}", pkg))
-    }}
 
     let cd_result = env::set_current_dir(&pkgdir);
     match cd_result {
-    Ok(_) => {
-        inf(format!("Entered package directory"))
+        Ok(_) => inf(format!("Entered package directory")),
+        Err(_) => err_unrec(format!("Could not enter package directory")),
     }
-    Err(_) => {
-        err_unrec(format!("Could not enter package directory"))
-    }}
 
     sec(format!("Installing AUR package depends"));
 
     // you can use this to get the makedepends too - just use the make_depends field instead of the depends field
-                                                  //     | riiiiight
+    //     | riiiiight
     let aurpkgname = results[0].name.to_string(); //     v here
     let depends = raur::info(&[&aurpkgname]).unwrap()[0].depends.clone();
 
     inssort(noconfirm, depends);
     let clone = Repository::clone(&url, Path::new(&pkgdir));
     match clone {
-    Ok(_) => {
-        inf(format!("Cloning {} into package directory", pkg));
+        Ok(_) => {
+            inf(format!("Cloning {} into package directory", pkg));
+        }
+        Err(_) => err_unrec(format!("Failed cloning {} into package directory", pkg)),
     }
-    Err(_) => {
-        err_unrec(format!("Failed cloning {} into package directory", pkg))
-    }}
 
     if noconfirm == false {
         let pkgbuild = prompt(format!("View PKGBUILD?"));
@@ -100,31 +100,33 @@ pub fn clone(noconfirm: bool, pkg: &str) {
     if noconfirm == true {
         sec(format!("Installing {} ...", pkg));
         let install_result = Command::new("makepkg")
-                             .arg("-si")
-                             .arg("--noconfirm")
-                             .status();
+            .arg("-si")
+            .arg("--noconfirm")
+            .status();
         match install_result {
-        Ok(_) => {
-            uninstall_make_depend(results, pkg);
-        }
-        Err(_) => {
-            err_unrec(format!("Couldn't install {}", pkg));
-        }};
+            Ok(_) => {
+                uninstall_make_depend(results, pkg);
+            }
+            Err(_) => {
+                err_unrec(format!("Couldn't install {}", pkg));
+            }
+        };
     } else {
         sec(format!("Installing {} ...", pkg));
         let install_result = Command::new("makepkg")
-                             .arg("-si")
-                             .status()
-                             .expect("Couldn't call makepkg");
+            .arg("-si")
+            .status()
+            .expect("Couldn't call makepkg");
         match install_result.code() {
-        Some(0) => {
-            uninstall_make_depend(results, pkg);
-        }
-        Some(_) => {
-            err_unrec(format!("Couldn't install {}", pkg));
-        }
-        None => {
-            err_unrec(format!("Couldn't install {}", pkg));
-        }};
+            Some(0) => {
+                uninstall_make_depend(results, pkg);
+            }
+            Some(_) => {
+                err_unrec(format!("Couldn't install {}", pkg));
+            }
+            None => {
+                err_unrec(format!("Couldn't install {}", pkg));
+            }
+        };
     }
 }

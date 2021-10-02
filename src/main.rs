@@ -1,13 +1,27 @@
-
 mod mods;
-use mods::{clearcache::clearcache, clone::clone, help::help, install::install, inssort::inssort, search::{a_search, r_search}, uninstall::uninstall, upgrade::upgrade, update::update, ver::ver, strs::inf, strs::err_unrec, strs::err_rec, xargs::*};
+use mods::{
+    clearcache::clearcache,
+    clone::clone,
+    help::help,
+    inssort::inssort,
+    install::install,
+    search::{a_search, r_search},
+    strs::err_rec,
+    strs::err_unrec,
+    strs::inf,
+    uninstall::uninstall,
+    update::update,
+    upgrade::upgrade,
+    ver::ver,
+    xargs::*,
+};
 use std::{env, process::exit, process::Command};
 
 fn main() {
     // let statements
     let args: Vec<String> = env::args().collect();
     let mut pkgs: Vec<String> = env::args().skip(2).collect();
-    
+
     // args catch
     if args.len() <= 1 {
         help();
@@ -29,7 +43,7 @@ fn main() {
 
     // upgrade
     } else if oper == "-Syu" || oper == "-Syun" || oper == "upg" {
-            upgrade(noconfirm);
+        upgrade(noconfirm);
 
     // update
     } else if oper == "-Sy" || oper == "upd" {
@@ -68,13 +82,14 @@ fn main() {
             .expect("Something has gone wrong.");
 
         match pass.code() {
-        Some(1) => {
-            err_rec(format!("No such operation \"{}\"", args.join(" ")));
-            inf(format!("Try running \"ame help\" for an overview of how to use ame"))
+            Some(1) => {
+                err_rec(format!("No such operation \"{}\"", args.join(" ")));
+                inf(format!(
+                    "Try running \"ame help\" for an overview of how to use ame"
+                ))
+            }
+            Some(_) => {}
+            None => err_unrec(format!("Something has gone terribly wrong.")),
         }
-        Some(_) => {}
-        None => {
-            err_unrec(format!("Something has gone terribly wrong."))
-        }}
     }
 }

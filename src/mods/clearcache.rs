@@ -1,5 +1,5 @@
-use std::fs;
 use crate::mods::strs::err_rec;
+use std::fs;
 
 pub fn clearcache() {
     let path = format!("{}/.cache/ame/", std::env::var("HOME").unwrap());
