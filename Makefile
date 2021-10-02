@@ -7,4 +7,5 @@ release:
 clean:
 	rm -rf target/ Cargo.lock ame
 install:
+	cargo build --release
 	sudo cp target/release/ame /usr/bin/ame
