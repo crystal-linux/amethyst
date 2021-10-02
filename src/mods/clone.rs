@@ -65,7 +65,14 @@ pub fn clone(noconfirm: bool, pkg: &str) {
     let depends = raur::info(&[&aurpkgname]).unwrap()[0].depends.clone();
 
     inssort(noconfirm, depends);
-    Repository::clone(&url, Path::new(&pkgdir)).unwrap();
+    let clone = Repository::clone(&url, Path::new(&pkgdir));
+    match clone {
+    Ok(_) => {
+        inf(format!("Cloning {} into package directory", pkg));
+    }
+    Err(_) => {
+        err_unrec(format!("Failed cloning {} into package directory", pkg))
+    }}
 
     if noconfirm == false {
         let pkgbuild = prompt(format!("View PKGBUILD?"));
