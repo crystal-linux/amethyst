@@ -11,15 +11,6 @@ pub fn argssort(args: &mut Vec<String>) -> &Vec<String> {
             args.retain(|x| x != &"--noconfirm".to_string());
             println!("{:?}", args);
             args
-        } else if args.contains(&"--pkgbuild".to_string()) {
-            args.retain(|x| x != &"--pkgbuild".to_string());
-            println!("{:?}", args);
-            args
-        } else if args.contains(&"--pkgbuild".to_string()) && args.contains(&"--noconfirm".to_string()) {
-            args.retain(|x| x != &"--noconfirm".to_string());
-            args.retain(|x| x != &"--pkgbuild".to_string());
-            println!("{:?}", args);
-            args
         } else {
             args
         }
