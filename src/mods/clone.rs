@@ -6,9 +6,8 @@ use git2::Repository;
 use moins::Moins;
 use std::{env, fs, path::Path, process::Command};
 
-fn uninstall_make_depend(results: Vec<raur::Package>, pkg: &str) {
-    let aurpkgname = results[0].name.to_string();
-    let make_depends = raur::info(&[&aurpkgname]).unwrap()[0].make_depends.clone();
+fn uninstall_make_depend(pkg: &str) {
+    let make_depends = raur::info(&[&pkg]).unwrap()[0].make_depends.clone();
 
     if make_depends.len() != 0 {
         inf(format!(
@@ -34,7 +33,7 @@ pub fn clone(noconfirm: bool, pkg: &str) {
         err_unrec(format!("No matching AUR packages found"));
     }
 
-    let url = format!("https://aur.archlinux.org/{}.git", results[0].name);
+    let url = format!("https://aur.archlinux.org/{}.git", pkg);
 
     if !path.is_dir() {
         let cache_result = fs::create_dir(&path);
@@ -62,7 +61,7 @@ pub fn clone(noconfirm: bool, pkg: &str) {
 
     let dir_result = fs::create_dir(&pkgdir);
     match dir_result {
-        Ok(_) => inf(format!("Cloned {} to package directory", pkg)),
+        Ok(_) => inf(format!("Created package directory for {}", pkg)),
         Err(_) => err_unrec(format!("Couldn't create package directory for {}", pkg)),
     }
 
@@ -74,8 +73,8 @@ pub fn clone(noconfirm: bool, pkg: &str) {
 
     sec(format!("Installing AUR package depends"));
 
-    let aurpkgname = results[0].name.to_string();
-    let depends = raur::info(&[&aurpkgname]).unwrap()[0].depends.clone();
+    let depends = raur::info(&[pkg]).unwrap()[0].depends.clone();
+    println!("{:?} {:?}", pkg, depends);
 
     inssort(noconfirm, depends);
     let clone = Repository::clone(&url, Path::new(&pkgdir));
@@ -104,7 +103,7 @@ pub fn clone(noconfirm: bool, pkg: &str) {
             .status();
         match install_result {
             Ok(_) => {
-                uninstall_make_depend(results, pkg);
+                uninstall_make_depend(pkg);
             }
             Err(_) => {
                 err_unrec(format!("Couldn't install {}", pkg));
@@ -119,7 +118,7 @@ pub fn clone(noconfirm: bool, pkg: &str) {
             .expect("Couldn't call makepkg");
         match install_result.code() {
             Some(0) => {
-                uninstall_make_depend(results, pkg);
+                uninstall_make_depend(pkg);
             }
             Some(_) => {
                 err_unrec(format!("Couldn't install {}", pkg));

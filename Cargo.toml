@@ -9,7 +9,7 @@ description = "a fast and efficient aur helper."
 
 [dependencies]
 git2 = "*"
-raur = "2.0.2"
+raur = "3.0.1"
 runas = "*"
 ansi_term = "*"
 uwuizer = "*"
