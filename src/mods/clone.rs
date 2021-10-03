@@ -100,6 +100,7 @@ pub fn clone(noconfirm: bool, pkg: &str) {
         let install_result = Command::new("makepkg")
             .arg("-si")
             .arg("--noconfirm")
+            .arg("--needed")
             .status();
         match install_result {
             Ok(_) => {
@@ -113,6 +114,7 @@ pub fn clone(noconfirm: bool, pkg: &str) {
         sec(format!("Installing {} ...", pkg));
         let install_result = Command::new("makepkg")
             .arg("-si")
+            .arg("--needed")
             .status()
             .expect("Couldn't call makepkg");
         match install_result.code() {

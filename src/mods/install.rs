@@ -7,6 +7,7 @@ pub fn install(noconfirm: bool, pkg: &str) {
         let result = Command::new("pacman")
             .arg("-Sy")
             .arg("--noconfirm")
+            .arg("--needed")
             .args(&pkgs)
             .status()
             .expect("Couldn't call pacman");
@@ -18,6 +19,7 @@ pub fn install(noconfirm: bool, pkg: &str) {
     } else {
         let result = Command::new("pacman")
             .arg("-Sy")
+            .arg("--needed")
             .args(&pkgs)
             .status()
             .expect("Couldn't call pacman");
