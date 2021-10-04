@@ -5,6 +5,7 @@ use crate::{
 use git2::Repository;
 use moins::Moins;
 use std::{env, fs, path::Path, process::Command};
+use raur::SearchBy::Name;
 
 fn uninstall_make_depend(pkg: &str) {
     let make_depends = raur::info(&[&pkg]).unwrap()[0].make_depends.clone();
@@ -27,7 +28,7 @@ pub fn clone(noconfirm: bool, pkg: &str) {
     let cachedir = format!("{}/.cache/ame", std::env::var("HOME").unwrap());
     let path = Path::new(&cachedir);
     let pkgdir = format!("{}/{}", &cachedir, &pkg);
-    let results = raur::search(&pkg).unwrap();
+    let results = raur::search_by(format!("^{}$", &pkg), Name).unwrap();
 
     if results.len() == 0 {
         err_unrec(format!("No matching AUR packages found"));
