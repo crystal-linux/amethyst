@@ -12,7 +12,10 @@ pub fn inssort(noconfirm: bool, pkgs: Vec<String>) {
             Some(_) => {
                 let out = Command::new("pacman")
                     .arg("-Ss")
-                    .arg(format!("^{}$", caps.unwrap().get(1).map_or("", |m| m.as_str())))
+                    .arg(format!(
+                        "^{}$",
+                        caps.unwrap().get(1).map_or("", |m| m.as_str())
+                    ))
                     .stdout(Stdio::null())
                     .status()
                     .expect("Something has gone wrong.");
