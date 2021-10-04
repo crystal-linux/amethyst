@@ -28,7 +28,7 @@ pub fn inssort(noconfirm: bool, pkgs: Vec<String>) {
     for a in aur {
         let sea = raur::search_by(format!("^{}$", a), Name).unwrap();
         if sea.len() == 0 {
-            err_unrec(format!("No matching packages found"))
+            err_unrec(format!("No matching packages found for pattern {}", a))
         } else {
             sec(format!("Installing AUR package: {}", a));
             clone(noconfirm, &a);
