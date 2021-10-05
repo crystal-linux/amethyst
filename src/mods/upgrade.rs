@@ -1,10 +1,14 @@
 use crate::mods::strs::{err_unrec, inf, sec, succ};
 use runas::Command;
-use std::env;
+use std::{env, fs};
 
-pub fn upgrade(noconfirm: bool) {
+pub fn upgrade(noconfirm: bool) -> std::io::Result<()>{
     let homepath = std::env::var("HOME").unwrap();
     let cachedir = format!("/{}/.cache/ame/", homepath);
+    let cache_exists = std::path::Path::new(&format!("/{}/.cache/ame/", homepath)).is_dir();
+    if cache_exists == false {
+        fs::create_dir_all(&cachedir)?;
+    }
     sec(format!("Performing system upgrade"));
     if noconfirm == true {
         let result = Command::new("pacman")
@@ -72,4 +76,5 @@ pub fn upgrade(noconfirm: bool) {
             };
         }
     }
+    Ok(())
 }
