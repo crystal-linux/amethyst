@@ -31,6 +31,8 @@ fn main() {
 
     argssort(&mut pkgs);
 
+    // at some point weve GOT TO rework this into a `match` statement
+
     if oper == "-S" || oper == "-Sn" || oper == "ins" {
         inssort(noconfirm, pkgs);
     } else if oper == "-R" || oper == "-Rn " || oper == "-Rsn" || oper == "-Rs" || oper == "rm" {
