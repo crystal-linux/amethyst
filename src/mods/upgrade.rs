@@ -2,12 +2,19 @@ use crate::mods::strs::{err_unrec, inf, sec, succ};
 use runas::Command;
 use std::{env, fs};
 
-pub fn upgrade(noconfirm: bool) -> std::io::Result<()>{
+pub fn upgrade(noconfirm: bool) {
     let homepath = std::env::var("HOME").unwrap();
     let cachedir = format!("/{}/.cache/ame/", homepath);
     let cache_exists = std::path::Path::new(&format!("/{}/.cache/ame/", homepath)).is_dir();
     if cache_exists == false {
-        fs::create_dir_all(&cachedir)?;
+        let cachecreate = fs::create_dir_all(&cachedir);
+        match cachecreate {
+        Ok(_) => {
+            inf(format!("Creating cachedir. (didn't exist previously)"))
+        }
+        Err(_) => {
+            err_unrec(format!("Couldn't create cachedir"))
+        }}
     }
     sec(format!("Performing system upgrade"));
     if noconfirm == true {
@@ -76,5 +83,4 @@ pub fn upgrade(noconfirm: bool) -> std::io::Result<()>{
             };
         }
     }
-    Ok(())
 }
