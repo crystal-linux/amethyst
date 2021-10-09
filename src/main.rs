@@ -14,7 +14,7 @@ use mods::{
     upgrade::upgrade,
     ver::ver,
     xargs::*,
-    database::addPkg
+    database::{addPkg, remPkg}
 };
 use std::{env, process::exit, process::Command};
 
@@ -44,6 +44,8 @@ fn main() {
         update();
     } else if oper == "-db" {
         addPkg(pkgs);
+    } else if oper == "-remdb" {
+        remPkg(pkgs);
     } else if oper == "-Ss" || oper == "sea" {
         r_search(&args[2]);
         a_search(&args[2]);
