@@ -42,10 +42,6 @@ fn main() {
         upgrade(noconfirm);
     } else if oper == "-Sy" || oper == "upd" {
         update();
-    } else if oper == "-db" {
-        addPkg(pkgs);
-    } else if oper == "-remdb" {
-        remPkg(pkgs);
     } else if oper == "-Ss" || oper == "sea" {
         r_search(&args[2]);
         a_search(&args[2]);
