@@ -1,16 +1,11 @@
 use crate::mods::strs::{err_unrec, inf, sec, succ};
 use runas::Command;
 use std::{env, fs};
-use toml;
 
 pub fn upgrade(noconfirm: bool) {
     let homepath = std::env::var("HOME").unwrap();
     let cachedir = format!("/{}/.cache/ame/", homepath);
     let cache_exists = std::path::Path::new(&format!("/{}/.cache/ame/", homepath)).is_dir();
-    let file =  format!("{}/.local/ame/aurPkgs.db", std::env::var("HOME").unwrap());
-    let database = std::fs::read_to_string(&file).expect("cant open database");
-    let mut dbParsed = database.parse::<toml::Value>().expect("invalid Database");
-
     if cache_exists == false {
         let cachecreate = fs::create_dir_all(&cachedir);
         match cachecreate {
@@ -45,34 +40,7 @@ pub fn upgrade(noconfirm: bool) {
         };
     }
 
-    println!("{:?}", dbParsed);
-    for entry in dbParsed.as_table() {
-        for (key, value) in &*entry {
-            //println!("{} / {}", key, value);
-            for (option, entry) in  {
-                println!("{} / {}", option, entry);
-            }
-            //if key.contains("name") {
-            /*    println!("{}",value);
-                let results = raur::search(format!("{}",entry["paru"]));
-                println!("{}",format!("{}",entry));
-                let mut test = value.to_string().replace("\"", "");
-                test = test.replace("version", "").replace("name","");
-                test = test.replace("=", "");
-                println!("{}",test.replace(" ",""));*/
-                //let results = raur::search(format!("{}",value));
-                //for res in results {
-                //    println!("{}",&res[0].name);
-                //}
-            /*} else if key.contains("version") {
-                if value.as_integer() == lVersion {
-                    println!("upgrading");
-                }
-            }*/
-        }
-    }
-
-    /*for file in std::fs::read_dir(&cachedir).unwrap() {
+    for file in std::fs::read_dir(&cachedir).unwrap() {
         let dir = &file.unwrap().path();
         let output = std::process::Command::new("git")
             .arg("pull")
@@ -114,5 +82,5 @@ pub fn upgrade(noconfirm: bool) {
                 None => err_unrec(format!("Couldn't install new AUR package version")),
             };
         }
-    }*/
+    }
 }

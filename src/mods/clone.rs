@@ -1,6 +1,6 @@
 use crate::{
     err_unrec, inf, inssort, mods::strs::prompt, mods::strs::sec, mods::strs::succ,
-    mods::uninstall::uninstall, mods::database::addPkg
+    mods::uninstall::uninstall,
 };
 use git2::Repository;
 use moins::Moins;
@@ -102,7 +102,6 @@ pub fn clone(noconfirm: bool, pkg: &str) {
         match install_result {
             Ok(_) => {
                 uninstall_make_depend(pkg);
-                addPkg(false, pkg);
             }
             Err(_) => {
                 err_unrec(format!("Couldn't install {}", pkg));
@@ -118,7 +117,6 @@ pub fn clone(noconfirm: bool, pkg: &str) {
         match install_result.code() {
             Some(0) => {
                 uninstall_make_depend(pkg);
-                addPkg(false, pkg);
             }
             Some(_) => {
                 err_unrec(format!("Couldn't install {}", pkg));
