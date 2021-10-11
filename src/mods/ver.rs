@@ -20,7 +20,7 @@ pub fn ver() {
         "{}",
         Colour::Purple
             .bold()
-            .paint("https://github.com/crystal-linux/ame")
+            .paint("https://git.getcryst.al/crystal-linux/ame")
     );
     println!("");
 }
