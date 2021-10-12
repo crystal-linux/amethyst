@@ -1,6 +1,6 @@
 use crate::{
-    err_unrec, inf, inssort, mods::strs::prompt, mods::strs::sec, mods::strs::succ,
-    mods::uninstall::uninstall, mods::database::addPkg
+    err_unrec, inf, inssort, mods::database::add_pkg, mods::strs::prompt, mods::strs::sec,
+    mods::strs::succ, mods::uninstall::uninstall,
 };
 use git2::Repository;
 use moins::Moins;
@@ -102,7 +102,11 @@ pub fn clone(noconfirm: bool, pkg: &str) {
         match install_result {
             Ok(_) => {
                 uninstall_make_depend(pkg);
-                addPkg(false, pkg);
+                let add_pkg_res = add_pkg(false, pkg);
+                match add_pkg_res {
+                    Ok(_) => inf(format!("Added package {} to database", pkg)),
+                    Err(_) => err_unrec(format!("Couldn't add package {} to database", pkg)),
+                }
             }
             Err(_) => {
                 err_unrec(format!("Couldn't install {}", pkg));
@@ -118,7 +122,11 @@ pub fn clone(noconfirm: bool, pkg: &str) {
         match install_result.code() {
             Some(0) => {
                 uninstall_make_depend(pkg);
-                addPkg(false, pkg);
+                let add_pkg_res = add_pkg(false, pkg);
+                match add_pkg_res {
+                    Ok(_) => inf(format!("Added package {} to database", pkg)),
+                    Err(_) => err_unrec(format!("Couldn't add package {} to database", pkg)),
+                }
             }
             Some(_) => {
                 err_unrec(format!("Couldn't install {}", pkg));

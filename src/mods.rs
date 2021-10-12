@@ -1,5 +1,6 @@
 pub mod clearcache;
 pub mod clone;
+pub mod database;
 pub mod help;
 pub mod inssort;
 pub mod install;
@@ -10,4 +11,3 @@ pub mod update;
 pub mod upgrade;
 pub mod ver;
 pub mod xargs;
-pub mod database;

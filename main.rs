@@ -34,8 +34,7 @@ fn main() {
     // update
     } else if oper == "-Sy" || oper == "upd" {
         update();
-    } else if oper == "-db" {
-        addPkg(pkgs);
+
     // general search
     } else if oper == "-Ss" || oper == "sea" {
         r_search(&args[2]);

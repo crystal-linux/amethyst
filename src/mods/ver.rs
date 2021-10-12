@@ -1,9 +1,9 @@
-use crate::mods::strs::inf;
+use crate::inf;
 use ansi_term::Colour;
 
 pub fn ver() {
     println!("");
-    inf(format!("ame - v2.3.2"));
+    inf(format!("ame - v2.4.0"));
     println!("");
     inf(format!("Contributors:"));
     println!("- axtlos <axtlos@salyut.one>");

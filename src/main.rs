@@ -14,7 +14,6 @@ use mods::{
     upgrade::upgrade,
     ver::ver,
     xargs::*,
-    database::{addPkg, remPkg}
 };
 use std::{env, process::exit, process::Command};
 

@@ -1,4 +1,7 @@
-use crate::mods::{strs::{err_rec, err_unrec, sec, succ}, database::remPkg};
+use crate::mods::{
+    database::rem_pkg,
+    strs::{err_rec, err_unrec, sec, succ},
+};
 use runas::Command;
 use std::{fs, path::Path};
 
@@ -17,10 +20,11 @@ pub fn uninstall(noconfirm: bool, pkgs: Vec<String>) {
         match result.code() {
             Some(0) => {
                 succ(format!(
-                "Succesfully uninstalled packages: {}",
-                &pkgs.join(" ")));
-                remPkg(&pkgs);
-            },
+                    "Succesfully uninstalled packages: {}",
+                    &pkgs.join(" ")
+                ));
+                rem_pkg(&pkgs);
+            }
             Some(_) => err_rec(format!("Couldn't uninstall packages: {}", &pkgs.join(" "))),
             None => err_rec(format!("Couldn't uninstall packages: {}", &pkgs.join(" "))),
         };
@@ -33,10 +37,11 @@ pub fn uninstall(noconfirm: bool, pkgs: Vec<String>) {
         match result.code() {
             Some(0) => {
                 succ(format!(
-                "Succesfully uninstalled packages: {}",
-                &pkgs.join(" ")));
-                remPkg(&pkgs);
-            },
+                    "Succesfully uninstalled packages: {}",
+                    &pkgs.join(" ")
+                ));
+                rem_pkg(&pkgs);
+            }
             Some(_) => err_rec(format!("Couldn't uninstall packages: {}", &pkgs.join(" "))),
             None => err_rec(format!("Couldn't uninstall packages: {}", &pkgs.join(" "))),
         };
