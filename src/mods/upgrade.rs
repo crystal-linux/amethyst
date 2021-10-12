@@ -1,20 +1,43 @@
-use crate::mods::strs::{err_unrec, inf, sec, succ};
+//use crate::mods::strs::{err_unrec, inf, sec, succ};
+use crate::{
+    err_unrec, inf, inssort, mods::strs::prompt, mods::strs::sec, mods::strs::succ, uninstall,
+};
+use git2::Repository;
 use runas::Command;
-use std::{env, fs};
+use std::{env, fs, path::Path};
+use toml;
+
+fn uninstall_make_depend(pkg: &str) {
+    let make_depends = raur::info(&[&pkg]).unwrap()[0].make_depends.clone();
+
+    if make_depends.len() != 0 {
+        inf(format!(
+            "{} installed following make dependencies: {}",
+            pkg,
+            make_depends.join(", ")
+        ));
+        let remove = prompt(format!("Would you like to remove them?"));
+        if remove == true {
+            uninstall(true, make_depends);
+        }
+    }
+    succ(format!("Succesfully upgraded {}", pkg));
+}
 
 pub fn upgrade(noconfirm: bool) {
     let homepath = std::env::var("HOME").unwrap();
     let cachedir = format!("/{}/.cache/ame/", homepath);
     let cache_exists = std::path::Path::new(&format!("/{}/.cache/ame/", homepath)).is_dir();
+    let file = format!("{}/.local/ame/aurPkgs.db", std::env::var("HOME").unwrap());
+    let database = std::fs::read_to_string(&file).expect("Can't open database");
+    let db_parsed = database.parse::<toml::Value>().expect("Invalid Database");
+
     if cache_exists == false {
         let cachecreate = fs::create_dir_all(&cachedir);
         match cachecreate {
-        Ok(_) => {
-            inf(format!("Creating cachedir. (didn't exist previously)"))
+            Ok(_) => inf(format!("Creating cachedir. (didn't exist previously)")),
+            Err(_) => err_unrec(format!("Couldn't create cachedir")),
         }
-        Err(_) => {
-            err_unrec(format!("Couldn't create cachedir"))
-        }}
     }
     sec(format!("Performing system upgrade"));
     if noconfirm == true {
@@ -40,47 +63,155 @@ pub fn upgrade(noconfirm: bool) {
         };
     }
 
-    for file in std::fs::read_dir(&cachedir).unwrap() {
-        let dir = &file.unwrap().path();
-        let output = std::process::Command::new("git")
-            .arg("pull")
-            .output()
-            .unwrap();
-        let update_available = String::from_utf8(output.stdout).unwrap();
+    println!("{:?}", db_parsed);
+    for entry in db_parsed.as_table() {
+        for (key, value) in &*entry {
+            let results = raur::search(format!("{}", key));
+            for res in results {
+                println!("{}", &res[0].name);
+                let url = format!("https://aur.archlinux.org/{}.git", key);
+                let package = raur::info(&[key]).unwrap();
+                let version = value
+                    .to_string()
+                    .replace("name", "")
+                    .replace("version", "")
+                    .replace(" = ", "")
+                    .replace("\"", "")
+                    .replace(format!("{}", &res[0].name.to_string()).as_str(), "");
+                let name = value
+                    .to_string()
+                    .replace("name", "")
+                    .replace("version", "")
+                    .replace(" = ", "")
+                    .replace("\"", "")
+                    .replace(format!("{}", &res[0].version.to_string()).as_str(), "");
+                println!("{} / {}", name, version);
+                if res[0].version.contains(&version) {
+                    let keydir = format!("{}{}", &cachedir, &key);
+                    if std::path::Path::new(&keydir).is_dir() {
+                        let cd_result = env::set_current_dir(&keydir);
+                        match cd_result {
+                            Ok(_) => inf(format!("Entered package directory")),
+                            Err(_) => err_unrec(format!("Could not enter package directory")),
+                        }
+                        inssort(true, package[0].depends.clone());
 
-        let cd_result = env::set_current_dir(&dir);
-        match cd_result {
-            Ok(_) => inf(format!("Entered AUR package directory to pull changes")),
-            Err(_) => err_unrec(format!(
-                "Could not enter AUR package directory to pull changes"
-            )),
-        }
+                        sec(format!("Installing {} ...", &key));
+                        let install_result = std::process::Command::new("makepkg")
+                            .arg("-si")
+                            .arg("--noconfirm")
+                            .arg("--needed")
+                            .status();
+                        match install_result {
+                            Ok(_) => {
+                                uninstall_make_depend(&key);
+                            }
+                            Err(_) => {
+                                err_unrec(format!("Couldn't install {}", &key));
+                            }
+                        };
 
-        if update_available != "Already up to date." {
-            let path_as_str = &dir.display().to_string();
-            let pkg: Vec<&str> = path_as_str.split("/").collect();
+                        sec(format!("Installing {} ...", &key));
+                        let install_result = std::process::Command::new("makepkg")
+                            .arg("-si")
+                            .arg("--needed")
+                            .status()
+                            .expect("Couldn't call makepkg");
+                        match install_result.code() {
+                            Some(0) => {
+                                uninstall_make_depend(&key);
+                            }
+                            Some(_) => {
+                                err_unrec(format!("Couldn't install {}", &key));
+                            }
+                            None => {
+                                err_unrec(format!("Couldn't install {}", &key));
+                            }
+                        };
+                    } else {
+                        inf(format!("Cloning {} ...", &key));
 
-            inf(format!("{} is up to date", pkg[pkg.len() - 1]));
-        } else {
-            let cd2_result = env::set_current_dir(&dir);
-            match cd2_result {
-                Ok(_) => inf(format!(
-                    "Entering AUR package directory to install new version"
-                )),
-                Err(_) => err_unrec(format!(
-                    "Couldn't enter AUR package directory to install new version"
-                )),
+                        if Path::new(&keydir).is_dir() {
+                            let rm_result = fs::remove_dir_all(&keydir);
+                            match rm_result {
+                                    Ok(_) => inf(format!(
+                                        "Package path for {} already found. Removing to reinstall",
+                                        &key
+                                    )),
+                                    Err(_) => err_unrec(format!(
+                                        "Package path for {} already found, but could not remove to reinstall",
+                                        &key
+                                    )),
+                                }
+                        }
+
+                        let dir_result = fs::create_dir(&keydir);
+                        match dir_result {
+                            Ok(_) => inf(format!("Created package directory for {}", &key)),
+                            Err(_) => {
+                                err_unrec(format!("Couldn't create package directory for {}", &key))
+                            }
+                        }
+
+                        let cd_result = env::set_current_dir(&keydir);
+                        match cd_result {
+                            Ok(_) => inf(format!("Entered package directory")),
+                            Err(_) => err_unrec(format!("Could not enter package directory")),
+                        }
+
+                        inssort(true, package[0].depends.clone());
+
+                        let clone = Repository::clone(&url, Path::new(&keydir));
+                        match clone {
+                            Ok(_) => {
+                                inf(format!("Cloning {} into package directory", &key));
+                            }
+                            Err(_) => {
+                                err_unrec(format!("Failed cloning {} into package directory", &key))
+                            }
+                        }
+                    }
+
+                    sec(format!("Installing {} ...", &key));
+                    let install_result = std::process::Command::new("makepkg")
+                        .arg("-si")
+                        .arg("--noconfirm")
+                        .arg("--needed")
+                        .status();
+                    match install_result {
+                        Ok(_) => {
+                            uninstall_make_depend(&key);
+                        }
+                        Err(_) => {
+                            err_unrec(format!("Couldn't install {}", &key));
+                        }
+                    };
+                    sec(format!("Installing {} ...", &key));
+                    let install_result = std::process::Command::new("makepkg")
+                        .arg("-si")
+                        .arg("--needed")
+                        .status()
+                        .expect("Couldn't call makepkg");
+                    match install_result.code() {
+                        Some(0) => {
+                            uninstall_make_depend(&key);
+                        }
+                        Some(_) => {
+                            err_unrec(format!("Couldn't install {}", &key));
+                        }
+                        None => {
+                            err_unrec(format!("Couldn't install {}", &key));
+                        }
+                    };
+                } else {
+                    println!("not upgrading!");
+                    if std::path::Path::new(&format!("{}{}", &cachedir, &key)).is_dir() {
+                        println!("not cloning");
+                    } else {
+                        println!("cloning");
+                    }
+                }
             }
-
-            let makepkg_result = std::process::Command::new("makepkg")
-                .arg("-si")
-                .status()
-                .expect("Couldn't call makepkg");
-            match makepkg_result.code() {
-                Some(0) => succ(format!("New AUR package version installed")),
-                Some(_) => err_unrec(format!("Couldn't install new AUR package version")),
-                None => err_unrec(format!("Couldn't install new AUR package version")),
-            };
         }
     }
 }
