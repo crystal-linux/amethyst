@@ -1,6 +1,6 @@
 //use crate::mods::strs::{err_unrec, inf, sec, succ};
 use crate::{
-    err_unrec, inf, inssort, mods::strs::prompt, mods::strs::sec, mods::strs::succ, uninstall,
+    err_rec, err_unrec, inf, inssort, mods::strs::prompt, mods::strs::sec, mods::strs::succ, uninstall,
 };
 use git2::Repository;
 use runas::Command;
@@ -29,7 +29,15 @@ pub fn upgrade(noconfirm: bool) {
     let cachedir = format!("/{}/.cache/ame/", homepath);
     let cache_exists = std::path::Path::new(&format!("/{}/.cache/ame/", homepath)).is_dir();
     let file = format!("{}/.local/ame/aurPkgs.db", std::env::var("HOME").unwrap());
-    let database = std::fs::read_to_string(&file).expect("Can't open database");
+    let database = String::new();
+    if std::path::Path::new(&file).exists() {
+        let database = std::fs::read_to_string(&file).expect("Can't Open Database");
+    } else {
+        fs::create_dir_all(format!("/{}/.local/ame/", homepath));
+        err_rec(String::from("Database wasn't found, creating new one"));
+        let dbFile = std::fs::File::create(&file);
+        let database = String::new();
+    }
     let db_parsed = database.parse::<toml::Value>().expect("Invalid Database");
 
     if cache_exists == false {

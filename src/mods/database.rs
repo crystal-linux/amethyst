@@ -2,10 +2,18 @@ use crate::{err_unrec, inf};
 use std::fs::File;
 use std::io::{Error, Write};
 use toml_edit::{value, Document};
+use crate::mods::strs::{err_rec};
 
 pub fn rem_pkg(pkgs: &Vec<String>) {
     let file = format!("{}/.local/ame/aurPkgs.db", std::env::var("HOME").unwrap());
-    let database = std::fs::read_to_string(&file).expect("Can't Open Database");
+    let database = String::new();
+    if std::path::Path::new(&file).exists() {
+        let database = std::fs::read_to_string(&file).expect("Can't Open Database");
+    } else {
+        err_rec(String::from("Database wasn't found, creating new one"));
+        let dbFile = File::create(&file);
+        let database = String::new();
+    }
 
     let mut update_database = database;
     for i in pkgs {
