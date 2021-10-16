@@ -27,7 +27,7 @@ Made for Crystal, compatible with any Arch-based Linux distribution.</p>
 | Upgrade a package | ame upg | ame -Syu |
 | Search for a package in general | ame sea | ame -Ss |
 | Search for a package in the repos | ame repsea | ame -Sr |
-| Search for a package in aur | ame aursea | ame -S |
+| Search for a package in aur | ame aursea | ame -Sa |
 
 ## How to build:
 (Install cargo)
