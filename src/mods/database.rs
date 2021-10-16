@@ -44,11 +44,28 @@ pub fn rem_pkg(pkgs: &Vec<String>) {
 }
 
 pub fn add_pkg(from_repo: bool, pkg: &str) -> Result<(), Error> {
+    let homepath = std::env::var("HOME").unwrap();
     let file = format!("{}/.local/ame/aurPkgs.db", std::env::var("HOME").unwrap());
-    let database = std::fs::read_to_string(&file).expect("cant open database");
+    let database = String::new();
+    if std::path::Path::new(&file).exists() {
+        let database = std::fs::read_to_string(&file).expect("Can't Open Database");
+    } else {
+        let _cdar = std::fs::create_dir_all(format!("/{}/.local/ame/", homepath));
+        match _cdar {
+            Ok(_) => {
+                inf(format!("Created cache directory (previously missing)"))
+            }
+            Err(_) => {
+                err_unrec(format!("Couldn't create cache directory"))
+            }
+        }
+        err_rec(String::from("Database wasn't found, creating new one"));
+        let _dbfile = std::fs::File::create(&file);
+        let database = String::new();
+    }
+    let mut db_parsed = database.parse::<Document>().expect("Invalid Database");
     let mut file_as_path = File::create(std::path::Path::new(&file))?;
 
-    let mut db_parsed = database.parse::<Document>().expect("invalid Database");
     if from_repo == false {
         let results = raur::search(&pkg);
         for res in &results {
