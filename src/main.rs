@@ -16,8 +16,6 @@ fn main() {
 
     argssort(&mut pkgs);
 
-    // at some point weve GOT TO rework this into a `match` statement
-
     match oper.as_str() {
         "-S" | "-Sn" | "ins" => {
             inssort(noconfirm, pkgs);
