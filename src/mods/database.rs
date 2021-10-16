@@ -54,7 +54,6 @@ pub fn add_pkg(from_repo: bool, pkg: &str) -> Result<(), Error> {
         db_parsed[&pkg]["name"] = value(pkg);
         db_parsed[&pkg]["version"] = value(pkg);
     }
-    print!("{}", db_parsed);
     file_as_path
         .write_all(format!("{}", db_parsed).as_bytes())
         .unwrap();
