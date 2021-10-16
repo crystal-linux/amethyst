@@ -1,4 +1,3 @@
-//use crate::mods::strs::{err_unrec, inf, sec, succ};
 use crate::{
     err_rec, err_unrec, inf, inssort, mods::strs::prompt, mods::strs::sec, mods::strs::succ, uninstall,
 };
@@ -31,12 +30,20 @@ pub fn upgrade(noconfirm: bool) {
     let file = format!("{}/.local/ame/aurPkgs.db", std::env::var("HOME").unwrap());
     let database = String::new();
     if std::path::Path::new(&file).exists() {
-        let database = std::fs::read_to_string(&file).expect("Can't Open Database");
+        let _db = std::fs::read_to_string(&file).expect("Can't Open Database");
     } else {
-        fs::create_dir_all(format!("/{}/.local/ame/", homepath));
+        let _cdar = fs::create_dir_all(format!("/{}/.local/ame/", homepath));
+        match _cdar {
+            Ok(_) => {
+                inf(format!("Created cache directory (previously missing)"))
+            }
+            Err(_) => {
+                err_unrec(format!("Couldn't create cache directory"))
+            }
+        }
         err_rec(String::from("Database wasn't found, creating new one"));
-        let dbFile = std::fs::File::create(&file);
-        let database = String::new();
+        let _dbfile = std::fs::File::create(&file);
+        let _db = String::new();
     }
     let db_parsed = database.parse::<toml::Value>().expect("Invalid Database");
 

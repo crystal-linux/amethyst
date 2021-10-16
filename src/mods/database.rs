@@ -8,11 +8,18 @@ pub fn rem_pkg(pkgs: &Vec<String>) {
     let file = format!("{}/.local/ame/aurPkgs.db", std::env::var("HOME").unwrap());
     let database = String::new();
     if std::path::Path::new(&file).exists() {
-        let database = std::fs::read_to_string(&file).expect("Can't Open Database");
+        let _db = std::fs::read_to_string(&file);
+        match _db {
+            Ok(_) => {
+                inf(format!("Database parsed"))
+            }
+            Err(_) => {
+                err_unrec(format!("Couldn't open database"))
+            }
+        }
     } else {
         err_rec(String::from("Database wasn't found, creating new one"));
-        let dbFile = File::create(&file);
-        let database = String::new();
+        let _dbfile = File::create(&file);
     }
 
     let mut update_database = database;
