@@ -29,6 +29,8 @@ Made for Crystal, compatible with any Arch-based Linux distribution.</p>
 | Search for a package in the repos | ame repsea | ame -Sr |
 | Search for a package in aur | ame aursea | ame -Sa |
 
+You can also use any pacman flag!
+
 ## How to build:
 (Install cargo)
 
