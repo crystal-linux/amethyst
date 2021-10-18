@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/crystal-linux">
-    <img src="https://raw.githubusercontent.com/crystal-linux/branding/main/logos/crystal-logo-minimal.png" alt="Logo" width="150" height="150">
+    <img src="https://git.getcryst.al/crystal/branding/raw/branch/main/logos/crystal-logo-minimal.png" alt="Logo" width="150" height="150">
   </a>
 </p>
 <p align="center"> 
@@ -28,6 +28,8 @@ Made for Crystal, compatible with any Arch-based Linux distribution.</p>
 | Search for a package in general | ame sea | ame -Ss |
 | Search for a package in the repos | ame repsea | ame -Sr |
 | Search for a package in aur | ame aursea | ame -Sa |
+
+You can also use any pacman flag!
 
 ## How to build:
 (Install cargo)
