@@ -12,7 +12,7 @@ pub fn purge(noconfirm: bool, pkgs: Vec<String>) {
     ));
     if noconfirm == true {
         let result = Command::new("pacman")
-            .arg("-Rs")
+            .arg("-Rsu")
             .args(&pkgs)
             .arg("--noconfirm")
             .status()
@@ -30,7 +30,7 @@ pub fn purge(noconfirm: bool, pkgs: Vec<String>) {
         };
     } else {
         let result = Command::new("pacman")
-            .arg("-Rs")
+            .arg("-Rsu")
             .args(&pkgs)
             .status()
             .expect("Couldn't call pacman");

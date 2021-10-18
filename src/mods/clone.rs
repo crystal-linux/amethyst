@@ -1,6 +1,6 @@
 use crate::{
     err_unrec, inf, inssort, mods::database::add_pkg, mods::strs::prompt, mods::strs::sec,
-    mods::strs::succ, mods::uninstall::uninstall,
+    mods::strs::succ, mods::purge::purge,
 };
 use git2::Repository;
 use moins::Moins;
@@ -9,15 +9,43 @@ use std::{env, fs, path::Path, process::Command};
 fn uninstall_make_depend(pkg: &str) {
     let make_depends = raur::info(&[&pkg]).unwrap()[0].make_depends.clone();
 
-    if make_depends.len() != 0 {
+    let explicit_packages = Command::new("pacman")
+        .arg("-Qetq")
+        .stdout(std::process::Stdio::piped())
+        .output()
+        .expect("Something has gone terribly wrong");
+    
+    
+    let expl_pkgs_parse = String::from_utf8(explicit_packages.stdout).unwrap();
+    let expl_pkgs_parse = expl_pkgs_parse.split("\n").collect::<Vec<&str>>();
+
+    let mut rem_pkgs = Vec::new();
+    for pkg in expl_pkgs_parse {
+        println!("{:?}", make_depends);
+        for i in 0 .. make_depends.len() {
+            match make_depends[i].contains(pkg) {
+                false => {
+                    match rem_pkgs.contains(&make_depends[i]) {
+                        false => {
+                            rem_pkgs.push(make_depends[i].as_str().to_string());
+                        }
+                        _ => {}
+                    }
+                }
+                _ => {}
+            };
+        }
+    }
+
+    if rem_pkgs.len() != 0 {
         inf(format!(
             "{} installed following make dependencies: {}",
             pkg,
-            make_depends.join(", ")
+            rem_pkgs.join(", ")
         ));
         let remove = prompt(format!("Would you like to remove them?"));
         if remove == true {
-            uninstall(true, make_depends);
+            purge(true, rem_pkgs);
         }
     }
     succ(format!("Succesfully installed {}", pkg));
