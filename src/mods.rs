@@ -11,3 +11,4 @@ pub mod update;
 pub mod upgrade;
 pub mod ver;
 pub mod xargs;
+pub mod purge;

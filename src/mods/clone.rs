@@ -23,7 +23,7 @@ fn uninstall_make_depend(pkg: &str) {
     succ(format!("Succesfully installed {}", pkg));
 }
 
-pub fn clone(noconfirm: bool, pkg: &str) {
+pub fn clone(noconfirm: bool, as_dep: bool, pkg: &str) {
     let cachedir = format!("{}/.cache/ame", std::env::var("HOME").unwrap());
     let path = Path::new(&cachedir);
     let pkgdir = format!("{}/{}", &cachedir, &pkg);
@@ -73,7 +73,7 @@ pub fn clone(noconfirm: bool, pkg: &str) {
 
     sec(format!("Installing AUR package depends"));
 
-    inssort(noconfirm, package[0].depends.clone());
+    inssort(noconfirm, true, package[0].depends.clone());
 
     let clone = Repository::clone(&url, Path::new(&pkgdir));
     match clone {
@@ -82,58 +82,80 @@ pub fn clone(noconfirm: bool, pkg: &str) {
         }
         Err(_) => err_unrec(format!("Failed cloning {} into package directory", pkg)),
     }
+    if as_dep == false {
+        if noconfirm == false {
+            let pkgbuild = prompt(format!("View PKGBUILD?"));
 
-    if noconfirm == false {
-        let pkgbuild = prompt(format!("View PKGBUILD?"));
-
-        if pkgbuild == true {
-            let mut pkgbld = fs::read_to_string(format!("{}/PKGBUILD", &pkgdir)).unwrap();
-            Moins::run(&mut pkgbld, None);
+            if pkgbuild == true {
+                let mut pkgbld = fs::read_to_string(format!("{}/PKGBUILD", &pkgdir)).unwrap();
+                Moins::run(&mut pkgbld, None);
+            }
         }
-    }
 
-    if noconfirm == true {
-        sec(format!("Installing {} ...", pkg));
-        let install_result = Command::new("makepkg")
-            .arg("-si")
-            .arg("--noconfirm")
-            .arg("--needed")
-            .status();
-        match install_result {
-            Ok(_) => {
-                uninstall_make_depend(pkg);
-                let add_pkg_res = add_pkg(false, pkg);
-                match add_pkg_res {
-                    Ok(_) => inf(format!("Added package {} to database", pkg)),
-                    Err(_) => err_unrec(format!("Couldn't add package {} to database", pkg)),
+        if noconfirm == true {
+            sec(format!("Installing {} ...", pkg));
+            let install_result = Command::new("makepkg")
+                .arg("-si")
+                .arg("--noconfirm")
+                .arg("--needed")
+                .status();
+            match install_result {
+                Ok(_) => {
+                    uninstall_make_depend(pkg);
+                    let add_pkg_res = add_pkg(false, pkg);
+                    match add_pkg_res {
+                        Ok(_) => inf(format!("Added package {} to database", pkg)),
+                        Err(_) => err_unrec(format!("Couldn't add package {} to database", pkg)),
+                    }
                 }
-            }
-            Err(_) => {
-                err_unrec(format!("Couldn't install {}", pkg));
-            }
-        };
+                Err(_) => {
+                    err_unrec(format!("Couldn't install {}", pkg));
+                }
+            };
+        } else {
+            sec(format!("Installing {} ...", pkg));
+            let install_result = Command::new("makepkg")
+                .arg("-si")
+                .arg("--needed")
+                .status()
+                .expect("Couldn't call makepkg");
+            match install_result.code() {
+                Some(0) => {
+                    uninstall_make_depend(pkg);
+                    let add_pkg_res = add_pkg(false, pkg);
+                    match add_pkg_res {
+                        Ok(_) => inf(format!("Added package {} to database", pkg)),
+                        Err(_) => err_unrec(format!("Couldn't add package {} to database", pkg)),
+                    }
+                }
+                Some(_) => {
+                    err_unrec(format!("Couldn't install {}", pkg));
+                }
+                None => {
+                    err_unrec(format!("Couldn't install {}", pkg));
+                }
+            };
+        }
     } else {
         sec(format!("Installing {} ...", pkg));
-        let install_result = Command::new("makepkg")
-            .arg("-si")
-            .arg("--needed")
-            .status()
-            .expect("Couldn't call makepkg");
-        match install_result.code() {
-            Some(0) => {
-                uninstall_make_depend(pkg);
-                let add_pkg_res = add_pkg(false, pkg);
-                match add_pkg_res {
-                    Ok(_) => inf(format!("Added package {} to database", pkg)),
-                    Err(_) => err_unrec(format!("Couldn't add package {} to database", pkg)),
+            let install_result = Command::new("makepkg")
+                .arg("-si")
+                .arg("--noconfirm")
+                .arg("--needed")
+                .arg("--asdeps")
+                .status();
+            match install_result {
+                Ok(_) => {
+                    uninstall_make_depend(pkg);
+                    let add_pkg_res = add_pkg(false, pkg);
+                    match add_pkg_res {
+                        Ok(_) => inf(format!("Added package {} to database", pkg)),
+                        Err(_) => err_unrec(format!("Couldn't add package {} to database", pkg)),
+                    }
                 }
-            }
-            Some(_) => {
-                err_unrec(format!("Couldn't install {}", pkg));
-            }
-            None => {
-                err_unrec(format!("Couldn't install {}", pkg));
-            }
-        };
+                Err(_) => {
+                    err_unrec(format!("Couldn't install {}", pkg));
+                }
+            };
     }
 }

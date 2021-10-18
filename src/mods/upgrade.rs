@@ -1,5 +1,5 @@
 use crate::{
-    err_rec, err_unrec, inf, inssort, mods::strs::prompt, mods::strs::sec, mods::strs::succ, uninstall,
+    err_rec, err_unrec, inf, inssort, mods::strs::prompt, mods::strs::sec, mods::strs::succ, uninstall, mods::database::get_value,
 };
 use git2::Repository;
 use runas::Command;
@@ -78,29 +78,13 @@ pub fn upgrade(noconfirm: bool) {
         };
     }
 
-    println!("{:?}", db_parsed);
     for entry in db_parsed.as_table() {
-        for (key, value) in &*entry {
+        for (key, _value) in &*entry {
             let results = raur::search(format!("{}", key));
             for res in results {
-                println!("{}", &res[0].name);
                 let url = format!("https://aur.archlinux.org/{}.git", key);
                 let package = raur::info(&[key]).unwrap();
-                let version = value
-                    .to_string()
-                    .replace("name", "")
-                    .replace("version", "")
-                    .replace(" = ", "")
-                    .replace("\"", "")
-                    .replace(format!("{}", &res[0].name.to_string()).as_str(), "");
-                let name = value
-                    .to_string()
-                    .replace("name", "")
-                    .replace("version", "")
-                    .replace(" = ", "")
-                    .replace("\"", "")
-                    .replace(format!("{}", &res[0].version.to_string()).as_str(), "");
-                println!("{} / {}", name, version);
+                let version = get_value(&key, "version");
                 if res[0].version.contains(&version) {
                     let keydir = format!("{}{}", &cachedir, &key);
                     if std::path::Path::new(&keydir).is_dir() {
@@ -109,7 +93,7 @@ pub fn upgrade(noconfirm: bool) {
                             Ok(_) => inf(format!("Entered package directory")),
                             Err(_) => err_unrec(format!("Could not enter package directory")),
                         }
-                        inssort(true, package[0].depends.clone());
+                        inssort(true, true,package[0].depends.clone());
 
                         sec(format!("Installing {} ...", &key));
                         let install_result = std::process::Command::new("makepkg")
@@ -174,7 +158,7 @@ pub fn upgrade(noconfirm: bool) {
                             Err(_) => err_unrec(format!("Could not enter package directory")),
                         }
 
-                        inssort(true, package[0].depends.clone());
+                        inssort(true, true, package[0].depends.clone());
 
                         let clone = Repository::clone(&url, Path::new(&keydir));
                         match clone {
@@ -219,12 +203,7 @@ pub fn upgrade(noconfirm: bool) {
                         }
                     };
                 } else {
-                    println!("not upgrading!");
-                    if std::path::Path::new(&format!("{}{}", &cachedir, &key)).is_dir() {
-                        println!("not cloning");
-                    } else {
-                        println!("cloning");
-                    }
+                    inf(format!("Package {} already up to date", &key));
                 }
             }
         }

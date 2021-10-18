@@ -1,5 +1,5 @@
 mod mods;
-use mods::{clearcache::{clearcache}, clone::clone, help::help, inssort::inssort, install::install, search::{a_search, r_search}, strs::err_rec, strs::err_unrec, strs::inf, uninstall::{uninstall}, update::{update}, upgrade::{upgrade}, ver::ver, xargs::*};
+use mods::{clearcache::{clearcache}, clone::clone, help::help, inssort::inssort, install::install, purge::{purge}, search::{a_search, r_search}, strs::err_rec, strs::err_unrec, strs::inf, uninstall::{uninstall}, update::{update}, upgrade::{upgrade}, ver::ver, xargs::*};
 use std::{env, process::exit, process::Command};
 
 fn main() {
@@ -18,10 +18,13 @@ fn main() {
 
     match oper.as_str() {
         "-S" | "-Sn" | "ins" => {
-            inssort(noconfirm, pkgs);
+            inssort(noconfirm, false, pkgs);
         }
-        "-R" | "-Rn" | "-Rsn" | "-Rs" | "rm" => {
+        "-R" | "-Rn" | "rm" => {
             uninstall(noconfirm, pkgs);
+        }
+        "-Rs" | "-Rsn" | "purge" => {
+            purge(noconfirm, pkgs)
         }
         "-Syu" | "-Syun" |"upg" => {
             upgrade(noconfirm);

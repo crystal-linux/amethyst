@@ -1,7 +1,7 @@
 use crate::{clone, err_unrec, install, mods::strs::sec};
 use std::process::{Command, Stdio};
 
-pub fn inssort(noconfirm: bool, pkgs: Vec<String>) {
+pub fn inssort(noconfirm: bool, as_dep: bool, pkgs: Vec<String>) {
     let mut repo = vec![];
     let mut aur = vec![];
     let re = regex::Regex::new(r"(\S+)((?:>=|<=)\S+$)").unwrap();
@@ -42,13 +42,25 @@ pub fn inssort(noconfirm: bool, pkgs: Vec<String>) {
             }
         }
     }
-    if repo.len() != 0 {
-        sec(format!("Installing repo packages: {}", &repo.join(", ")));
-        install(noconfirm, &repo.join(" "));
-    }
+    if as_dep == false {
+        if repo.len() != 0 {
+            sec(format!("Installing repo packages: {}", &repo.join(", ")));
+            install(noconfirm, false, &repo.join(" "));
+        }
 
-    for a in aur {
-        sec(format!("Couldn't find {} in repos. Searching AUR", a));
-        clone(noconfirm, &a);
+        for a in aur {
+            sec(format!("Couldn't find {} in repos. Searching AUR", a));
+            clone(noconfirm, false, &a);
+        }
+    } else {
+        if repo.len() != 0 {
+            sec(format!("Installing repo packages: {}", &repo.join(", ")));
+            install(noconfirm, true,&repo.join(" "));
+        }
+
+        for a in aur {
+            sec(format!("Couldn't find {} in repos. Searching AUR", a));
+            clone(noconfirm, true, &a);
+        }
     }
 }
