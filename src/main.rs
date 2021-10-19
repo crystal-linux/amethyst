@@ -1,8 +1,14 @@
 mod mods;
 use mods::{clearcache::{clearcache}, clone::clone, help::help, inssort::inssort, install::install, purge::{purge}, search::{a_search, r_search}, strs::err_rec, strs::err_unrec, strs::inf, uninstall::{uninstall}, update::{update}, upgrade::{upgrade}, ver::ver, xargs::*};
 use std::{env, process::exit, process::Command};
+use nix::unistd::Uid;
 
 fn main() {
+
+    if Uid::effective().is_root() {
+        err_unrec(format!("Do not run ame as root! this can cause serious damage to your system!"));
+    }
+
     let args: Vec<String> = env::args().collect();
     let mut pkgs: Vec<String> = env::args().skip(2).collect();
 

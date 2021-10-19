@@ -22,7 +22,8 @@ Made for Crystal, compatible with any Arch-based Linux distribution.</p>
 | Action | FreeBSD pkg-style alias | Pacman-style flag(s) |
 | ------ | ------ | ------ |
 | Install a package | ame ins | ame -S |
-| Remove a package | ame rm | ame -R / -Rs |
+| Remove a package | ame rm | ame -R |
+| Remove a package with its dependencies | ame purge | ame -Rs |
 | Update repository | ame upd | ame -Sy |
 | Upgrade a package | ame upg | ame -Syu |
 | Search for a package in general | ame sea | ame -Ss |
@@ -43,5 +44,12 @@ For general debug/test:
 Clean all build directories:
   - `make clean`
 
+<br>
+<br>
 
-`echo "AME_UWU=YES" >> ~/.zshrc`, self explanatory 
+```sh
+echo "AME_UWU=YES" >> ~/.zshrc # for zsh
+echo "AME_UWU=YES" >> ~/.bashrc # for bash
+set -Ux AME_UWU YES # for fish
+```
+self explanatory
