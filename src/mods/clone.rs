@@ -52,7 +52,7 @@ fn uninstall_make_depend(pkg: &str) {
 }
 
 pub fn clone(noconfirm: bool, as_dep: bool, pkg: &str) {
-    let cachedir = format!("{}/.cache/ame", std::env::var("HOME").unwrap());
+    let cachedir = format!("{}/.cache/ame", env::var("HOME").unwrap());
     let path = Path::new(&cachedir);
     let pkgdir = format!("{}/{}", &cachedir, &pkg);
     let package = raur::info(&[pkg]).unwrap();

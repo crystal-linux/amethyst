@@ -1,9 +1,10 @@
 use crate::inf;
 use ansi_term::Colour;
+use clap::{self, crate_version};
 
 pub fn ver() {
     println!("");
-    inf(format!("ame - v2.4.1"));
+    inf(format!("ame - {}",crate_version!()));
     println!("");
     inf(format!("Contributors:"));
     println!("- axtlos <axtlos@salyut.one>");

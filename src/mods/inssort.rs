@@ -1,11 +1,12 @@
 use crate::{clone, err_unrec, install, mods::strs::sec};
 use std::process::{Command, Stdio};
+use regex::Regex;
 
 pub fn inssort(noconfirm: bool, as_dep: bool, pkgs: Vec<String>) {
     let mut repo = vec![];
     let mut aur = vec![];
-    let re = regex::Regex::new(r"(\S+)((?:>=|<=)\S+$)").unwrap();
-    let reg = regex::Regex::new(r"((?:>=|<=)\S+$)").unwrap();
+    let re = Regex::new(r"(\S+)((?:>=|<=)\S+$)").unwrap();
+    let reg = Regex::new(r"((?:>=|<=)\S+$)").unwrap();
     for pkg in pkgs {
         let caps = re.captures(&pkg);
         match caps {

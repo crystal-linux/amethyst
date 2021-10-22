@@ -1,6 +1,6 @@
 [package]
 name = "ame"
-version = "2.4.1"
+version = "2.4.2"
 authors = [ "jnats <jnats@salyut.one>", "axtlos <axtlos@salyut.one>" ]
 edition = "2018"
 description = "a fast and efficient aur helper."
@@ -19,3 +19,4 @@ toml_edit = "0.5.0"
 toml = "*"
 bytes = "*"
 nix = "*"
+clap = "*"

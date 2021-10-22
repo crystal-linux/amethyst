@@ -1,19 +1,18 @@
 use crate::{err_unrec, inf};
-use std::fs::File;
-use std::io::{Error, Write};
+use std::{fs, io::{Error, Write}, env, path};
 use toml_edit::{value, Document};
 use crate::mods::strs::{err_rec};
 
 pub fn get_value(pkg: &str, sear_value: &str) -> String {
-    let homepath = std::env::var("HOME").unwrap();
-    let file = format!("{}/.local/ame/aurPkgs.db", std::env::var("HOME").unwrap());
+    let homepath = env::var("HOME").unwrap();
+    let file = format!("{}/.local/ame/aurPkgs.db", env::var("HOME").unwrap());
     let mut database = String::new();
-    match std::path::Path::new(&file).exists() {
+    match path::Path::new(&file).exists() {
         true => {
-            database = std::fs::read_to_string(&file).expect("Can't Open Database");
+            database = fs::read_to_string(&file).expect("Can't Open Database");
         }
         false => {
-            let _cdar = std::fs::create_dir_all(format!("/{}/.local/ame/",homepath));
+            let _cdar = fs::create_dir_all(format!("/{}/.local/ame/",homepath));
             match _cdar {
                 Ok(_) => {
                     inf(format!("Created path for database (previously missing)"))
@@ -23,7 +22,7 @@ pub fn get_value(pkg: &str, sear_value: &str) -> String {
                 }
             }
             err_rec(String::from("Datbase wasn't found, creating new one"));
-            let _dbfile = std::fs::File::create(&file);
+            let _dbfile = fs::File::create(&file);
             match _dbfile {
                 Ok(_) => {
                     inf(format!("Created empty database (previously missing)"))
@@ -73,15 +72,15 @@ pub fn get_value(pkg: &str, sear_value: &str) -> String {
 }
 
 pub fn rem_pkg(pkgs: &Vec<String>) {
-    let homepath = std::env::var("HOME").unwrap();
-    let file = format!("{}/.local/ame/aurPkgs.db", std::env::var("HOME").unwrap());
+    let homepath = env::var("HOME").unwrap();
+    let file = format!("{}/.local/ame/aurPkgs.db", env::var("HOME").unwrap());
     let mut database = String::new();
-    match std::path::Path::new(&file).exists() {
+    match path::Path::new(&file).exists() {
         true => {
-            database = std::fs::read_to_string(&file).expect("Can't Open Database");
+            database = fs::read_to_string(&file).expect("Can't Open Database");
         }
         false => {
-            let _cdar = std::fs::create_dir_all(format!("/{}/.local/ame/",homepath));
+            let _cdar = fs::create_dir_all(format!("/{}/.local/ame/",homepath));
             match _cdar {
                 Ok(_) => {
                     inf(format!("Created path for database (previously missing)"))
@@ -91,7 +90,7 @@ pub fn rem_pkg(pkgs: &Vec<String>) {
                 }
             }
             err_rec(String::from("Datbase wasn't found, creating new one"));
-            let _dbfile = std::fs::File::create(&file);
+            let _dbfile = fs::File::create(&file);
             match _dbfile {
                 Ok(_) => {
                     inf(format!("Created empty database (previously missing)"))
@@ -116,7 +115,7 @@ pub fn rem_pkg(pkgs: &Vec<String>) {
             }
         }
     }
-    let file_as_path = File::create(std::path::Path::new(&file)).unwrap();
+    let file_as_path = fs::File::create(path::Path::new(&file)).unwrap();
     let db_update_res = write!(&file_as_path, "{}", update_database);
     match db_update_res {
         Ok(_) => inf(format!("Database update successful")),
@@ -125,15 +124,15 @@ pub fn rem_pkg(pkgs: &Vec<String>) {
 }
 
 pub fn add_pkg(from_repo: bool, pkg: &str) -> Result<(), Error> {
-    let homepath = std::env::var("HOME").unwrap();
-    let file = format!("{}/.local/ame/aurPkgs.db", std::env::var("HOME").unwrap());
+    let homepath = env::var("HOME").unwrap();
+    let file = format!("{}/.local/ame/aurPkgs.db", env::var("HOME").unwrap());
     let mut database = String::new();
-    match std::path::Path::new(&file).exists() {
+    match path::Path::new(&file).exists() {
         true => {
-            database = std::fs::read_to_string(&file).expect("Can't Open Database");
+            database = fs::read_to_string(&file).expect("Can't Open Database");
         }
         false => {
-            let _cdar = std::fs::create_dir_all(format!("/{}/.local/ame/",homepath));
+            let _cdar = fs::create_dir_all(format!("/{}/.local/ame/",homepath));
             match _cdar {
                 Ok(_) => {
                     inf(format!("Created path for database (previously missing)"))
@@ -143,7 +142,7 @@ pub fn add_pkg(from_repo: bool, pkg: &str) -> Result<(), Error> {
                 }
             }
             err_rec(String::from("Datbase wasn't found, creating new one"));
-            let _dbfile = std::fs::File::create(&file);
+            let _dbfile = fs::File::create(&file);
             match _dbfile {
                 Ok(_) => {
                     inf(format!("Created empty database (previously missing)"))
@@ -155,14 +154,12 @@ pub fn add_pkg(from_repo: bool, pkg: &str) -> Result<(), Error> {
         }
     }
     let mut db_parsed = database.parse::<Document>().expect("Invalid Database");
-    let mut file_as_path = File::create(std::path::Path::new(&file))?;
+    let mut file_as_path = fs::File::create(path::Path::new(&file))?;
     if from_repo == false {
         let results = raur::search(&pkg);
         for res in &results {
-            //for r in res {
-                db_parsed[&res[0].name]["name"] = value(&res[0].name);
-                db_parsed[&res[0].name]["version"] = value(&res[0].version);
-            //}
+            db_parsed[&res[0].name]["name"] = value(&res[0].name);
+            db_parsed[&res[0].name]["version"] = value(&res[0].version);
         }
     } else {
         db_parsed[&pkg]["name"] = value(pkg);

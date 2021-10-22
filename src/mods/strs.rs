@@ -1,8 +1,8 @@
 use ansi_term::Colour;
-use std::{env, io, io::Write, process};
+use std::{env, io, io::Write, process, string};
 use uwuizer::*;
 
-pub fn inf(a: std::string::String) {
+pub fn inf(a: string::String) {
     if env::var("AME_UWU").unwrap_or("n/a".to_string()) == "YES" {
         println!(
             "{} {}",
@@ -14,7 +14,7 @@ pub fn inf(a: std::string::String) {
     }
 }
 
-pub fn sec(a: std::string::String) {
+pub fn sec(a: string::String) {
     if env::var("AME_UWU").unwrap_or("n/a".to_string()) == "YES" {
         println!(
             "{} {}",
@@ -30,7 +30,7 @@ pub fn sec(a: std::string::String) {
     }
 }
 
-pub fn succ(a: std::string::String) {
+pub fn succ(a: string::String) {
     if env::var("AME_UWU").unwrap_or("n/a".to_string()) == "YES" {
         println!(
             "{} {}",
@@ -46,7 +46,7 @@ pub fn succ(a: std::string::String) {
     }
 }
 
-pub fn prompt(a: std::string::String) -> bool {
+pub fn prompt(a: string::String) -> bool {
     if env::var("AME_UWU").unwrap_or("n/a".to_string()) == "YES" {
         print!(
             "{} {} {}",
@@ -80,7 +80,7 @@ pub fn prompt(a: std::string::String) -> bool {
     }
 }
 
-pub fn err_unrec(a: std::string::String) {
+pub fn err_unrec(a: string::String) {
     if env::var("AME_UWU").unwrap_or("n/a".to_string()) == "YES" {
         println!(
             "{} {} {}",
@@ -100,7 +100,7 @@ pub fn err_unrec(a: std::string::String) {
     }
 }
 
-pub fn err_rec(a: std::string::String) {
+pub fn err_rec(a: string::String) {
     if env::var("AME_UWU").unwrap_or("n/a".to_string()) == "YES" {
         println!(
             "{} {}",

@@ -24,13 +24,13 @@ fn uninstall_make_depend(pkg: &str) {
 }
 
 pub fn upgrade(noconfirm: bool) {
-    let homepath = std::env::var("HOME").unwrap();
+    let homepath = env::var("HOME").unwrap();
     let cachedir = format!("/{}/.cache/ame/", homepath);
-    let cache_exists = std::path::Path::new(&format!("/{}/.cache/ame/", homepath)).is_dir();
-    let file = format!("{}/.local/ame/aurPkgs.db", std::env::var("HOME").unwrap());
+    let cache_exists = Path::new(&format!("/{}/.cache/ame/", homepath)).is_dir();
+    let file = format!("{}/.local/ame/aurPkgs.db", env::var("HOME").unwrap());
     let database = String::new();
-    if std::path::Path::new(&file).exists() {
-        let _db = std::fs::read_to_string(&file).expect("Can't Open Database");
+    if Path::new(&file).exists() {
+        let _db = fs::read_to_string(&file).expect("Can't Open Database");
     } else {
         let _cdar = fs::create_dir_all(format!("/{}/.local/ame/", homepath));
         match _cdar {
@@ -42,7 +42,7 @@ pub fn upgrade(noconfirm: bool) {
             }
         }
         err_rec(String::from("Database wasn't found, creating new one"));
-        let _dbfile = std::fs::File::create(&file);
+        let _dbfile = fs::File::create(&file);
         let _db = String::new();
     }
     let db_parsed = database.parse::<toml::Value>().expect("Invalid Database");
@@ -87,7 +87,7 @@ pub fn upgrade(noconfirm: bool) {
                 let version = get_value(&key, "version");
                 if res[0].version.contains(&version) {
                     let keydir = format!("{}{}", &cachedir, &key);
-                    if std::path::Path::new(&keydir).is_dir() {
+                    if Path::new(&keydir).is_dir() {
                         let cd_result = env::set_current_dir(&keydir);
                         match cd_result {
                             Ok(_) => inf(format!("Entered package directory")),
