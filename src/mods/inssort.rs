@@ -8,37 +8,62 @@ pub fn inssort(noconfirm: bool, as_dep: bool, pkgs: Vec<String>) {
     let re = Regex::new(r"(\S+)((?:>=|<=)\S+$)").unwrap();
     let reg = Regex::new(r"((?:>=|<=)\S+$)").unwrap();
     for pkg in pkgs {
-        let caps = re.captures(&pkg);
-        match caps {
-            Some(_) => {
-                let out = Command::new("pacman")
-                    .arg("-Ss")
-                    .arg(format!(
-                        "^{}$",
-                        caps.unwrap().get(1).map_or("", |m| m.as_str())
-                    ))
-                    .stdout(Stdio::null())
-                    .status()
-                    .expect("Something has gone wrong.");
-                match out.code() {
-                    Some(0) => repo.push(reg.replace_all(&pkg, "").to_string()),
-                    Some(1) => aur.push(pkg),
-                    Some(_) => err_unrec(format!("Something has gone terribly wrong")),
-                    None => err_unrec(format!("Process terminated")),
+        match pkg.contains("/") {
+            true => {
+                match pkg.split("/").collect::<Vec<&str>>()[0] == "aur" {
+                    true => {
+                        aur.push(pkg.split("/").collect::<Vec<&str>>()[1].to_string());
+                    }
+                    false => {
+                        let out = Command::new("bash")
+                            .arg("-c")
+                            .arg(format!("pacman -Sl {} | grep {}", pkg.split("/").collect::<Vec<&str>>()[0],pkg.split("/").collect::<Vec<&str>>()[1]))
+                            .stdout(Stdio::null())
+                            .status()
+                            .expect("Something has gone wrong.");
+                        match out.code() {
+                            Some(0) => repo.push(reg.replace_all(&pkg, "").to_string()),
+                            Some(1) => err_unrec(format!("Package {} not found in repository {}", pkg.split("/").collect::<Vec<&str>>()[1],pkg.split("/").collect::<Vec<&str>>()[0])),
+                            Some(_) => err_unrec(format!("Something has gone terribly wrong")),
+                            None => err_unrec(format!("Process terminated")),
+                        }
+                    }
                 }
             }
-            None => {
-                let out = Command::new("pacman")
-                    .arg("-Ss")
-                    .arg(format!("^{}$", &pkg))
-                    .stdout(Stdio::null())
-                    .status()
-                    .expect("Something has gone wrong.");
-                match out.code() {
-                    Some(0) => repo.push(pkg),
-                    Some(1) => aur.push(pkg),
-                    Some(_) => err_unrec(format!("Something has gone terribly wrong")),
-                    None => err_unrec(format!("Process terminated")),
+            false => {
+                let caps = re.captures(&pkg);
+                match caps {
+                    Some(_) => {
+                        let out = Command::new("pacman")
+                            .arg("-Ss")
+                            .arg(format!(
+                                "^{}$",
+                                caps.unwrap().get(1).map_or("", |m| m.as_str())
+                            ))
+                            .stdout(Stdio::null())
+                            .status()
+                            .expect("Something has gone wrong.");
+                        match out.code() {
+                            Some(0) => repo.push(reg.replace_all(&pkg, "").to_string()),
+                            Some(1) => aur.push(pkg),
+                            Some(_) => err_unrec(format!("Something has gone terribly wrong")),
+                            None => err_unrec(format!("Process terminated")),
+                        }
+                    }
+                    None => {
+                        let out = Command::new("pacman")
+                            .arg("-Ss")
+                            .arg(format!("^{}$", &pkg))
+                            .stdout(Stdio::null())
+                            .status()
+                            .expect("Something has gone wrong.");
+                        match out.code() {
+                            Some(0) => repo.push(pkg),
+                            Some(1) => aur.push(pkg),
+                            Some(_) => err_unrec(format!("Something has gone terribly wrong")),
+                            None => err_unrec(format!("Process terminated")),
+                        }
+                    }
                 }
             }
         }
