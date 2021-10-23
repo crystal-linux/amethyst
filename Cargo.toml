@@ -1,6 +1,6 @@
 [package]
 name = "ame"
-version = "2.4.1"
+version = "0.0.0"
 authors = [ "jnats <jnats@salyut.one>", "axtlos <axtlos@salyut.one>" ]
 edition = "2018"
 description = "a fast and efficient aur helper."
