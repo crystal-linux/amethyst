@@ -21,7 +21,6 @@ fn uninstall_make_depend(pkg: &str) {
 
     let mut rem_pkgs = Vec::new();
     for pkg in expl_pkgs_parse {
-        println!("{:?}", make_depends);
         for i in 0 .. make_depends.len() {
             match make_depends[i].contains(pkg) {
                 false => {
