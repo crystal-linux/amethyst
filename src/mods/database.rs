@@ -21,7 +21,7 @@ pub fn get_value(pkg: &str, sear_value: &str) -> String {
                     err_unrec(format!("Couldn't create path for database (~/.local/ame)"))
                 }
             }
-            err_rec(String::from("Datbase wasn't found, creating new one"));
+            err_rec(String::from("Database wasn't found, creating new one"));
             let _dbfile = fs::File::create(&file);
             match _dbfile {
                 Ok(_) => {
@@ -89,7 +89,7 @@ pub fn rem_pkg(pkgs: &Vec<String>) {
                     err_unrec(format!("Couldn't create path for database (~/.local/ame)"))
                 }
             }
-            err_rec(String::from("Datbase wasn't found, creating new one"));
+            err_rec(String::from("Database wasn't found, creating new one"));
             let _dbfile = fs::File::create(&file);
             match _dbfile {
                 Ok(_) => {
@@ -141,7 +141,7 @@ pub fn add_pkg(from_repo: bool, pkg: &str) -> Result<(), Error> {
                     err_unrec(format!("Couldn't create path for database (~/.local/ame)"))
                 }
             }
-            err_rec(String::from("Datbase wasn't found, creating new one"));
+            err_rec(String::from("Database wasn't found, creating new one"));
             let _dbfile = fs::File::create(&file);
             match _dbfile {
                 Ok(_) => {
