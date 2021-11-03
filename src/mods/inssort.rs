@@ -91,7 +91,6 @@ pub fn inssort(noconfirm: bool, as_dep: bool, pkgs: Vec<String>) {
     }
 }
 
-//this function is used to install packages from a file
 pub fn inssort_from_file(noconfirm: bool, as_dep: bool, file: &str) {
     let mut pkgs: Vec<String> = Vec::new();
     let mut contents = String::new();
