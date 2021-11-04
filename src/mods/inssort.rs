@@ -96,7 +96,6 @@ pub fn inssort_from_file(noconfirm: bool, as_dep: bool, file: &str) {
     let mut contents = String::new();
     contents = std::fs::read_to_string(&file).expect("Couldn't read file");
     for line in contents.lines() {
-        println!("{}", line);
         pkgs.push(line.to_string());
     }
     let mut repo = vec![];

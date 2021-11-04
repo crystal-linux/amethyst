@@ -1,5 +1,5 @@
 mod mods;
-use mods::{clearcache::{clearcache}, clone::clone, help::help, inssort::{inssort, inssort_from_file}, install::install, purge::{purge}, search::{a_search, r_search}, strs::err_rec, strs::err_unrec, strs::inf, uninstall::{uninstall}, update::{update}, upgrade::{upgrade}, ver::ver, xargs::*};
+use mods::{clearcache::{clearcache}, clone::clone, help::help, inssort::{inssort, inssort_from_file}, install::install, purge::{purge, purge_from_file}, search::{a_search, r_search}, strs::err_rec, strs::err_unrec, strs::inf, uninstall::{uninstall, uninstall_from_file}, update::{update}, upgrade::{upgrade}, ver::ver, xargs::*};
 use std::{env, process::exit, process::Command};
 use nix::unistd::Uid;
 
@@ -34,6 +34,12 @@ fn main() {
         }
         "-Rs" | "-Rsn" | "purge" => {
             purge(noconfirm, pkgs)
+        }
+        "-Rl" | "-Rln" | "rml" => {
+            uninstall_from_file(noconfirm, &pkgs[0]);
+        }
+        "-Rsl" | "-Rsln" | "purgel" => {
+            purge_from_file(noconfirm, &pkgs[0]);
         }
         "-Syu" | "-Syun" |"upg" => {
             upgrade(noconfirm);
