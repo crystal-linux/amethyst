@@ -9,7 +9,6 @@ pub fn noconf(args: &Vec<String>) -> bool {
 pub fn argssort(args: &mut Vec<String>) -> &Vec<String> {
     if args.contains(&"--noconfirm".to_string()) {
         args.retain(|x| x != &"--noconfirm".to_string());
-        println!("{:?}", args);
         args
     } else {
         args
