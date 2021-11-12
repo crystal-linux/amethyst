@@ -6,7 +6,7 @@ use runas::Command;
 use std::{env, fs, path::Path};
 use toml;
 
-fn uninstall_make_depend(pkg: &str) {
+fn uninstall_make_depend(pkg: &str) { // uninstall make depends installed by ame itself
     let make_depends = raur::info(&[&pkg]).unwrap()[0].make_depends.clone();
 
     if make_depends.len() != 0 {
@@ -23,7 +23,7 @@ fn uninstall_make_depend(pkg: &str) {
     succ(format!("Succesfully upgraded {}", pkg));
 }
 
-pub fn upgrade(noconfirm: bool) {
+pub fn upgrade(noconfirm: bool) { // upgrade all packages
     let homepath = env::var("HOME").unwrap();
     let cachedir = format!("/{}/.cache/ame/", homepath);
     let cache_exists = Path::new(&format!("/{}/.cache/ame/", homepath)).is_dir();

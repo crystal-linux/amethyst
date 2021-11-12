@@ -3,7 +3,7 @@ use std::{fs, io::{Error, Write}, env, path};
 use toml_edit::{value, Document};
 use crate::mods::strs::{err_rec};
 
-pub fn get_value(pkg: &str, sear_value: &str) -> String {
+pub fn get_value(pkg: &str, sear_value: &str) -> String { // Get specific value from database
     let homepath = env::var("HOME").unwrap();
     let file = format!("{}/.local/ame/aurPkgs.db", env::var("HOME").unwrap());
     let mut database = String::new();
@@ -71,7 +71,7 @@ pub fn get_value(pkg: &str, sear_value: &str) -> String {
     return return_val;
 }
 
-pub fn rem_pkg(pkgs: &Vec<String>) {
+pub fn rem_pkg(pkgs: &Vec<String>) { // Remove packages from database
     let homepath = env::var("HOME").unwrap();
     let file = format!("{}/.local/ame/aurPkgs.db", env::var("HOME").unwrap());
     let mut database = String::new();
@@ -123,7 +123,7 @@ pub fn rem_pkg(pkgs: &Vec<String>) {
     }
 }
 
-pub fn add_pkg(from_repo: bool, pkg: &str) -> Result<(), Error> {
+pub fn add_pkg(from_repo: bool, pkg: &str) -> Result<(), Error> { // Add package to database
     let homepath = env::var("HOME").unwrap();
     let file = format!("{}/.local/ame/aurPkgs.db", env::var("HOME").unwrap());
     let mut database = String::new();

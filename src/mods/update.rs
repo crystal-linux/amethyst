@@ -1,7 +1,7 @@
 use crate::mods::strs::{err_unrec, sec, succ};
 use runas::Command;
 
-pub fn update() {
+pub fn update() { // update the repositories
     sec(format!("Syncing package repos"));
 
     let result = Command::new("pacman")

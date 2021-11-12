@@ -6,7 +6,7 @@ use git2::Repository;
 use moins::Moins;
 use std::{env, fs, path::Path, process::Command};
 
-fn uninstall_make_depend(pkg: &str) {
+fn uninstall_make_depend(pkg: &str) { // uninstall make depends of a package
     let make_depends = raur::info(&[&pkg]).unwrap()[0].make_depends.clone();
 
     let explicit_packages = Command::new("pacman")
@@ -50,7 +50,7 @@ fn uninstall_make_depend(pkg: &str) {
     succ(format!("Succesfully installed {}", pkg));
 }
 
-pub fn clone(noconfirm: bool, as_dep: bool, pkg: &str) {
+pub fn clone(noconfirm: bool, as_dep: bool, pkg: &str) { // clone a package from aur
     let cachedir = format!("{}/.cache/ame", env::var("HOME").unwrap());
     let path = Path::new(&cachedir);
     let pkgdir = format!("{}/{}", &cachedir, &pkg);

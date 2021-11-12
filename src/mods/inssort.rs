@@ -2,7 +2,7 @@ use crate::{clone, err_unrec, install, mods::strs::sec};
 use std::process::{Command, Stdio};
 use regex::Regex;
 
-pub fn inssort(noconfirm: bool, as_dep: bool, pkgs: Vec<String>) {
+pub fn inssort(noconfirm: bool, as_dep: bool, pkgs: Vec<String>) { // TODO: understand what the fuck is actually going on here
     let mut repo = vec![];
     let mut aur = vec![];
     let re = Regex::new(r"(\S+)((?:>=|<=)\S+$)").unwrap();
@@ -91,7 +91,7 @@ pub fn inssort(noconfirm: bool, as_dep: bool, pkgs: Vec<String>) {
     }
 }
 
-pub fn inssort_from_file(noconfirm: bool, as_dep: bool, file: &str) {
+pub fn inssort_from_file(noconfirm: bool, as_dep: bool, file: &str) { // same thing as above but with a list of packages from a file
     let mut pkgs: Vec<String> = Vec::new();
     let mut contents = String::new();
     contents = std::fs::read_to_string(&file).expect("Couldn't read file");

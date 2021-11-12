@@ -5,7 +5,7 @@ use crate::mods::{
 use runas::Command;
 use std::{fs, path::Path};
 
-pub fn purge(noconfirm: bool, pkgs: Vec<String>) {
+pub fn purge(noconfirm: bool, pkgs: Vec<String>) { // purge packages
     sec(format!(
         "Attempting to uninstall packages: {}",
         &pkgs.join(" ")
@@ -60,7 +60,7 @@ pub fn purge(noconfirm: bool, pkgs: Vec<String>) {
 }
 
 
-pub fn purge_from_file(noconfirm: bool, file: &str) {
+pub fn purge_from_file(noconfirm: bool, file: &str) { // purge packages from list of packages
     let mut pkgs: Vec<String> = Vec::new();
     let mut contents = String::new();
     contents = std::fs::read_to_string(&file).expect("Couldn't read file");

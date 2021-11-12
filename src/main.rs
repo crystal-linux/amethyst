@@ -5,7 +5,7 @@ use nix::unistd::Uid;
 
 fn main() {
 
-    if Uid::effective().is_root() {
+    if Uid::effective().is_root() { // check if user runs ame as root
         err_unrec(format!("Do not run ame as root! this can cause serious damage to your system!"));
     }
 
@@ -22,51 +22,51 @@ fn main() {
 
     argssort(&mut pkgs);
 
-    match oper.as_str() {
+    match oper.as_str() { // match oper
         "-S" | "-Sn" | "ins" => {
-            inssort(noconfirm, false, pkgs);
+            inssort(noconfirm, false, pkgs); // install
         }
         "-Sl" | "-Sln" | "insl" => {
-            inssort_from_file(noconfirm, false, &pkgs[0]);
+            inssort_from_file(noconfirm, false, &pkgs[0]); // install from file
         }
         "-R" | "-Rn" | "rm" => {
-            uninstall(noconfirm, pkgs);
+            uninstall(noconfirm, pkgs); // uninstall
         }
         "-Rs" | "-Rsn" | "purge" => {
-            purge(noconfirm, pkgs)
+            purge(noconfirm, pkgs); // purge
         }
         "-Rl" | "-Rln" | "rml" => {
-            uninstall_from_file(noconfirm, &pkgs[0]);
+            uninstall_from_file(noconfirm, &pkgs[0]); // uninstall from file
         }
         "-Rsl" | "-Rsln" | "purgel" => {
-            purge_from_file(noconfirm, &pkgs[0]);
+            purge_from_file(noconfirm, &pkgs[0]); // purge from file
         }
         "-Syu" | "-Syun" |"upg" => {
-            upgrade(noconfirm);
+            upgrade(noconfirm); // upgrade
         }
         "-Sy" | "upd" => {
-            update();
+            update(); // update
         }
         "-Ss" | "sea" => {
-            r_search(&args[2]);
-            a_search(&args[2]);
+            r_search(&args[2]); // search for packages in the repository
+            a_search(&args[2]); // search for packages in the aur
         }
         "-Sa" | "aursea" => {
-            a_search(&args[2]);
+            a_search(&args[2]); // search for packages in the aur
         }
         "-Sr" | "repsea" => {
-            r_search(&args[2]);
+            r_search(&args[2]); // search for packages in the repository
         }
         "-Cc" | "clr" => {
-            clearcache();
+            clearcache(); // clear cache
         }
         "-v" | "-V" | "ver" => {
-            ver();
+            ver(); // version
         }
         "-h" | "help" => {
-            help()
+            help(); // help
         }
-        _ => {
+        _ => { // if oper is not valid it either passes the args to pacman or prints an error
                 let pass = Command::new("pacman")
                 .args(env::args().skip(1))
                 .status()

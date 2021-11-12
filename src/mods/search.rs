@@ -2,7 +2,7 @@ use crate::mods::strs::{err_rec, err_unrec, succ};
 use ansi_term::Colour;
 use std::{ops::Deref, process::Command};
 
-pub fn a_search(pkg: &str) {
+pub fn a_search(pkg: &str) { // search for a package in the AUR
     let results = raur::search(&pkg);
 
     for r in &results {
@@ -21,7 +21,7 @@ pub fn a_search(pkg: &str) {
     }
 }
 
-pub fn r_search(pkg: &str) {
+pub fn r_search(pkg: &str) { // search for a package in the repositories
     let result = Command::new("pacman")
         .arg("-Ss")
         .arg(&pkg)

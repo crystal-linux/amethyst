@@ -1,6 +1,6 @@
 use crate::mods::strs::{err_rec, inf};
 
-pub fn help() {
+pub fn help() { // print help message
     println!("");
     inf(format!("Usage:"));
     println!(

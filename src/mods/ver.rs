@@ -2,7 +2,7 @@ use crate::inf;
 use ansi_term::Colour;
 use clap::{self, crate_version};
 
-pub fn ver() {
+pub fn ver() { // print version and contributors
     println!("");
     inf(format!("ame - {}",crate_version!()));
     println!("");

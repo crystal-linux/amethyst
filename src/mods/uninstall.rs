@@ -5,7 +5,7 @@ use crate::mods::{
 use runas::Command;
 use std::{fs, path::Path};
 
-pub fn uninstall(noconfirm: bool, pkgs: Vec<String>) {
+pub fn uninstall(noconfirm: bool, pkgs: Vec<String>) { // uninstall a package
     sec(format!(
         "Attempting to uninstall packages: {}",
         &pkgs.join(" ")
@@ -59,7 +59,7 @@ pub fn uninstall(noconfirm: bool, pkgs: Vec<String>) {
     }
 }
 
-pub fn uninstall_from_file(noconfirm: bool, file: &str) {
+pub fn uninstall_from_file(noconfirm: bool, file: &str) { // uninstall a package from a list of packages
     let mut pkgs: Vec<String> = Vec::new();
     let mut contents = String::new();
     contents = std::fs::read_to_string(&file).expect("Couldn't read file");

@@ -1,7 +1,7 @@
 use crate::mods::strs::err_rec;
 use std::fs;
 
-pub fn clearcache() {
+pub fn clearcache() { // delete all files in cache
     let path = format!("{}/.cache/ame/", std::env::var("HOME").unwrap());
 
     err_rec(format!("Clearing cache"));
