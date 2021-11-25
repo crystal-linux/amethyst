@@ -1,6 +1,6 @@
 mod mods;
 use mods::{clearcache::{clearcache}, clone::clone, help::help, inssort::{inssort, inssort_from_file}, install::install, purge::{purge, purge_from_file}, search::{a_search, r_search}, strs::err_rec, strs::err_unrec, strs::inf, uninstall::{uninstall, uninstall_from_file}, update::{update}, upgrade::{upgrade}, ver::ver, xargs::*};
-use std::{env, process::exit, process::Command};
+use std::{env, process::exit};
 use nix::unistd::Uid;
 
 fn main() {
@@ -9,7 +9,7 @@ fn main() {
         err_unrec(format!("Do not run ame as root! this can cause serious damage to your system!"));
     }
 
-    let args: Vec<String> = env::args().collect();
+    let args: Vec<String> = env::args().skip(1).collect();
     let mut pkgs: Vec<String> = env::args().skip(2).collect();
 
     if args.len() <= 1 {
@@ -17,7 +17,7 @@ fn main() {
         exit(1);
     }
 
-    let oper = &args[1];
+    let oper = &args[0];
     let noconfirm: bool = noconf(&args);
 
     argssort(&mut pkgs);
@@ -48,14 +48,14 @@ fn main() {
             update(); // update
         }
         "-Ss" | "sea" => {
-            r_search(&args[2]); // search for packages in the repository
-            a_search(&args[2]); // search for packages in the aur
+            r_search(&args[1]); // search for packages in the repository
+            a_search(&args[1]); // search for packages in the aur
         }
         "-Sa" | "aursea" => {
-            a_search(&args[2]); // search for packages in the aur
+            a_search(&args[1]); // search for packages in the aur
         }
         "-Sr" | "repsea" => {
-            r_search(&args[2]); // search for packages in the repository
+            r_search(&args[1]); // search for packages in the repository
         }
         "-Cc" | "clr" => {
             clearcache(); // clear cache
@@ -67,8 +67,8 @@ fn main() {
             help(); // help
         }
         _ => { // if oper is not valid it either passes the args to pacman or prints an error
-                let pass = Command::new("pacman")
-                .args(env::args().skip(1))
+                let pass = runas::Command::new("pacman")
+                .args(&args)
                 .status()
                 .expect("Something has gone wrong.");
 

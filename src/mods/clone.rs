@@ -2,7 +2,6 @@ use crate::{
     err_unrec, inf, inssort, mods::database::add_pkg, mods::strs::prompt, mods::strs::sec,
     mods::strs::succ, mods::purge::purge,
 };
-use git2::Repository;
 use moins::Moins;
 use std::{env, fs, path::Path, process::Command};
 
@@ -102,12 +101,18 @@ pub fn clone(noconfirm: bool, as_dep: bool, pkg: &str) { // clone a package from
 
     inssort(noconfirm, true, package[0].depends.clone());
 
-    let clone = Repository::clone(&url, Path::new(&pkgdir));
-    match clone {
-        Ok(_) => {
+    let clone = std::process::Command::new("git")
+        .arg("clone")
+        .arg(&url)
+        .arg(&pkgdir)
+        .status()
+        .expect("couldnt clone repository");
+    match clone.code() {
+        Some(0) => {
             inf(format!("Cloning {} into package directory", pkg));
         }
-        Err(_) => err_unrec(format!("Failed cloning {} into package directory", pkg)),
+        Some(_) => err_unrec(format!("Failed cloning {} into package directory", pkg)),
+        _ => err_unrec(format!("Failed cloning {} into package directory", pkg)),
     }
     if as_dep == false {
         if noconfirm == false {

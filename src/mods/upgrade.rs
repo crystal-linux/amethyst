@@ -1,7 +1,6 @@
 use crate::{
     err_rec, err_unrec, inf, inssort, mods::strs::prompt, mods::strs::sec, mods::strs::succ, uninstall, mods::database::get_value,
 };
-use git2::Repository;
 use runas::Command;
 use std::{env, fs, path::Path};
 use toml;
@@ -160,14 +159,18 @@ pub fn upgrade(noconfirm: bool) { // upgrade all packages
 
                         inssort(true, true, package[0].depends.clone());
 
-                        let clone = Repository::clone(&url, Path::new(&keydir));
-                        match clone {
-                            Ok(_) => {
+                        let clone = std::process::Command::new("git")
+                            .arg("clone")
+                            .arg(&url)
+                            .arg(&keydir)
+                            .status()
+                            .expect("Couldn't clone repo");
+                        match clone.code() {
+                            Some(0) => {
                                 inf(format!("Cloning {} into package directory", &key));
                             }
-                            Err(_) => {
-                                err_unrec(format!("Failed cloning {} into package directory", &key))
-                            }
+                            Some(_) => err_unrec(format!("Failed cloning {} into package directory", &key)),
+                            _ => err_unrec(format!("Failed cloning {} into package directory", &key)),
                         }
                     }
 
