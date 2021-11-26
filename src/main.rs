@@ -41,7 +41,7 @@ fn main() {
         "-Rsl" | "-Rsln" | "purgel" => {
             purge_from_file(noconfirm, &pkgs[0]); // purge from file
         }
-        "-Syu" | "-Syun" |"upg" => {
+        "-Syu" | "-Syun" | "upg" => {
             upgrade(noconfirm); // upgrade
         }
         "-Sy" | "upd" => {
