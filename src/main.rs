@@ -38,7 +38,7 @@ fn main() {
     let args: Vec<String> = env::args().skip(1).collect();
     let mut pkgs: Vec<String> = env::args().skip(2).collect();
 
-    if args.len() <= 1 {
+    if args.len() <= 0 {
         help();
         exit(1);
     }
@@ -47,7 +47,6 @@ fn main() {
     let noconfirm: bool = noconf(&args);
 
     argssort(&mut pkgs);
-
     match oper.as_str() { // match oper
         "-S" | "-Sn" | "ins" => {
             inssort(noconfirm, false, pkgs); // install
