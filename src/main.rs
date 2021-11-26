@@ -1,11 +1,37 @@
 mod mods;
-use mods::{clearcache::{clearcache}, clone::clone, help::help, inssort::{inssort, inssort_from_file}, install::install, purge::{purge, purge_from_file}, search::{a_search, r_search}, strs::err_rec, strs::err_unrec, strs::inf, uninstall::{uninstall, uninstall_from_file}, update::{update}, upgrade::{upgrade}, ver::ver, xargs::*};
-use std::{env, process::exit};
-use nix::unistd::Uid;
+use mods::{
+    clearcache::clearcache,
+    clone::clone,
+    help::help,
+    inssort::{
+        inssort,
+        inssort_from_file},
+    install::install,
+    purge::{
+        purge,
+        purge_from_file},
+    search::{
+        a_search,
+        r_search},
+    strs::err_rec, 
+    strs::err_unrec, 
+    strs::inf, 
+    uninstall::{
+        uninstall,
+        uninstall_from_file},
+        update::update,
+    upgrade::upgrade, 
+    ver::ver, 
+    xargs::*
+};
+use std::{
+    env,
+    process::exit
+};
 
 fn main() {
 
-    if Uid::effective().is_root() { // check if user runs ame as root
+    if nix::unistd::Uid::effective().is_root() { // check if user runs ame as root
         err_unrec(format!("Do not run ame as root! this can cause serious damage to your system!"));
     }
 

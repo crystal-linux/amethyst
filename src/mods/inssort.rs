@@ -93,8 +93,7 @@ pub fn inssort(noconfirm: bool, as_dep: bool, pkgs: Vec<String>) { // TODO: unde
 
 pub fn inssort_from_file(noconfirm: bool, as_dep: bool, file: &str) { // same thing as above but with a list of packages from a file
     let mut pkgs: Vec<String> = Vec::new();
-    let mut contents = String::new();
-    contents = std::fs::read_to_string(&file).expect("Couldn't read file");
+    let contents = std::fs::read_to_string(&file).expect("Couldn't read file");
     for line in contents.lines() {
         pkgs.push(line.to_string());
     }
