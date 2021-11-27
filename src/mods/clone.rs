@@ -134,11 +134,7 @@ pub fn clone(noconfirm: bool, as_dep: bool, pkg: &str) { // clone a package from
             match install_result {
                 Ok(_) => {
                     uninstall_make_depend(pkg);
-                    let add_pkg_res = add_pkg(false, pkg);
-                    match add_pkg_res {
-                        Ok(_) => inf(format!("Added package {} to database", pkg)),
-                        Err(_) => err_unrec(format!("Couldn't add package {} to database", pkg)),
-                    }
+                    add_pkg(false, pkg);
                 }
                 Err(_) => {
                     err_unrec(format!("Couldn't install {}", pkg));
@@ -154,11 +150,7 @@ pub fn clone(noconfirm: bool, as_dep: bool, pkg: &str) { // clone a package from
             match install_result.code() {
                 Some(0) => {
                     uninstall_make_depend(pkg);
-                    let add_pkg_res = add_pkg(false, pkg);
-                    match add_pkg_res {
-                        Ok(_) => inf(format!("Added package {} to database", pkg)),
-                        Err(_) => err_unrec(format!("Couldn't add package {} to database", pkg)),
-                    }
+                    add_pkg(false, pkg);
                 }
                 Some(_) => {
                     err_unrec(format!("Couldn't install {}", pkg));
@@ -179,11 +171,7 @@ pub fn clone(noconfirm: bool, as_dep: bool, pkg: &str) { // clone a package from
             match install_result {
                 Ok(_) => {
                     uninstall_make_depend(pkg);
-                    let add_pkg_res = add_pkg(false, pkg);
-                    match add_pkg_res {
-                        Ok(_) => inf(format!("Added package {} to database", pkg)),
-                        Err(_) => err_unrec(format!("Couldn't add package {} to database", pkg)),
-                    }
+                    add_pkg(false, pkg);
                 }
                 Err(_) => {
                     err_unrec(format!("Couldn't install {}", pkg));

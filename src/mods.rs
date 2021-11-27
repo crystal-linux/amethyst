@@ -12,3 +12,4 @@ pub mod upgrade;
 pub mod ver;
 pub mod xargs;
 pub mod purge;
+pub mod statpkgs;

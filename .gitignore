@@ -2,3 +2,5 @@ target/
 Cargo.lock
 ame
 .vscode
+aur_pkgs.db
+test.sql

@@ -22,7 +22,12 @@ use mods::{
         update::update,
     upgrade::upgrade, 
     ver::ver, 
-    xargs::*
+    xargs::*,
+    statpkgs::rebuild,
+    database::{
+        add_pkg,
+        create_database,
+    },
 };
 use std::{
     env,
@@ -43,6 +48,11 @@ fn main() {
         exit(1);
     }
 
+    let file = format!("{}/crystal/ame/aur_pkgs.db", env::var("HOME").unwrap());
+    if !std::path::Path::new(&file).exists() {
+        create_database();
+    }
+
     let oper = &args[0];
     let noconfirm: bool = noconf(&args);
 
@@ -53,6 +63,10 @@ fn main() {
         }
         "-Sl" | "-Sln" | "insl" => {
             inssort_from_file(noconfirm, false, &pkgs[0]); // install from file
+        }
+        "-B" | "-Bn" | "build" => {
+            //rebuild(noconfirm); // install as a dependency
+            add_pkg(noconfirm, &pkgs[0]);
         }
         "-R" | "-Rn" | "rm" => {
             uninstall(noconfirm, pkgs); // uninstall
