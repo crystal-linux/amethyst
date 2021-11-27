@@ -1,6 +1,5 @@
 use crate::mods::strs::{err_unrec, succ};
 use runas::Command;
-use std::fs::File;
 
 pub fn install(noconfirm: bool, as_dep: bool, pkg: &str) { // install a package
     let pkgs: Vec<&str> = pkg.split(" ").collect();
