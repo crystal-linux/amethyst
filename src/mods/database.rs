@@ -3,15 +3,15 @@ use std::{fs, env};
 
 pub fn create_database() {
     let homepath = env::var("HOME").unwrap();
-    let file = format!("{}/crystal/ame/aur_pkgs.db", env::var("HOME").unwrap());
-    if !std::path::Path::new(&format!("{}/.local/ame/", env::var("HOME").unwrap())).is_dir() {
+    let file = format!("{}/.local/share/ame/aur_pkgs.db", env::var("HOME").unwrap());
+    if !std::path::Path::new(&format!("{}/.local/share/ame/", env::var("HOME").unwrap())).is_dir() {
         let _cdar = fs::create_dir_all(format!("/{}/.local/ame/",homepath));
             match _cdar {
                 Ok(_) => {
                     inf(format!("Created path for database (previously missing)"))
                 }
                 Err(_) => {
-                    err_unrec(format!("Couldn't create path for database (~/.local/ame)"))
+                    err_unrec(format!("Couldn't create path for database (~/.local/rhare/ame)"))
                 }
             }
     }
@@ -25,7 +25,7 @@ pub fn create_database() {
 }
 
 pub fn get_value(pkg: &str, sear_value: &str) -> String {
-    let file = format!("{}/crystal/ame/aur_pkgs.db", env::var("HOME").unwrap());
+    let file = format!("{}/.local/share/ame/aur_pkgs.db", env::var("HOME").unwrap());
     let connection = sqlite::open(file).unwrap();
     let mut return_val = String::new();
     match sear_value {
@@ -67,7 +67,7 @@ pub fn get_value(pkg: &str, sear_value: &str) -> String {
 }
 
 pub fn rem_pkg(pkgs: &Vec<String>) {
-    let file = format!("{}/crystal/ame/aur_pkgs.db", env::var("HOME").unwrap());
+    let file = format!("{}/.local/share/ame/aur_pkgs.db", env::var("HOME").unwrap());
     let connection = sqlite::open(file).unwrap();
 
     for i in pkgs {
@@ -88,7 +88,7 @@ pub fn rem_pkg(pkgs: &Vec<String>) {
 }
 
 pub fn add_pkg(_from_repo: bool, pkg: &str) {
-    let file = format!("{}/crystal/ame/aur_pkgs.db", env::var("HOME").unwrap());
+    let file = format!("{}/.local/share/ame/aur_pkgs.db", env::var("HOME").unwrap());
     let connection = sqlite::open(file).unwrap();
     let results = raur::search(&pkg);
     let mut package_name = String::new();

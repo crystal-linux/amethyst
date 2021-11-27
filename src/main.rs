@@ -48,7 +48,7 @@ fn main() {
         exit(1);
     }
 
-    let file = format!("{}/crystal/ame/aur_pkgs.db", env::var("HOME").unwrap());
+    let file = format!("{}/.local/share/ame/aur_pkgs.db", env::var("HOME").unwrap());
     if !std::path::Path::new(&file).exists() {
         create_database();
     }
