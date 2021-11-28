@@ -2,8 +2,9 @@ use ansi_term::Colour;
 use std::{env, io, io::Write, process, string};
 use uwuizer::*;
 
-pub fn inf(a: string::String) { // info
-    if env::var("AME_UWU").unwrap_or("n/a".to_string()) == "YES" {
+pub fn inf(a: string::String) {
+    // info
+    if env::var("AME_UWU").unwrap_or_else(|_| "n/a".to_string()) == "YES" {
         println!(
             "{} {}",
             Colour::Purple.paint("❖"),
@@ -14,8 +15,8 @@ pub fn inf(a: string::String) { // info
     }
 }
 
-pub fn sec(a: string::String) { 
-    if env::var("AME_UWU").unwrap_or("n/a".to_string()) == "YES" {
+pub fn sec(a: string::String) {
+    if env::var("AME_UWU").unwrap_or_else(|_| "n/a".to_string()) == "YES" {
         println!(
             "{} {}",
             Colour::Purple.bold().paint("❖"),
@@ -30,8 +31,9 @@ pub fn sec(a: string::String) {
     }
 }
 
-pub fn succ(a: string::String) { // success
-    if env::var("AME_UWU").unwrap_or("n/a".to_string()) == "YES" {
+pub fn succ(a: string::String) {
+    // success
+    if env::var("AME_UWU").unwrap_or_else(|_| "n/a".to_string()) == "YES" {
         println!(
             "{} {}",
             Colour::Green.bold().paint("✓"),
@@ -46,22 +48,15 @@ pub fn succ(a: string::String) { // success
     }
 }
 
-pub fn prompt(a: string::String) -> bool { // prompt
-    if env::var("AME_UWU").unwrap_or("n/a".to_string()) == "YES" {
+pub fn prompt(a: string::String) -> bool {
+    // prompt
+    if env::var("AME_UWU").unwrap_or_else(|_| "n/a".to_string()) == "YES" {
         print!(
             "{} {} {}",
             Colour::Purple.bold().paint("❖"),
             Colour::White.bold().paint(uwuize!(&a)),
             Colour::White.bold().paint("(Y/n): ")
         );
-        io::stdout().flush().ok().expect("Couldn't flush stdout");
-        let mut yn: String = String::new();
-        let _ = std::io::stdin().read_line(&mut yn);
-        if yn.trim() == "n" || yn.trim() == "N" || yn.trim() == "no" || yn.trim() == "No" {
-            false
-        } else {
-            true
-        }
     } else {
         print!(
             "{} {} {}",
@@ -69,26 +64,22 @@ pub fn prompt(a: string::String) -> bool { // prompt
             Colour::White.bold().paint(&a),
             Colour::White.bold().paint("(Y/n): ")
         );
-        io::stdout().flush().ok().expect("Couldn't flush stdout");
-        let mut yn: String = String::new();
-        let _ = std::io::stdin().read_line(&mut yn);
-        if yn.trim() == "n" || yn.trim() == "N" || yn.trim() == "no" || yn.trim() == "No" {
-            false
-        } else {
-            true
-        }
     }
+    io::stdout().flush().ok();
+    let mut yn: String = String::new();
+    let _ = std::io::stdin().read_line(&mut yn);
+    !(yn.trim() == "n" || yn.trim() == "N" || yn.trim() == "no" || yn.trim() == "No")
 }
 
-pub fn err_unrec(a: string::String) { // unrecoverable error
-    if env::var("AME_UWU").unwrap_or("n/a".to_string()) == "YES" {
+pub fn err_unrec(a: string::String) {
+    // unrecoverable error
+    if env::var("AME_UWU").unwrap_or_else(|_| "n/a".to_string()) == "YES" {
         println!(
             "{} {} {}",
             Colour::Red.bold().paint(uwuize!("✖ Unrecoverable error:")),
             Colour::Red.paint(uwuize!(&a)),
             Colour::Red.bold().paint(uwuize!("Terminating."))
         );
-        process::exit(1);
     } else {
         println!(
             "{} {} {}",
@@ -96,12 +87,13 @@ pub fn err_unrec(a: string::String) { // unrecoverable error
             Colour::Red.paint(a),
             Colour::Red.bold().paint("Terminating.")
         );
-        process::exit(1);
     }
+    process::exit(1);
 }
 
-pub fn err_rec(a: string::String) { // recoverable error
-    if env::var("AME_UWU").unwrap_or("n/a".to_string()) == "YES" {
+pub fn err_rec(a: string::String) {
+    // recoverable error
+    if env::var("AME_UWU").unwrap_or_else(|_| "n/a".to_string()) == "YES" {
         println!(
             "{} {}",
             Colour::Yellow.bold().paint(uwuize!("⚠ WARNING:")),

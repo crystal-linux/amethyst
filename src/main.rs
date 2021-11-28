@@ -2,48 +2,35 @@ mod mods;
 use mods::{
     clearcache::clearcache,
     clone::clone,
+    database::{add_pkg, create_database},
     help::help,
-    inssort::{
-        inssort,
-        inssort_from_file},
+    inssort::{inssort, inssort_from_file},
     install::install,
-    purge::{
-        purge,
-        purge_from_file},
-    search::{
-        a_search,
-        r_search},
-    strs::err_rec, 
-    strs::err_unrec, 
-    strs::inf, 
-    uninstall::{
-        uninstall,
-        uninstall_from_file},
-        update::update,
-    upgrade::upgrade, 
-    ver::ver, 
+    purge::{purge, purge_from_file},
+    search::{a_search, r_search},
+    strs::err_rec,
+    strs::err_unrec,
+    strs::inf,
+    uninstall::{uninstall, uninstall_from_file},
+    update::update,
+    upgrade::upgrade,
+    ver::ver,
     xargs::*,
-    statpkgs::rebuild,
-    database::{
-        add_pkg,
-        create_database,
-    },
 };
-use std::{
-    env,
-    process::exit
-};
+use std::{env, process::exit};
 
 fn main() {
-
-    if nix::unistd::Uid::effective().is_root() { // check if user runs ame as root
-        err_unrec(format!("Do not run ame as root! this can cause serious damage to your system!"));
+    if nix::unistd::Uid::effective().is_root() {
+        // check if user runs ame as root
+        err_unrec(
+            "Do not run ame as root! this can cause serious damage to your system!".to_string(),
+        );
     }
 
     let args: Vec<String> = env::args().skip(1).collect();
     let mut pkgs: Vec<String> = env::args().skip(2).collect();
 
-    if args.len() <= 0 {
+    if args.is_empty() {
         help();
         exit(1);
     }
@@ -57,7 +44,8 @@ fn main() {
     let noconfirm: bool = noconf(&args);
 
     argssort(&mut pkgs);
-    match oper.as_str() { // match oper
+    match oper.as_str() {
+        // match oper
         "-S" | "-Sn" | "ins" => {
             inssort(noconfirm, false, pkgs); // install
         }
@@ -105,8 +93,9 @@ fn main() {
         "-h" | "help" => {
             help(); // help
         }
-        _ => { // if oper is not valid it either passes the args to pacman or prints an error
-                let pass = runas::Command::new("pacman")
+        _ => {
+            // if oper is not valid it either passes the args to pacman or prints an error
+            let pass = runas::Command::new("pacman")
                 .args(&args)
                 .status()
                 .expect("Something has gone wrong.");
@@ -114,12 +103,10 @@ fn main() {
             match pass.code() {
                 Some(1) => {
                     err_rec(format!("No such operation \"{}\"", args.join(" ")));
-                    inf(format!(
-                        "Try running \"ame help\" for an overview of how to use ame"
-                    ))
+                    inf("Try running \"ame help\" for an overview of how to use ame".to_string())
                 }
                 Some(_) => {}
-                None => err_unrec(format!("Something has gone terribly wrong.")),
+                None => err_unrec("Something has gone terribly wrong.".to_string()),
             }
         }
     }

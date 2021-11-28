@@ -1,10 +1,11 @@
 use crate::mods::strs::{err_unrec, succ};
 use runas::Command;
 
-pub fn install(noconfirm: bool, as_dep: bool, pkg: &str) { // install a package
-    let pkgs: Vec<&str> = pkg.split(" ").collect();
-    if as_dep == false {
-        if noconfirm == true {
+pub fn install(noconfirm: bool, as_dep: bool, pkg: &str) {
+    // install a package
+    let pkgs: Vec<&str> = pkg.split(' ').collect();
+    if !as_dep {
+        if noconfirm {
             let result = Command::new("pacman")
                 .arg("-S")
                 .arg("--noconfirm")

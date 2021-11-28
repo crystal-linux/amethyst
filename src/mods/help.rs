@@ -1,8 +1,9 @@
 use crate::mods::strs::{err_rec, inf};
 
-pub fn help() { // print help message
-    println!("");
-    inf(format!("Usage:"));
+pub fn help() {
+    // print help message
+    println!();
+    inf("Usage:".to_string());
     println!(
         "
 ame -S(n)   / ins         <pkg> - install a package
@@ -17,7 +18,7 @@ ame -h      / help              - display this help message
 
 ame <any valid pacman flags>    - passes said flags to be processed by pacman"
     );
-    println!("");
-    err_rec(format!("Appending 'n' where (n) is present passes '--noconfirm' to pacman. Use at your own risk. (alternatively, using '--noconfirm' as a flag works too.)"));
-    println!("");
+    println!();
+    err_rec("Appending 'n' where (n) is present passes '--noconfirm' to pacman. Use at your own risk. (alternatively, using '--noconfirm' as a flag works too.)".to_string());
+    println!();
 }

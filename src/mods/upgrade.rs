@@ -1,28 +1,31 @@
 use crate::{
-    err_rec, err_unrec, inf, inssort, mods::strs::prompt, mods::strs::sec, mods::strs::succ, uninstall, mods::database::get_value,
+    err_rec, err_unrec, inf, inssort, mods::database::get_value, mods::strs::prompt,
+    mods::strs::sec, mods::strs::succ, uninstall,
 };
 use runas::Command;
 use std::{env, fs, path::Path};
 use toml;
 
-fn uninstall_make_depend(pkg: &str) { // uninstall make depends installed by ame itself
+fn uninstall_make_depend(pkg: &str) {
+    // uninstall make depends installed by ame itself
     let make_depends = raur::info(&[&pkg]).unwrap()[0].make_depends.clone();
 
-    if make_depends.len() != 0 {
+    if !make_depends.is_empty() {
         inf(format!(
             "{} installed following make dependencies: {}",
             pkg,
             make_depends.join(", ")
         ));
-        let remove = prompt(format!("Would you like to remove them?"));
-        if remove == true {
+        let remove = prompt("Would you like to remove them?".to_string());
+        if remove {
             uninstall(true, make_depends);
         }
     }
     succ(format!("Succesfully upgraded {}", pkg));
 }
 
-pub fn upgrade(noconfirm: bool) { // upgrade all packages
+pub fn upgrade(noconfirm: bool) {
+    // upgrade all packages
     let homepath = env::var("HOME").unwrap();
     let cachedir = format!("/{}/.cache/ame/", homepath);
     let cache_exists = Path::new(&format!("/{}/.cache/ame/", homepath)).is_dir();
@@ -33,12 +36,8 @@ pub fn upgrade(noconfirm: bool) { // upgrade all packages
     } else {
         let _cdar = fs::create_dir_all(format!("/{}/.local/ame/", homepath));
         match _cdar {
-            Ok(_) => {
-                inf(format!("Created cache directory (previously missing)"))
-            }
-            Err(_) => {
-                err_unrec(format!("Couldn't create cache directory"))
-            }
+            Ok(_) => inf("Created cache directory (previously missing)".to_string()),
+            Err(_) => err_unrec("Couldn't create cache directory".to_string()),
         }
         err_rec(String::from("Database wasn't found, creating new one"));
         let _dbfile = fs::File::create(&file);
@@ -46,24 +45,24 @@ pub fn upgrade(noconfirm: bool) { // upgrade all packages
     }
     let db_parsed = database.parse::<toml::Value>().expect("Invalid Database");
 
-    if cache_exists == false {
+    if !cache_exists {
         let cachecreate = fs::create_dir_all(&cachedir);
         match cachecreate {
-            Ok(_) => inf(format!("Creating cachedir. (didn't exist previously)")),
-            Err(_) => err_unrec(format!("Couldn't create cachedir")),
+            Ok(_) => inf("Creating cachedir. (didn't exist previously)".to_string()),
+            Err(_) => err_unrec("Couldn't create cachedir".to_string()),
         }
     }
-    sec(format!("Performing system upgrade"));
-    if noconfirm == true {
+    sec("Performing system upgrade".to_string());
+    if noconfirm {
         let result = Command::new("pacman")
             .arg("-Syu")
             .arg("--noconfirm")
             .status()
             .expect("Couldn't call pacman");
         match result.code() {
-            Some(0) => succ(format!("All repo packages upgraded")),
-            Some(_) => err_unrec(format!("Couldn't upgrade packages")),
-            None => err_unrec(format!("Couldn't upgrade packages")),
+            Some(0) => succ("All repo packages upgraded".to_string()),
+            Some(_) => err_unrec("Couldn't upgrade packages".to_string()),
+            None => err_unrec("Couldn't upgrade packages".to_string()),
         };
     } else {
         let result = Command::new("pacman")
@@ -71,28 +70,28 @@ pub fn upgrade(noconfirm: bool) { // upgrade all packages
             .status()
             .expect("Couldn't call pacman");
         match result.code() {
-            Some(0) => succ(format!("All repo packages upgraded")),
-            Some(_) => err_unrec(format!("Couldn't upgrade packages")),
-            None => err_unrec(format!("Couldn't upgrade packages")),
+            Some(0) => succ("All repo packages upgraded".to_string()),
+            Some(_) => err_unrec("Couldn't upgrade packages".to_string()),
+            None => err_unrec("Couldn't upgrade packages".to_string()),
         };
     }
 
-    for entry in db_parsed.as_table() {
+    if let Some(entry) = db_parsed.as_table() {
         for (key, _value) in &*entry {
-            let results = raur::search(format!("{}", key));
-            for res in results {
+            let results = raur::search(key.to_string());
+            if let Ok(res) = results {
                 let url = format!("https://aur.archlinux.org/{}.git", key);
                 let package = raur::info(&[key]).unwrap();
-                let version = get_value(&key, "version");
+                let version = get_value(key, "version");
                 if res[0].version.contains(&version) {
                     let keydir = format!("{}{}", &cachedir, &key);
                     if Path::new(&keydir).is_dir() {
                         let cd_result = env::set_current_dir(&keydir);
                         match cd_result {
-                            Ok(_) => inf(format!("Entered package directory")),
-                            Err(_) => err_unrec(format!("Could not enter package directory")),
+                            Ok(_) => inf("Entered package directory".to_string()),
+                            Err(_) => err_unrec("Could not enter package directory".to_string()),
                         }
-                        inssort(true, true,package[0].depends.clone());
+                        inssort(true, true, package[0].depends.clone());
 
                         sec(format!("Installing {} ...", &key));
                         let install_result = std::process::Command::new("makepkg")
@@ -102,7 +101,7 @@ pub fn upgrade(noconfirm: bool) { // upgrade all packages
                             .status();
                         match install_result {
                             Ok(_) => {
-                                uninstall_make_depend(&key);
+                                uninstall_make_depend(key);
                             }
                             Err(_) => {
                                 err_unrec(format!("Couldn't install {}", &key));
@@ -117,7 +116,7 @@ pub fn upgrade(noconfirm: bool) { // upgrade all packages
                             .expect("Couldn't call makepkg");
                         match install_result.code() {
                             Some(0) => {
-                                uninstall_make_depend(&key);
+                                uninstall_make_depend(key);
                             }
                             Some(_) => {
                                 err_unrec(format!("Couldn't install {}", &key));
@@ -153,8 +152,8 @@ pub fn upgrade(noconfirm: bool) { // upgrade all packages
 
                         let cd_result = env::set_current_dir(&keydir);
                         match cd_result {
-                            Ok(_) => inf(format!("Entered package directory")),
-                            Err(_) => err_unrec(format!("Could not enter package directory")),
+                            Ok(_) => inf("Entered package directory".to_string()),
+                            Err(_) => err_unrec("Could not enter package directory".to_string()),
                         }
 
                         inssort(true, true, package[0].depends.clone());
@@ -169,8 +168,12 @@ pub fn upgrade(noconfirm: bool) { // upgrade all packages
                             Some(0) => {
                                 inf(format!("Cloning {} into package directory", &key));
                             }
-                            Some(_) => err_unrec(format!("Failed cloning {} into package directory", &key)),
-                            _ => err_unrec(format!("Failed cloning {} into package directory", &key)),
+                            Some(_) => {
+                                err_unrec(format!("Failed cloning {} into package directory", &key))
+                            }
+                            _ => {
+                                err_unrec(format!("Failed cloning {} into package directory", &key))
+                            }
                         }
                     }
 
@@ -182,7 +185,7 @@ pub fn upgrade(noconfirm: bool) { // upgrade all packages
                         .status();
                     match install_result {
                         Ok(_) => {
-                            uninstall_make_depend(&key);
+                            uninstall_make_depend(key);
                         }
                         Err(_) => {
                             err_unrec(format!("Couldn't install {}", &key));
@@ -196,7 +199,7 @@ pub fn upgrade(noconfirm: bool) { // upgrade all packages
                         .expect("Couldn't call makepkg");
                     match install_result.code() {
                         Some(0) => {
-                            uninstall_make_depend(&key);
+                            uninstall_make_depend(key);
                         }
                         Some(_) => {
                             err_unrec(format!("Couldn't install {}", &key));

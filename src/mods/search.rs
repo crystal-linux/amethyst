@@ -2,12 +2,13 @@ use crate::mods::strs::{err_rec, err_unrec, succ};
 use ansi_term::Colour;
 use std::{ops::Deref, process::Command};
 
-pub fn a_search(pkg: &str) { // search for a package in the AUR
+pub fn a_search(pkg: &str) {
+    // search for a package in the AUR
     let results = raur::search(&pkg);
 
     for r in &results {
-        if r.len() == 0 {
-            err_rec(format!("No matching AUR packages found"));
+        if r.is_empty() {
+            err_rec("No matching AUR packages found".to_string());
         }
         for res in r {
             println!(
@@ -21,16 +22,17 @@ pub fn a_search(pkg: &str) { // search for a package in the AUR
     }
 }
 
-pub fn r_search(pkg: &str) { // search for a package in the repositories
+pub fn r_search(pkg: &str) {
+    // search for a package in the repositories
     let result = Command::new("pacman")
         .arg("-Ss")
         .arg(&pkg)
         .status()
         .unwrap();
     match result.code() {
-        Some(0) => succ(format!("Repo search successful")),
-        Some(1) => err_rec(format!("No matching repo packages found")),
-        Some(_) => err_unrec(format!("Someting went terribly wrong")),
-        None => err_unrec(format!("Couldn't search pacman repos")),
+        Some(0) => succ("Repo search successful".to_string()),
+        Some(1) => err_rec("No matching repo packages found".to_string()),
+        Some(_) => err_unrec("Someting went terribly wrong".to_string()),
+        None => err_unrec("Couldn't search pacman repos".to_string()),
     };
 }
