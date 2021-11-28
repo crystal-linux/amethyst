@@ -16,6 +16,8 @@ use mods::{
     upgrade::upgrade,
     ver::ver,
     xargs::*,
+    statpkgs::*,
+    stat_database::*,
 };
 use std::{env, process::exit};
 
@@ -53,8 +55,7 @@ fn main() {
             inssort_from_file(noconfirm, false, &pkgs[0]); // install from file
         }
         "-B" | "-Bn" | "build" => {
-            //rebuild(noconfirm); // install as a dependency
-            add_pkg(noconfirm, &pkgs[0]);
+            rebuild(noconfirm); // install as a dependency
         }
         "-R" | "-Rn" | "rm" => {
             uninstall(noconfirm, pkgs); // uninstall

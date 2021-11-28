@@ -7,6 +7,7 @@ pub mod install;
 pub mod purge;
 pub mod search;
 pub mod statpkgs;
+pub mod stat_database;
 pub mod strs;
 pub mod uninstall;
 pub mod update;

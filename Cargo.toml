@@ -1,7 +1,7 @@
 [package]
 name = "ame"
 version = "0.0.0"
-authors = [ "jnats <jnats@salyut.one>", "axtlos <axtlos@salyut.one>" ]
+authors = [ "jnats <jnats@salyut.one>", "axtlos <axtlos@tar.black>" ]
 edition = "2018"
 description = "a fast and efficient aur helper."
 
@@ -20,3 +20,4 @@ bytes = "*"
 nix = "*"
 clap = "*"
 sqlite = "*"
+file_diff = "*"
