@@ -74,7 +74,7 @@ pub fn rem_pkg(pkgs: &[String]) {
     for i in pkgs {
         let result = connection.execute(format!(
             "
-            DELETE FROM pkgs WHERE name = {};
+            DELETE FROM pkgs WHERE name = \"{}\";
             ",
             i
         ));
@@ -85,24 +85,39 @@ pub fn rem_pkg(pkgs: &[String]) {
     }
 }
 
-pub fn add_pkg(_from_repo: bool, pkg: &str) {
-    let file = format!("{}/.local/share/ame/aur_pkgs.db", env::var("HOME").unwrap());
-    let connection = sqlite::open(file).unwrap();
-    let results = raur::search(&pkg);
-    let mut package_name = String::new();
-    let mut package_version = String::new();
-    for res in &results {
-        package_name = res[0].name.to_string();
-        package_version = res[0].version.to_string();
-    }
-    let result = connection.execute(format!(
-        "
-        INSERT INTO pkgs (name, version) VALUES (\"{}\", \"{}\");
-        ",
-        package_name, package_version
-    ));
-    match result {
-        Ok(_) => inf(format!("Added {} to database", package_name)),
-        Err(_) => err_unrec(format!("Couldn't add {} to database", package_name)),
+pub fn add_pkg(from_repo: bool, pkgs: &Vec<&str>) {
+    for pkg in pkgs {
+        let file = format!("{}/.local/share/ame/aur_pkgs.db", env::var("HOME").unwrap());
+        let connection = sqlite::open(file).unwrap();
+        let results = raur::search(&pkg);
+        let mut package_name = String::new();
+        let mut package_version = String::new();
+        for res in &results {
+            package_name = res[0].name.to_string();
+            package_version = res[0].version.to_string();
+        }
+        if from_repo == false {
+            let result = connection.execute(format!(
+                "
+                INSERT INTO pkgs (name, version) VALUES (\"{}\", \"{}\");
+                ",
+                package_name, package_version
+            ));
+            match result {
+                Ok(_) => inf(format!("Added {} to database", package_name)),
+                Err(_) => err_unrec(format!("Couldn't add {} to database", package_name)),
+            }
+        } else {
+            let result = connection.execute(format!(
+                "
+                INSERT INTO pkgs (name, version) VALUES (\"{}\", \"{}\");
+                ",
+                pkg, "from_repo".to_string()
+            ));
+            match result {
+                Ok(_) => inf(format!("Added {} to database", package_name)),
+                Err(_) => err_unrec(format!("Couldn't add {} to database", package_name)),
+            }
+        }
     }
 }

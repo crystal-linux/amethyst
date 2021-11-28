@@ -1,4 +1,5 @@
 use crate::mods::strs::{err_unrec, succ};
+use crate::mods::database::add_pkg;
 use runas::Command;
 
 pub fn install(noconfirm: bool, as_dep: bool, pkg: &str) {
@@ -14,7 +15,10 @@ pub fn install(noconfirm: bool, as_dep: bool, pkg: &str) {
                 .status()
                 .expect("Couldn't call pacman");
             match result.code() {
-                Some(0) => succ(format!("Succesfully installed packages: {}", pkg)),
+                Some(0) => {
+                    succ(format!("Succesfully installed packages: {}", pkg));
+                    add_pkg(true, &pkgs);
+                },
                 Some(_) => err_unrec(format!("Couldn't install packages: {}", pkg)),
                 None => err_unrec(format!("Couldn't install packages: {}", pkg)),
             };
@@ -26,7 +30,10 @@ pub fn install(noconfirm: bool, as_dep: bool, pkg: &str) {
                 .status()
                 .expect("Couldn't call pacman");
             match result.code() {
-                Some(0) => succ(format!("Succesfully installed packages: {}", pkg)),
+                Some(0) => {
+                    succ(format!("Succesfully installed packages: {}", pkg));
+                    add_pkg(true, &pkgs);
+                },
                 Some(_) => err_unrec(format!("Couldn't install packages: {}", pkg)),
                 None => err_unrec(format!("Couldn't install packages: {}", pkg)),
             };
@@ -41,7 +48,10 @@ pub fn install(noconfirm: bool, as_dep: bool, pkg: &str) {
             .status()
             .expect("Couldn't call pacman");
         match result.code() {
-            Some(0) => succ(format!("Succesfully installed packages: {}", pkg)),
+            Some(0) => {
+                succ(format!("Succesfully installed packages: {}", pkg));
+                add_pkg(true, &pkgs);
+            },
             Some(_) => err_unrec(format!("Couldn't install packages: {}", pkg)),
             None => err_unrec(format!("Couldn't install packages: {}", pkg)),
         };

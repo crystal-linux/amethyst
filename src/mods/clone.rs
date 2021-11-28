@@ -130,7 +130,9 @@ pub fn clone(noconfirm: bool, as_dep: bool, pkg: &str) {
             match install_result {
                 Ok(_) => {
                     uninstall_make_depend(pkg);
-                    add_pkg(false, pkg);
+                    let mut vec = Vec::new();
+                    vec.push(pkg);
+                    add_pkg(false, &vec);
                 }
                 Err(_) => {
                     err_unrec(format!("Couldn't install {}", pkg));
@@ -145,7 +147,9 @@ pub fn clone(noconfirm: bool, as_dep: bool, pkg: &str) {
             match install_result.code() {
                 Some(0) => {
                     uninstall_make_depend(pkg);
-                    add_pkg(false, pkg);
+                    let mut vec = Vec::new();
+                    vec.push(pkg);
+                    add_pkg(false, &vec);
                 }
                 Some(_) => {
                     err_unrec(format!("Couldn't install {}", pkg));
@@ -166,7 +170,9 @@ pub fn clone(noconfirm: bool, as_dep: bool, pkg: &str) {
         match install_result {
             Ok(_) => {
                 uninstall_make_depend(pkg);
-                add_pkg(false, pkg);
+                let mut vec = Vec::new();
+                vec.push(pkg);
+                add_pkg(false, &vec);
             }
             Err(_) => {
                 err_unrec(format!("Couldn't install {}", pkg));
