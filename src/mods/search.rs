@@ -1,24 +1,26 @@
 use crate::mods::strs::{err_rec, err_unrec, succ};
+use crate::mods::rpc::*;
 use ansi_term::Colour;
-use std::{ops::Deref, process::Command};
+use std::process::Command;
 
 pub fn a_search(pkg: &str) {
     // search for a package in the AUR
-    let results = raur::search(&pkg);
+    let results = rpcsearch(pkg).results;
 
     for r in &results {
-        if r.is_empty() {
+        if results.is_empty() {
             err_rec("No matching AUR packages found".to_string());
         }
-        for res in r {
-            println!(
-                "{}{} {}\n    {}",
-                Colour::Cyan.bold().paint("aur/"),
-                Colour::White.bold().paint(&res.name),
-                Colour::Green.bold().paint(&res.version),
-                Colour::White.paint(res.description.as_ref().map_or("n/a", String::deref))
-            );
-        }
+        println!(
+            "{}{} {}\n    {}",
+            Colour::Cyan.bold().paint("aur/"),
+            Colour::White.bold().paint(&r.name),
+            Colour::Green.bold().paint(&r.version),
+            Colour::White.paint(r.description.as_ref().unwrap_or(&"No description available".to_string()))
+        );
+    }
+    if !results.is_empty() {
+        succ("AUR search successful".to_string());
     }
 }
 

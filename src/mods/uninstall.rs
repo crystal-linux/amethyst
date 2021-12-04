@@ -11,6 +11,43 @@ pub fn uninstall(noconfirm: bool, pkgs: Vec<String>) {
         "Attempting to uninstall packages: {}",
         &pkgs.join(" ")
     ));
+
+    let important = [
+        "base",
+        "linux",
+        "linux-firmware",
+        "systemd-sysvcompat",
+        "networkmanager",
+        "man-db",
+        "man-pages",
+        "texinfo",
+        "sudo",
+        "curl",
+        "archlinux-keyring",
+        "btrfs-progs",
+        "timeshift",
+        "timeshift-autosnap"
+    ];
+
+    let mut overrides: Vec<String> = Vec::new();
+    if Path::new("/etc/ame/overrides.conf").exists() {
+        overrides = fs::read_to_string("/etc/ame/overrides.conf")
+            .expect("Failed to read overrides.conf")
+            .lines()
+            .map(|s| s.to_string())
+            .collect();
+    }
+
+    let mut matches: Vec<String> = Vec::new();
+    for pkg in pkgs.iter() {
+        for imp in important.iter() {
+            if pkg == imp && !overrides.contains(pkg) {
+                matches.push(pkg.to_string());
+            }
+        }
+    }
+    err_unrec(format!("The action you called for tries to uninstall packages: {} . This is disallowed by default as these are important system packages. If you fully know what you are doing and would like to uninstall these, please create an override in /etc/ame/overrides.conf.", matches.join(" ")));
+
     if noconfirm {
         let result = Command::new("pacman")
             .arg("-Ru")

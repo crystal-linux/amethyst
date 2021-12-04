@@ -8,16 +8,12 @@ description = "a fast and efficient aur helper."
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-raur = "3.0.1"
-runas = "*"
-ansi_term = "*"
-uwuizer = "*"
-moins = "*"
-regex = "*"
-toml_edit = "*"
-toml = "*"
-bytes = "*"
-nix = "*"
-clap = "*"
-sqlite = "*"
-file_diff = "*"
+runas = "0.2.1"
+ansi_term = "0.12.1"
+uwuizer = "0.2.1"
+moins = "0.5.0"
+regex = { version = "1.5.4", default-features = false }
+toml = "0.5.8"
+sqlite = "0.26.0"
+reqwest = { version = "0.11.7", default-features = false, features = [ "blocking", "json", "default-tls" ] }
+serde = { version = "1.0.90", default-features = false, features = [ "derive" ] }

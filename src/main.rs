@@ -2,7 +2,7 @@ mod mods;
 use mods::{
     clearcache::clearcache,
     clone::clone,
-    database::{add_pkg, create_database},
+    database::create_database,
     help::help,
     inssort::{inssort, inssort_from_file},
     install::install,
@@ -22,7 +22,12 @@ use mods::{
 use std::{env, process::exit};
 
 fn main() {
-    if nix::unistd::Uid::effective().is_root() {
+
+    extern "C" {
+        fn geteuid() -> u32;
+    }
+
+    if unsafe { geteuid() } == 0 {
         // check if user runs ame as root
         err_unrec(
             "Do not run ame as root! this can cause serious damage to your system!".to_string(),

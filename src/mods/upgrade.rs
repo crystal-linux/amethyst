@@ -1,6 +1,6 @@
 use crate::{
     err_rec, err_unrec, inf, inssort, mods::database::get_value, mods::strs::prompt,
-    mods::strs::sec, mods::strs::succ, uninstall,
+    mods::strs::sec, mods::strs::succ, uninstall, mods::rpc::*
 };
 use runas::Command;
 use std::{env, fs, path::Path};
@@ -8,7 +8,7 @@ use toml;
 
 fn uninstall_make_depend(pkg: &str) {
     // uninstall make depends installed by ame itself
-    let make_depends = raur::info(&[&pkg]).unwrap()[0].make_depends.clone();
+    let make_depends = rpcinfo(pkg).make_depends;
 
     if !make_depends.is_empty() {
         inf(format!(
@@ -78,12 +78,11 @@ pub fn upgrade(noconfirm: bool) {
 
     if let Some(entry) = db_parsed.as_table() {
         for (key, _value) in &*entry {
-            let results = raur::search(key.to_string());
-            if let Ok(res) = results {
+            let results = rpcsearch(&key.to_string()).results;
                 let url = format!("https://aur.archlinux.org/{}.git", key);
-                let package = raur::info(&[key]).unwrap();
+                let package = rpcinfo(&key.to_string());
                 let version = get_value(key, "version");
-                if res[0].version.contains(&version) {
+                if results[0].version.contains(&version) {
                     let keydir = format!("{}{}", &cachedir, &key);
                     if Path::new(&keydir).is_dir() {
                         let cd_result = env::set_current_dir(&keydir);
@@ -91,7 +90,7 @@ pub fn upgrade(noconfirm: bool) {
                             Ok(_) => inf("Entered package directory".to_string()),
                             Err(_) => err_unrec("Could not enter package directory".to_string()),
                         }
-                        inssort(true, true, package[0].depends.clone());
+                        inssort(true, true, package.depends.clone());
 
                         sec(format!("Installing {} ...", &key));
                         let install_result = std::process::Command::new("makepkg")
@@ -156,7 +155,7 @@ pub fn upgrade(noconfirm: bool) {
                             Err(_) => err_unrec("Could not enter package directory".to_string()),
                         }
 
-                        inssort(true, true, package[0].depends.clone());
+                        inssort(true, true, package.depends.clone());
 
                         let clone = std::process::Command::new("git")
                             .arg("clone")
@@ -211,7 +210,7 @@ pub fn upgrade(noconfirm: bool) {
                 } else {
                     inf(format!("Package {} already up to date", &key));
                 }
-            }
+        
         }
     }
 }

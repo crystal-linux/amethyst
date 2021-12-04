@@ -1,11 +1,13 @@
 use crate::inf;
 use ansi_term::Colour;
-use clap::{self, crate_version};
 
 pub fn ver() {
+
+    const VERSION: &str = env!("CARGO_PKG_VERSION");
+
     // print version and contributors
     println!();
-    inf(format!("ame - {}", crate_version!()));
+    inf(format!("ame - {}", VERSION));
     println!();
     inf("Contributors:".to_string());
     println!("- axtlos <axtlos@salyut.one>");

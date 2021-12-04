@@ -1,13 +1,16 @@
 use crate::{
-    err_unrec, inf, inssort, mods::database::add_pkg, mods::purge::purge, mods::strs::prompt,
-    mods::strs::sec, mods::strs::succ,
+    err_unrec, inf, mods::database::add_pkg, mods::purge::purge, mods::strs::prompt,
+    mods::strs::sec, mods::strs::succ, mods::rpc::*
 };
 use moins::Moins;
 use std::{env, fs, path::Path, process::Command};
 
 fn uninstall_make_depend(pkg: &str) {
     // uninstall make depends of a package
-    let make_depends = raur::info(&[&pkg]).unwrap()[0].make_depends.clone();
+
+    // gets the "make_depends" field of the package using rpcinfo()
+    // let make_depends = rpcinfo(pkg)[0].make_depends;
+    let make_depends = rpcinfo(pkg).make_depends;
 
     let explicit_packages = Command::new("pacman")
         .arg("-Qetq")
@@ -18,13 +21,12 @@ fn uninstall_make_depend(pkg: &str) {
     let expl_pkgs_parse = String::from_utf8(explicit_packages.stdout).unwrap();
     let expl_pkgs_parse = expl_pkgs_parse.split('\n').collect::<Vec<&str>>();
 
-    let mut rem_pkgs = Vec::new();
+    let mut rem_pkgs: Vec<String> = Vec::new();
     for pkg in expl_pkgs_parse {
-        #[allow(clippy::needless_range_loop)]
-        for i in 0..make_depends.len() {
-            if let false = make_depends[i].contains(pkg) {
-                if let false = rem_pkgs.contains(&make_depends[i]) {
-                    rem_pkgs.push(make_depends[i].as_str().to_string());
+        for md in &make_depends {
+            if let false = md.contains(pkg) {
+                if let false = rem_pkgs.contains(md) {
+                    rem_pkgs.push(md.as_str().to_string());
                 }
             };
         }
@@ -49,14 +51,17 @@ pub fn clone(noconfirm: bool, as_dep: bool, pkg: &str) {
     let cachedir = format!("{}/.cache/ame", env::var("HOME").unwrap());
     let path = Path::new(&cachedir);
     let pkgdir = format!("{}/{}", &cachedir, &pkg);
-    let package = raur::info(&[pkg]).unwrap();
-
-    if package.is_empty() {
+    let search = rpcsearch(pkg).results;
+    if search.is_empty() {
         err_unrec("No matching AUR packages found".to_string());
     }
 
     let url = format!("https://aur.archlinux.org/{}.git", pkg);
 
+    if !Path::new(&format!("{}/.cache", env::var("HOME").unwrap())).exists() {
+        fs::create_dir_all(format!("{}/.cache", env::var("HOME").unwrap()))
+            .expect("Failed to create ~/.cache directory");
+    }
     if !path.is_dir() {
         let cache_result = fs::create_dir(&path);
         match cache_result {
@@ -95,7 +100,7 @@ pub fn clone(noconfirm: bool, as_dep: bool, pkg: &str) {
 
     sec("Installing AUR package depends".to_string());
 
-    inssort(noconfirm, true, package[0].depends.clone());
+    // inssort(noconfirm, true, package[0].depends.clone());
 
     let clone = std::process::Command::new("git")
         .arg("clone")
@@ -130,8 +135,7 @@ pub fn clone(noconfirm: bool, as_dep: bool, pkg: &str) {
             match install_result {
                 Ok(_) => {
                     uninstall_make_depend(pkg);
-                    let mut vec = Vec::new();
-                    vec.push(pkg);
+                    let vec = vec![pkg];
                     add_pkg(false, &vec);
                 }
                 Err(_) => {
@@ -147,8 +151,7 @@ pub fn clone(noconfirm: bool, as_dep: bool, pkg: &str) {
             match install_result.code() {
                 Some(0) => {
                     uninstall_make_depend(pkg);
-                    let mut vec = Vec::new();
-                    vec.push(pkg);
+                    let vec = vec![pkg];
                     add_pkg(false, &vec);
                 }
                 Some(_) => {
@@ -170,8 +173,7 @@ pub fn clone(noconfirm: bool, as_dep: bool, pkg: &str) {
         match install_result {
             Ok(_) => {
                 uninstall_make_depend(pkg);
-                let mut vec = Vec::new();
-                vec.push(pkg);
+                let vec = vec![pkg];
                 add_pkg(false, &vec);
             }
             Err(_) => {
