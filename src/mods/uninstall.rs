@@ -26,7 +26,7 @@ pub fn uninstall(noconfirm: bool, pkgs: Vec<String>) {
         "archlinux-keyring",
         "btrfs-progs",
         "timeshift",
-        "timeshift-autosnap"
+        "timeshift-autosnap",
     ];
 
     let mut overrides: Vec<String> = Vec::new();

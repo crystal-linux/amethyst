@@ -1,5 +1,5 @@
-use crate::mods::strs::{err_rec, err_unrec, succ};
 use crate::mods::rpc::*;
+use crate::mods::strs::{err_rec, err_unrec, succ};
 use ansi_term::Colour;
 use std::process::Command;
 
@@ -16,7 +16,11 @@ pub fn a_search(pkg: &str) {
             Colour::Cyan.bold().paint("aur/"),
             Colour::White.bold().paint(&r.name),
             Colour::Green.bold().paint(&r.version),
-            Colour::White.paint(r.description.as_ref().unwrap_or(&"No description available".to_string()))
+            Colour::White.paint(
+                r.description
+                    .as_ref()
+                    .unwrap_or(&"No description available".to_string())
+            )
         );
     }
     if !results.is_empty() {

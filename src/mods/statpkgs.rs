@@ -1,14 +1,8 @@
-use std::{fs, env};
 use crate::inf;
 use crate::{
-    err_rec,
-    stat_add_pkg,
-    stat_get_value,
-    stat_rem_pkg,
-    inssort,
-    stat_dump_dat,
-    uninstall,
+    err_rec, inssort, stat_add_pkg, stat_dump_dat, stat_get_value, stat_rem_pkg, uninstall,
 };
+use std::{env, fs};
 
 pub fn rebuild(noconfirm: bool) {
     let file = format!("{}/.config/ame/pkgs.toml", env::var("HOME").unwrap());
@@ -17,12 +11,13 @@ pub fn rebuild(noconfirm: bool) {
 
     let file = format!("{}/.local/share/ame/aur_pkgs.db", env::var("HOME").unwrap());
     let connection = sqlite::open(file).unwrap();
-    connection.execute(
-        "
+    connection
+        .execute(
+            "
         CREATE TABLE IF NOT EXISTS static_pkgs (name TEXT, pin INTEGER);
         ",
-    )
-    .unwrap();
+        )
+        .unwrap();
 
     let db_parsed = database.parse::<toml::Value>().expect("Invalid Database");
     let mut pkgs = Vec::new();
@@ -32,7 +27,7 @@ pub fn rebuild(noconfirm: bool) {
             // println!("{}", key);
             // println!("{}", format!("{}",value).replace("update = ", ""));
             tempvec.push(key.to_string());
-            tempvec.push(format!("{}",value).replace("update = ", ""));
+            tempvec.push(format!("{}", value).replace("update = ", ""));
             pkgs.push(tempvec);
         }
     }

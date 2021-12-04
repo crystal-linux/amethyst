@@ -11,21 +11,22 @@ pub struct Package {
     pub depends: Vec<String>,
     #[serde(default)]
     #[serde(rename = "MakeDepends")]
-    pub make_depends: Vec<String>
+    pub make_depends: Vec<String>,
 }
 
 #[derive(serde::Deserialize)]
 pub struct SearchResults {
     pub resultcount: u32,
-    pub results: Vec<Package>
+    pub results: Vec<Package>,
 }
 
 pub fn rpcinfo(pkg: &str) -> Package {
     let res = reqwest::blocking::get(&format!(
         "https://aur.archlinux.org/rpc/?v=5&type=info&arg={}",
         pkg
-    )).unwrap();
-    
+    ))
+    .unwrap();
+
     res.json().unwrap()
 }
 
@@ -33,7 +34,8 @@ pub fn rpcsearch(pkg: &str) -> SearchResults {
     let res = reqwest::blocking::get(&format!(
         "https://aur.archlinux.org/rpc/?v=5&type=search&arg={}",
         pkg
-    )).unwrap();
+    ))
+    .unwrap();
 
     res.json().unwrap()
 }

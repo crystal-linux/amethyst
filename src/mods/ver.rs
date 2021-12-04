@@ -2,7 +2,6 @@ use crate::inf;
 use ansi_term::Colour;
 
 pub fn ver() {
-
     const VERSION: &str = env!("CARGO_PKG_VERSION");
 
     // print version and contributors

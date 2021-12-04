@@ -1,6 +1,6 @@
 use crate::{
-    err_rec, err_unrec, inf, inssort, mods::database::get_value, mods::strs::prompt,
-    mods::strs::sec, mods::strs::succ, uninstall, mods::rpc::*
+    err_rec, err_unrec, inf, inssort, mods::database::get_value, mods::rpc::*, mods::strs::prompt,
+    mods::strs::sec, mods::strs::succ, uninstall,
 };
 use runas::Command;
 use std::{env, fs, path::Path};
@@ -79,102 +79,18 @@ pub fn upgrade(noconfirm: bool) {
     if let Some(entry) = db_parsed.as_table() {
         for (key, _value) in &*entry {
             let results = rpcsearch(&key.to_string()).results;
-                let url = format!("https://aur.archlinux.org/{}.git", key);
-                let package = rpcinfo(&key.to_string());
-                let version = get_value(key, "version");
-                if results[0].version.contains(&version) {
-                    let keydir = format!("{}{}", &cachedir, &key);
-                    if Path::new(&keydir).is_dir() {
-                        let cd_result = env::set_current_dir(&keydir);
-                        match cd_result {
-                            Ok(_) => inf("Entered package directory".to_string()),
-                            Err(_) => err_unrec("Could not enter package directory".to_string()),
-                        }
-                        inssort(true, true, package.depends.clone());
-
-                        sec(format!("Installing {} ...", &key));
-                        let install_result = std::process::Command::new("makepkg")
-                            .arg("-si")
-                            .arg("--noconfirm")
-                            .arg("--needed")
-                            .status();
-                        match install_result {
-                            Ok(_) => {
-                                uninstall_make_depend(key);
-                            }
-                            Err(_) => {
-                                err_unrec(format!("Couldn't install {}", &key));
-                            }
-                        };
-
-                        sec(format!("Installing {} ...", &key));
-                        let install_result = std::process::Command::new("makepkg")
-                            .arg("-si")
-                            .arg("--needed")
-                            .status()
-                            .expect("Couldn't call makepkg");
-                        match install_result.code() {
-                            Some(0) => {
-                                uninstall_make_depend(key);
-                            }
-                            Some(_) => {
-                                err_unrec(format!("Couldn't install {}", &key));
-                            }
-                            None => {
-                                err_unrec(format!("Couldn't install {}", &key));
-                            }
-                        };
-                    } else {
-                        inf(format!("Cloning {} ...", &key));
-
-                        if Path::new(&keydir).is_dir() {
-                            let rm_result = fs::remove_dir_all(&keydir);
-                            match rm_result {
-                                    Ok(_) => inf(format!(
-                                        "Package path for {} already found. Removing to reinstall",
-                                        &key
-                                    )),
-                                    Err(_) => err_unrec(format!(
-                                        "Package path for {} already found, but could not remove to reinstall",
-                                        &key
-                                    )),
-                                }
-                        }
-
-                        let dir_result = fs::create_dir(&keydir);
-                        match dir_result {
-                            Ok(_) => inf(format!("Created package directory for {}", &key)),
-                            Err(_) => {
-                                err_unrec(format!("Couldn't create package directory for {}", &key))
-                            }
-                        }
-
-                        let cd_result = env::set_current_dir(&keydir);
-                        match cd_result {
-                            Ok(_) => inf("Entered package directory".to_string()),
-                            Err(_) => err_unrec("Could not enter package directory".to_string()),
-                        }
-
-                        inssort(true, true, package.depends.clone());
-
-                        let clone = std::process::Command::new("git")
-                            .arg("clone")
-                            .arg(&url)
-                            .arg(&keydir)
-                            .status()
-                            .expect("Couldn't clone repo");
-                        match clone.code() {
-                            Some(0) => {
-                                inf(format!("Cloning {} into package directory", &key));
-                            }
-                            Some(_) => {
-                                err_unrec(format!("Failed cloning {} into package directory", &key))
-                            }
-                            _ => {
-                                err_unrec(format!("Failed cloning {} into package directory", &key))
-                            }
-                        }
+            let url = format!("https://aur.archlinux.org/{}.git", key);
+            let package = rpcinfo(&key.to_string());
+            let version = get_value(key, "version");
+            if results[0].version.contains(&version) {
+                let keydir = format!("{}{}", &cachedir, &key);
+                if Path::new(&keydir).is_dir() {
+                    let cd_result = env::set_current_dir(&keydir);
+                    match cd_result {
+                        Ok(_) => inf("Entered package directory".to_string()),
+                        Err(_) => err_unrec("Could not enter package directory".to_string()),
                     }
+                    inssort(true, true, package.depends.clone());
 
                     sec(format!("Installing {} ...", &key));
                     let install_result = std::process::Command::new("makepkg")
@@ -190,6 +106,7 @@ pub fn upgrade(noconfirm: bool) {
                             err_unrec(format!("Couldn't install {}", &key));
                         }
                     };
+
                     sec(format!("Installing {} ...", &key));
                     let install_result = std::process::Command::new("makepkg")
                         .arg("-si")
@@ -208,9 +125,89 @@ pub fn upgrade(noconfirm: bool) {
                         }
                     };
                 } else {
-                    inf(format!("Package {} already up to date", &key));
+                    inf(format!("Cloning {} ...", &key));
+
+                    if Path::new(&keydir).is_dir() {
+                        let rm_result = fs::remove_dir_all(&keydir);
+                        match rm_result {
+                                    Ok(_) => inf(format!(
+                                        "Package path for {} already found. Removing to reinstall",
+                                        &key
+                                    )),
+                                    Err(_) => err_unrec(format!(
+                                        "Package path for {} already found, but could not remove to reinstall",
+                                        &key
+                                    )),
+                                }
+                    }
+
+                    let dir_result = fs::create_dir(&keydir);
+                    match dir_result {
+                        Ok(_) => inf(format!("Created package directory for {}", &key)),
+                        Err(_) => {
+                            err_unrec(format!("Couldn't create package directory for {}", &key))
+                        }
+                    }
+
+                    let cd_result = env::set_current_dir(&keydir);
+                    match cd_result {
+                        Ok(_) => inf("Entered package directory".to_string()),
+                        Err(_) => err_unrec("Could not enter package directory".to_string()),
+                    }
+
+                    inssort(true, true, package.depends.clone());
+
+                    let clone = std::process::Command::new("git")
+                        .arg("clone")
+                        .arg(&url)
+                        .arg(&keydir)
+                        .status()
+                        .expect("Couldn't clone repo");
+                    match clone.code() {
+                        Some(0) => {
+                            inf(format!("Cloning {} into package directory", &key));
+                        }
+                        Some(_) => {
+                            err_unrec(format!("Failed cloning {} into package directory", &key))
+                        }
+                        _ => err_unrec(format!("Failed cloning {} into package directory", &key)),
+                    }
                 }
-        
+
+                sec(format!("Installing {} ...", &key));
+                let install_result = std::process::Command::new("makepkg")
+                    .arg("-si")
+                    .arg("--noconfirm")
+                    .arg("--needed")
+                    .status();
+                match install_result {
+                    Ok(_) => {
+                        uninstall_make_depend(key);
+                    }
+                    Err(_) => {
+                        err_unrec(format!("Couldn't install {}", &key));
+                    }
+                };
+                sec(format!("Installing {} ...", &key));
+                let install_result = std::process::Command::new("makepkg")
+                    .arg("-si")
+                    .arg("--needed")
+                    .status()
+                    .expect("Couldn't call makepkg");
+                match install_result.code() {
+                    Some(0) => {
+                        uninstall_make_depend(key);
+                    }
+                    Some(_) => {
+                        err_unrec(format!("Couldn't install {}", &key));
+                    }
+                    None => {
+                        err_unrec(format!("Couldn't install {}", &key));
+                    }
+                };
+            } else {
+                inf(format!("Package {} already up to date", &key));
+            }
         }
     }
 }

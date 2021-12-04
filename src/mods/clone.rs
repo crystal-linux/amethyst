@@ -1,6 +1,6 @@
 use crate::{
-    err_unrec, inf, mods::database::add_pkg, mods::purge::purge, mods::strs::prompt,
-    mods::strs::sec, mods::strs::succ, mods::rpc::*
+    err_unrec, inf, mods::database::add_pkg, mods::purge::purge, mods::rpc::*, mods::strs::prompt,
+    mods::strs::sec, mods::strs::succ,
 };
 use moins::Moins;
 use std::{env, fs, path::Path, process::Command};

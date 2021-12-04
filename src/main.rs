@@ -8,6 +8,8 @@ use mods::{
     install::install,
     purge::{purge, purge_from_file},
     search::{a_search, r_search},
+    stat_database::*,
+    statpkgs::*,
     strs::err_rec,
     strs::err_unrec,
     strs::inf,
@@ -16,13 +18,10 @@ use mods::{
     upgrade::upgrade,
     ver::ver,
     xargs::*,
-    statpkgs::*,
-    stat_database::*,
 };
 use std::{env, process::exit};
 
 fn main() {
-
     extern "C" {
         fn geteuid() -> u32;
     }
