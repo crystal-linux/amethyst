@@ -1,4 +1,4 @@
-use crate::{clone, err_unrec, install, mods::strs::sec};
+use crate::{clone, err_unrec, install, mods::strs::sec, mods::rpc::*};
 use regex::Regex;
 use std::process::{Command, Stdio};
 
@@ -6,8 +6,8 @@ pub fn inssort(noconfirm: bool, as_dep: bool, pkgs: Vec<String>) {
     // TODO: understand what the fuck is actually going on here
     let mut repo = vec![];
     let mut aur = vec![];
-    let re = Regex::new(r"(\S+)((?:>=|<=)\S+$)").unwrap();
-    let reg = Regex::new(r"((?:>=|<=)\S+$)").unwrap();
+    let re = Regex::new(r"(\S+)((?:>=|<=|>|<)\S+$)").unwrap();
+    let reg = Regex::new(r"((?:>=|<=|>|<)\S+$)").unwrap();
     for pkg in pkgs {
         match pkg.contains('/') {
             true => match pkg.split('/').collect::<Vec<&str>>()[0] == "aur" {
@@ -83,6 +83,8 @@ pub fn inssort(noconfirm: bool, as_dep: bool, pkgs: Vec<String>) {
 
         for a in aur {
             sec(format!("Couldn't find {} in repos. Searching AUR", a));
+            let md = &rpcinfo(&a).make_depends;
+            inssort(noconfirm, true, md.to_vec());
             clone(noconfirm, false, &a);
         }
     } else {
@@ -93,6 +95,8 @@ pub fn inssort(noconfirm: bool, as_dep: bool, pkgs: Vec<String>) {
 
         for a in aur {
             sec(format!("Couldn't find {} in repos. Searching AUR", a));
+            let md = &rpcinfo(&a).make_depends;
+            inssort(noconfirm, true, md.to_vec());
             clone(noconfirm, true, &a);
         }
     }
@@ -184,6 +188,8 @@ pub fn inssort_from_file(noconfirm: bool, as_dep: bool, file: &str) {
 
         for a in aur {
             sec(format!("Couldn't find {} in repos. Searching AUR", a));
+            let md = &rpcinfo(&a).make_depends;
+            inssort(noconfirm, true, md.to_vec());
             clone(noconfirm, false, &a);
         }
     } else {
@@ -194,6 +200,8 @@ pub fn inssort_from_file(noconfirm: bool, as_dep: bool, file: &str) {
 
         for a in aur {
             sec(format!("Couldn't find {} in repos. Searching AUR", a));
+            let md = &rpcinfo(&a).make_depends;
+            inssort(noconfirm, true, md.to_vec());
             clone(noconfirm, true, &a);
         }
     }

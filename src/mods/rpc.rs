@@ -1,4 +1,4 @@
-#[derive(serde::Deserialize, Debug)]
+#[derive(serde::Deserialize, Debug, Clone)]
 pub struct Package {
     #[serde(rename = "Name")]
     pub name: String,
@@ -24,18 +24,16 @@ pub fn rpcinfo(pkg: &str) -> Package {
     let res = reqwest::blocking::get(&format!(
         "https://aur.archlinux.org/rpc/?v=5&type=info&arg={}",
         pkg
-    ))
-    .unwrap();
+    )).unwrap();
 
-    res.json().unwrap()
+    res.json::<SearchResults>().unwrap().results[0].clone()
 }
 
 pub fn rpcsearch(pkg: &str) -> SearchResults {
     let res = reqwest::blocking::get(&format!(
         "https://aur.archlinux.org/rpc/?v=5&type=search&arg={}",
         pkg
-    ))
-    .unwrap();
+    )).unwrap();
 
     res.json().unwrap()
 }

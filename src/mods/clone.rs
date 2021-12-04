@@ -1,15 +1,12 @@
 use crate::{
     err_unrec, inf, mods::database::add_pkg, mods::purge::purge, mods::rpc::*, mods::strs::prompt,
-    mods::strs::sec, mods::strs::succ,
+    mods::strs::sec, mods::strs::succ, inssort
 };
 use moins::Moins;
 use std::{env, fs, path::Path, process::Command};
 
 fn uninstall_make_depend(pkg: &str) {
     // uninstall make depends of a package
-
-    // gets the "make_depends" field of the package using rpcinfo()
-    // let make_depends = rpcinfo(pkg)[0].make_depends;
     let make_depends = rpcinfo(pkg).make_depends;
 
     let explicit_packages = Command::new("pacman")
@@ -52,6 +49,7 @@ pub fn clone(noconfirm: bool, as_dep: bool, pkg: &str) {
     let path = Path::new(&cachedir);
     let pkgdir = format!("{}/{}", &cachedir, &pkg);
     let search = rpcsearch(pkg).results;
+    let package = search.first().unwrap();
     if search.is_empty() {
         err_unrec("No matching AUR packages found".to_string());
     }
@@ -99,15 +97,13 @@ pub fn clone(noconfirm: bool, as_dep: bool, pkg: &str) {
     }
 
     sec("Installing AUR package depends".to_string());
-
-    // inssort(noconfirm, true, package[0].depends.clone());
-
+    
     let clone = std::process::Command::new("git")
         .arg("clone")
         .arg(&url)
         .arg(&pkgdir)
         .status()
-        .expect("couldnt clone repository");
+        .expect("Couldn't clone repository");
     match clone.code() {
         Some(0) => {
             inf(format!("Cloning {} into package directory", pkg));
