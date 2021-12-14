@@ -100,7 +100,7 @@ pub fn add_pkg(from_repo: bool, pkgs: &[&str]) {
             package_name = res.name.clone();
             package_version = res.version.clone();
         }
-        if !from_repo {
+        if !from_repo{
             let result = connection.execute(format!(
                 "
                 INSERT INTO pkgs (name, version) VALUES (\"{}\", \"{}\");
@@ -119,8 +119,8 @@ pub fn add_pkg(from_repo: bool, pkgs: &[&str]) {
                 pkg, "from_repo"
             ));
             match result {
-                Ok(_) => inf(format!("Added {} to database", package_name)),
-                Err(_) => err_unrec(format!("Couldn't add {} to database", package_name)),
+                Ok(_) => inf(format!("Added {} to database", pkg)),
+                Err(_) => err_unrec(format!("Couldn't add {} to database", pkg)),
             }
         }
     }

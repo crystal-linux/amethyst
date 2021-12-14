@@ -46,7 +46,9 @@ pub fn uninstall(noconfirm: bool, pkgs: Vec<String>) {
             }
         }
     }
-    err_unrec(format!("The action you called for tries to uninstall packages: {} . This is disallowed by default as these are important system packages. If you fully know what you are doing and would like to uninstall these, please create an override in /etc/ame/overrides.conf.", matches.join(" ")));
+    if !matches.is_empty() {
+        err_unrec(format!("The action you called for tries to uninstall packages: {} . This is disallowed by default as these are important system packages. If you fully know what you are doing and would like to uninstall these, please create an override in /etc/ame/overrides.conf.", matches.join(" ")));
+    }
 
     if noconfirm {
         let result = Command::new("pacman")
