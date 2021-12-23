@@ -4,12 +4,16 @@ use std::{env, fs};
 pub fn create_database() {
     let homepath = env::var("HOME").unwrap();
     let file = format!("{}/.local/share/ame/aur_pkgs.db", env::var("HOME").unwrap());
-    if !std::path::Path::new(&format!("{}/.local", env::var("HOME").unwrap())).exists() {
-        fs::create_dir_all(format!("{}/.local", env::var("HOME").unwrap()))
-            .expect("Failed to create ~/.local");
-    }
     if !std::path::Path::new(&format!("{}/.local/share/ame/", env::var("HOME").unwrap())).is_dir() {
-        let _cdar = fs::create_dir_all(format!("/{}/.local/ame/", homepath));
+        if !std::path::Path::new(&format!("{}/.local/share", env::var("HOME").unwrap())).exists() {
+            if !std::path::Path::new(&format!("{}/.local", env::var("HOME").unwrap())).exists() {
+                fs::create_dir_all(format!("{}/.local", env::var("HOME").unwrap()))
+                    .expect("Failed to create ~/.local");
+            }
+            fs::create_dir_all(format!("{}/.local/share", env::var("HOME").unwrap()))
+                .expect("Failed to create ~/.local");
+        }
+        let _cdar = fs::create_dir_all(format!("/{}/.local/share/ame/", homepath));
         match _cdar {
             Ok(_) => {
                 inf("Created path for database (previously missing)".to_string());
