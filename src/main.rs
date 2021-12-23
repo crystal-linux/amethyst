@@ -1,4 +1,4 @@
-mod mods;
+mod rpc;
 use clap::{App, Arg, SubCommand};
 
 fn main() {
