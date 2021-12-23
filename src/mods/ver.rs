@@ -9,8 +9,8 @@ pub fn ver() {
     inf(format!("ame - {}", VERSION));
     println!();
     inf("Contributors:".to_string());
-    println!("- axtlos <axtlos@salyut.one>");
-    println!("- jnats <jnats@salyut.one>");
+    println!("- axtlos <axtlos@tar.black>");
+    println!("- jnats <michal@tar.black>");
     println!("- jasio <jasiobene@icloud.com>");
     println!("- generic <mdc028@bucknell.edu>");
     println!();
