@@ -1,19 +1,13 @@
 [package]
 name = "ame"
-version = "0.0.0"
+version = "3.0.0"
 authors = [ "jnats <michal@tar.black>", "axtlos <axtlos@tar.black>" ]
 edition = "2018"
-description = "a fast and efficient aur helper."
+description = "A fast and efficient aur helper."
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-runas = "0.2.1"
-ansi_term = "0.12.1"
-uwuizer = "0.2.1"
-moins = "0.5.0"
-regex = { version = "1.5.4", default-features = false }
-toml = "0.5.8"
-sqlite = "0.26.0"
+clap = "*"
 reqwest = { version = "0.11.7", default-features = false, features = [ "blocking", "json", "default-tls" ] }
 serde = { version = "1.0.90", default-features = false, features = [ "derive" ] }

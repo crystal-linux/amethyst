@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 #[derive(serde::Deserialize, Debug, Clone)]
 pub struct Package {
     #[serde(rename = "Name")]
