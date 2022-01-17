@@ -24,7 +24,7 @@ pub fn sort(input: &[String], verbosity: i32) -> structs::Sorted {
     }
 
     for b in a {
-        #[cfg(linux)]
+        #[cfg(unix)]
         let rs = Command::new("pacman")
             .arg("-Ss")
             .arg(format!("^{}$", &b))
