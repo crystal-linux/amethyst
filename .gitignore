@@ -1,6 +1,6 @@
 target/
 Cargo.lock
 ame
+ame.exe
 .vscode
-aur_pkgs.db
-test.sql
+.idea
