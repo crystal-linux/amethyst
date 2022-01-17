@@ -1,8 +1,8 @@
-mod operations;
 mod internal;
+mod operations;
 
-use clap::{App, Arg, SubCommand};
 use crate::internal::sort;
+use clap::{App, Arg, SubCommand};
 
 fn main() {
     let matches = App::new("Amethyst")
@@ -65,7 +65,9 @@ fn main() {
         .unwrap()
         .values_of("package(s)")
         .unwrap()
-        .into_iter().map(|s| s.to_string()).collect();
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect();
 
     if let true = matches.is_present("install") {
         let sorted = sort(&packages, verbosity);
