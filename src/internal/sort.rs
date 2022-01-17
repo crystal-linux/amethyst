@@ -1,4 +1,5 @@
-use crate::internal::{structs, rpc};
+use crate::internal::{rpc, structs};
+use std::process::{Command, Stdio};
 
 pub fn sort(a: &[String], verbosity: i32) -> structs::Sorted {
     #[allow(unused_mut)]
@@ -21,6 +22,16 @@ pub fn sort(a: &[String], verbosity: i32) -> structs::Sorted {
     }
 
     for b in a {
+        let out = Command::new("pacman")
+            .arg("-Ss")
+            .arg(format!("^{}$", &b))
+            .stdout(Stdio::null())
+            .status()
+            .expect("Something has gone wrong.");
+        if let Some(0) = out.code() {
+            repo.push(b.to_string());
+        }
+
         if rpc::rpcinfo(b.to_string()).found {
             if verbosity >= 1 {
                 eprintln!("{} found in AUR.", b);
@@ -34,9 +45,5 @@ pub fn sort(a: &[String], verbosity: i32) -> structs::Sorted {
         }
     }
 
-    structs::Sorted::new(
-        repo,
-        aur,
-        nf
-    )
+    structs::Sorted::new(repo, aur, nf)
 }
