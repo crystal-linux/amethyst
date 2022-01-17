@@ -1,11 +1,11 @@
 #[derive(Debug)]
 pub struct Sorted {
     #[allow(dead_code)]
-    repo: Vec<String>,
+    pub repo: Vec<String>,
     #[allow(dead_code)]
-    aur: Vec<String>,
+    pub aur: Vec<String>,
     #[allow(dead_code)]
-    nf: Vec<String>
+    pub nf: Vec<String>
 }
 
 impl Sorted {

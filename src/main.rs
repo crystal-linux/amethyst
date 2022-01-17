@@ -58,7 +58,7 @@ fn main() {
         )
         .get_matches();
 
-    let verbosity = matches.occurrences_of("verbose");
+    let verbosity: i32 = matches.occurrences_of("verbose") as i32;
 
     let packages: Vec<String> = matches
         .subcommand_matches("install")
@@ -68,12 +68,7 @@ fn main() {
         .into_iter().map(|s| s.to_string()).collect();
 
     if let true = matches.is_present("install") {
-        println!(
-            "Installing: {}\nVerbosity: {}\n{:?}",
-            packages.join(", "),
-            verbosity,
-            sort(&packages)
-        );
-        operations::install(packages);
+        let sorted = sort(&packages, verbosity);
+        operations::install(sorted.repo, verbosity);
     }
 }
