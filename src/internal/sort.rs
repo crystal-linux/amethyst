@@ -1,11 +1,13 @@
-use crate::internal::{rpc, structs};
+use crate::internal::{clean, rpc, structs};
 use std::process::{Command, Stdio};
 
-pub fn sort(a: &[String], verbosity: i32) -> structs::Sorted {
+pub fn sort(input: &[String], verbosity: i32) -> structs::Sorted {
     #[allow(unused_mut)]
     let mut repo: Vec<String> = vec![];
     let mut aur: Vec<String> = vec![];
     let mut nf: Vec<String> = vec![];
+
+    let a = clean(input, verbosity);
 
     match verbosity {
         0 => {}
@@ -15,16 +17,27 @@ pub fn sort(a: &[String], verbosity: i32) -> structs::Sorted {
         }
         _ => {
             eprintln!("Sorting:");
-            for b in a {
+            for b in &a {
                 eprintln!("{:?}", b);
             }
         }
     }
 
     for b in a {
+        #[cfg(linux)]
         let rs = Command::new("pacman")
             .arg("-Ss")
             .arg(format!("^{}$", &b))
+            .stdout(Stdio::null())
+            .status()
+            .expect("Something has gone wrong.");
+
+        #[cfg(windows)]
+        let rs = Command::new("pwsh")
+            .arg("-nop")
+            .arg("-c")
+            .arg("exit")
+            .arg("1")
             .stdout(Stdio::null())
             .status()
             .expect("Something has gone wrong.");
