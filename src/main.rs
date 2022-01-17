@@ -71,6 +71,12 @@ fn main() {
 
     if let true = matches.is_present("install") {
         let sorted = sort(&packages, verbosity);
+
         operations::install(sorted.repo, verbosity);
+        operations::aur_install(sorted.aur, verbosity);
+        eprintln!(
+            "Couldn't find packages: {} in repos or the AUR.",
+            sorted.nf.join(", ")
+        )
     }
 }
