@@ -22,20 +22,33 @@ pub struct SearchResults {
     pub results: Vec<Package>,
 }
 
-pub fn rpcinfo(pkg: &str) -> Package {
+pub struct InfoResults {
+    pub found: bool,
+    pub package: Option<Package>
+}
+
+pub fn rpcinfo(pkg: String) -> InfoResults {
     let res = reqwest::blocking::get(&format!(
         "https://aur.archlinux.org/rpc/?v=5&type=info&arg={}",
         pkg
-    )).unwrap();
+    )).unwrap().json::<SearchResults>().unwrap();
 
-    res.json::<SearchResults>().unwrap().results[0].clone()
+    if res.results.is_empty() {
+        InfoResults {
+            found: false,
+            package: None
+        }
+    } else {
+        InfoResults {
+            found: true,
+            package: Some(res.results[0].clone())
+        }
+    }
 }
 
-pub fn rpcsearch(pkg: &str) -> SearchResults {
-    let res = reqwest::blocking::get(&format!(
+pub fn rpcsearch(pkg: String) -> SearchResults {
+    reqwest::blocking::get(&format!(
         "https://aur.archlinux.org/rpc/?v=5&type=search&arg={}",
         pkg
-    )).unwrap();
-
-    res.json().unwrap()
+    )).unwrap().json().unwrap()
 }

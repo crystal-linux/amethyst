@@ -1,5 +1,8 @@
-mod rpc;
+mod operations;
+mod internal;
+
 use clap::{App, Arg, SubCommand};
+use crate::internal::sort;
 
 fn main() {
     let matches = App::new("Amethyst")
@@ -12,27 +15,65 @@ fn main() {
                 .help("Sets the level of verbosity"),
         )
         .subcommand(
-            SubCommand::with_name ("install")
+            SubCommand::with_name("install")
                 .about("Installs a package from either the AUR or the PacMan-defined repositories")
+                .aliases(&["-S", "ins"])
                 .arg(
                     Arg::with_name("noconfirm")
                         .short("y")
                         .long("noconfirm")
-                        .help("Do not ask for confirmation before installing the package")
+                        .help("Do not ask for confirmation before installing packages"),
                 )
                 .arg(
-                    Arg::with_name("package")
-                        .help("The name of the package to install")
+                    Arg::with_name("package(s)")
+                        .help("The name of the package(s) to install")
                         .required(true)
-                        .index(1)
-                )    
+                        .multiple(true)
+                        .index(1),
+                ),
+        )
+        .subcommand(
+            SubCommand::with_name("remove")
+                .about("Removes a previously installed package")
+                .aliases(&["-R", "rm"])
+                .arg(
+                    Arg::with_name("noconfirm")
+                        .short("y")
+                        .long("noconfirm")
+                        .help("Do not ask for confirmation before removing packages"),
+                )
+                .arg(
+                    Arg::with_name("recursive")
+                        .short("s")
+                        .long("recursive")
+                        .help("Recursively uninstall orphaned dependencies"),
+                )
+                .arg(
+                    Arg::with_name("package(s)")
+                        .help("The name of the package(s) to remove")
+                        .required(true)
+                        .multiple(true)
+                        .index(1),
+                ),
         )
         .get_matches();
 
-        match matches.occurrences_of("verbose") {
-            0 => println!("No verbosity"),
-            1 => println!("Some extra information"),
-            2 => println!("Plenty of debug text"),
-            _ => println!("Screensaver mode"),
-        }
+    let verbosity = matches.occurrences_of("verbose");
+
+    let packages: Vec<String> = matches
+        .subcommand_matches("install")
+        .unwrap()
+        .values_of("package(s)")
+        .unwrap()
+        .into_iter().map(|s| s.to_string()).collect();
+
+    if let true = matches.is_present("install") {
+        println!(
+            "Installing: {}\nVerbosity: {}\n{:?}",
+            packages.join(", "),
+            verbosity,
+            sort(&packages)
+        );
+        operations::install(packages);
+    }
 }
