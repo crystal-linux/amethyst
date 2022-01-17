@@ -22,21 +22,23 @@ pub fn sort(a: &[String], verbosity: i32) -> structs::Sorted {
     }
 
     for b in a {
-        let out = Command::new("pacman")
+        let rs = Command::new("pacman")
             .arg("-Ss")
             .arg(format!("^{}$", &b))
             .stdout(Stdio::null())
             .status()
             .expect("Something has gone wrong.");
-        if let Some(0) = out.code() {
-            repo.push(b.to_string());
-        }
 
         if rpc::rpcinfo(b.to_string()).found {
             if verbosity >= 1 {
                 eprintln!("{} found in AUR.", b);
             }
             aur.push(b.to_string());
+        } else if let Some(0) = rs.code() {
+            if verbosity >= 1 {
+                eprintln!("{} found in repos.", b)
+            }
+            repo.push(b.to_string());
         } else {
             if verbosity >= 1 {
                 eprintln!("{} not found.", b);
