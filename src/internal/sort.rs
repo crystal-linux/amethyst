@@ -18,7 +18,7 @@ pub fn sort(input: &[String], verbosity: i32) -> structs::Sorted {
         _ => {
             eprintln!("Sorting:");
             for b in &a {
-                eprintln!("{:?}", b);
+                eprintln!("{}", b);
             }
         }
     }

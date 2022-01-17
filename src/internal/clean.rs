@@ -1,7 +1,7 @@
 use regex::Regex;
 
 pub fn clean(a: &[String], verbosity: i32) -> Vec<String> {
-    let r = Regex::new(r"(\S+)((?:>=|<=|>|<|=>|=<)\S+$)").unwrap();
+    let r = Regex::new(r"(\S+)((?:>=|<=|>|<)\S+$)").unwrap();
 
     let mut cleaned: Vec<String> = vec![];
 
@@ -14,8 +14,21 @@ pub fn clean(a: &[String], verbosity: i32) -> Vec<String> {
         }
     }
 
-    if verbosity >= 1 {
-        eprintln!("Cleaned {:?}\nInto: {:?}", a, cleaned);
+    match verbosity {
+        0 => {}
+        1 => {
+            eprintln!("Cleaned: {:?}\nInto: {:?}", a, cleaned);
+        }
+        _ => {
+            eprintln!("Cleaned:");
+            for b in a {
+                eprintln!("{}", b);
+            }
+            eprintln!("Into:");
+            for c in &cleaned {
+                eprintln!("{}", c);
+            }
+        }
     }
 
     cleaned
