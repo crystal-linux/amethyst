@@ -1,7 +1,8 @@
+mod database;
 mod internal;
 mod operations;
 
-use crate::internal::{sort, structs::Options};
+use crate::internal::{init, sort, structs::Options};
 use clap::{App, AppSettings, Arg, ArgSettings, SubCommand};
 use std::process::exit;
 
@@ -85,6 +86,8 @@ fn main() {
         verbosity,
         noconfirm,
     };
+
+    init(options);
 
     let packages: Vec<String> = matches
         .subcommand()
