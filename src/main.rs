@@ -7,6 +7,14 @@ use clap::{App, AppSettings, Arg, ArgSettings, SubCommand};
 use std::process::exit;
 
 fn main() {
+    extern "C" {
+        fn geteuid() -> u32;
+    }
+
+    if unsafe { geteuid() } == 0 {
+        panic!("Running amethyst as root is disallowed as it can lead to system breakage. Instead, amethyst will prompt you when it needs superuser permissions.")
+    }
+
     let matches = App::new("Amethyst")
         .version(env!("CARGO_PKG_VERSION"))
         .about(env!("CARGO_PKG_DESCRIPTION"))
@@ -81,6 +89,7 @@ fn main() {
             AppSettings::GlobalVersion,
             AppSettings::VersionlessSubcommands,
             AppSettings::ArgRequiredElseHelp,
+            AppSettings::InferSubcommands,
         ])
         .get_matches();
 
