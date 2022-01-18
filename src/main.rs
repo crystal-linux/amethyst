@@ -1,8 +1,9 @@
 mod internal;
 mod operations;
 
-use crate::internal::sort;
-use clap::{App, Arg, SubCommand};
+use crate::internal::{sort, structs::Options};
+use clap::{App, AppSettings, Arg, ArgSettings, SubCommand};
+use std::process::exit;
 
 fn main() {
     let matches = App::new("Amethyst")
@@ -11,19 +12,21 @@ fn main() {
         .arg(
             Arg::with_name("verbose")
                 .short("v")
+                .long("verbose")
                 .multiple(true)
+                .set(ArgSettings::Global)
                 .help("Sets the level of verbosity"),
+        )
+        .arg(
+            Arg::with_name("noconfirm")
+                .long("noconfirm")
+                .set(ArgSettings::Global)
+                .help("Complete operation without prompting user"),
         )
         .subcommand(
             SubCommand::with_name("install")
                 .about("Installs a package from either the AUR or the PacMan-defined repositories")
                 .aliases(&["-S", "ins"])
-                .arg(
-                    Arg::with_name("noconfirm")
-                        .short("y")
-                        .long("noconfirm")
-                        .help("Do not ask for confirmation before installing packages"),
-                )
                 .arg(
                     Arg::with_name("package(s)")
                         .help("The name of the package(s) to install")
@@ -35,19 +38,7 @@ fn main() {
         .subcommand(
             SubCommand::with_name("remove")
                 .about("Removes a previously installed package")
-                .aliases(&["-R", "rm"])
-                .arg(
-                    Arg::with_name("noconfirm")
-                        .short("y")
-                        .long("noconfirm")
-                        .help("Do not ask for confirmation before removing packages"),
-                )
-                .arg(
-                    Arg::with_name("recursive")
-                        .short("s")
-                        .long("recursive")
-                        .help("Recursively uninstall orphaned dependencies"),
-                )
+                .aliases(&["-R", "-Rs", "rm"])
                 .arg(
                     Arg::with_name("package(s)")
                         .help("The name of the package(s) to remove")
@@ -56,12 +47,48 @@ fn main() {
                         .index(1),
                 ),
         )
+        .subcommand(
+            SubCommand::with_name("search")
+                .about("Searches for the relevant packages in both the AUR and repos.")
+                .aliases(&["-Ss", "sea"])
+                .arg(
+                    Arg::with_name("aur")
+                        .short("a")
+                        .long("aur")
+                        .help("Search only the AUR for the package"),
+                )
+                .arg(
+                    Arg::with_name("repo")
+                        .short("r")
+                        .long("repo")
+                        .help("Searches only local repos for the package"),
+                )
+                .arg(
+                    Arg::with_name("package(s)")
+                        .help("The name of the package to search for")
+                        .required(true)
+                        .multiple(false)
+                        .index(1),
+                ),
+        )
+        .settings(&[
+            AppSettings::GlobalVersion,
+            AppSettings::VersionlessSubcommands,
+            AppSettings::ArgRequiredElseHelp,
+        ])
         .get_matches();
 
     let verbosity: i32 = matches.occurrences_of("verbose") as i32;
+    let noconfirm: bool = matches.is_present("noconfirm");
+
+    let options = Options {
+        verbosity,
+        noconfirm,
+    };
 
     let packages: Vec<String> = matches
-        .subcommand_matches("install")
+        .subcommand()
+        .1
         .unwrap()
         .values_of("package(s)")
         .unwrap()
@@ -70,13 +97,52 @@ fn main() {
         .collect();
 
     if let true = matches.is_present("install") {
-        let sorted = sort(&packages, verbosity);
+        let sorted = sort(&packages, options);
 
-        operations::install(sorted.repo, verbosity);
-        operations::aur_install(sorted.aur, verbosity);
-        eprintln!(
-            "Couldn't find packages: {} in repos or the AUR.",
-            sorted.nf.join(", ")
-        )
+        operations::install(sorted.repo, options);
+        operations::aur_install(sorted.aur, options);
+        if !sorted.nf.is_empty() {
+            eprintln!(
+                "Couldn't find packages: {} in repos or the AUR.",
+                sorted.nf.join(", ")
+            );
+        }
+        exit(0);
+    }
+
+    if let true = matches.is_present("remove") {
+        operations::uninstall(packages, options);
+        exit(0);
+    }
+
+    if let true = matches.is_present("search") {
+        if matches
+            .subcommand_matches("search")
+            .unwrap()
+            .is_present("aur")
+        {
+            operations::aur_search(&packages[0], options);
+        }
+        if matches
+            .subcommand_matches("search")
+            .unwrap()
+            .is_present("repo")
+        {
+            operations::search(&packages[0], options);
+        }
+
+        if !matches
+            .subcommand_matches("search")
+            .unwrap()
+            .is_present("repo")
+            && !matches
+                .subcommand_matches("search")
+                .unwrap()
+                .is_present("aur")
+        {
+            operations::search(&packages[0], options);
+            operations::aur_search(&packages[0], options);
+        }
+        exit(0);
     }
 }

@@ -1,12 +1,14 @@
+use crate::Options;
+
 mod clean;
 pub mod rpc;
 mod sort;
 pub mod structs;
 
-pub fn sort(a: &[String], verbosity: i32) -> structs::Sorted {
-    sort::sort(a, verbosity)
+pub fn sort(a: &[String], options: Options) -> structs::Sorted {
+    sort::sort(a, options)
 }
 
-pub fn clean(a: &[String], verbosity: i32) -> Vec<String> {
-    clean::clean(a, verbosity)
+pub fn clean(a: &[String], options: Options) -> Vec<String> {
+    clean::clean(a, options)
 }

@@ -1,13 +1,14 @@
 use crate::internal::{clean, rpc, structs};
+use crate::Options;
 use std::process::{Command, Stdio};
 
-pub fn sort(input: &[String], verbosity: i32) -> structs::Sorted {
-    #[allow(unused_mut)]
+pub fn sort(input: &[String], options: Options) -> structs::Sorted {
     let mut repo: Vec<String> = vec![];
     let mut aur: Vec<String> = vec![];
     let mut nf: Vec<String> = vec![];
+    let verbosity = options.verbosity;
 
-    let a = clean(input, verbosity);
+    let a = clean(input, options);
 
     match verbosity {
         0 => {}

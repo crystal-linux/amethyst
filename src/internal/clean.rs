@@ -1,9 +1,10 @@
+use crate::Options;
 use regex::Regex;
 
-pub fn clean(a: &[String], verbosity: i32) -> Vec<String> {
+pub fn clean(a: &[String], options: Options) -> Vec<String> {
     let r = Regex::new(r"(\S+)((?:>=|<=|>|<)\S+$)").unwrap();
-
     let mut cleaned: Vec<String> = vec![];
+    let verbosity = options.verbosity;
 
     for b in a {
         if r.captures_iter(b).count() > 0 {

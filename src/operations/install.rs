@@ -1,15 +1,34 @@
-pub fn install(a: Vec<String>, verbosity: i32) {
+use crate::Options;
+
+pub fn install(mut a: Vec<String>, options: Options) {
+    let b = a.clone();
+    if options.noconfirm {
+        a.push("--noconfirm".to_string());
+    }
+    let verbosity = options.verbosity;
     match verbosity {
-        0 => {},
+        0 => {}
         1 => {
             eprintln!("Installing from repos:");
-            eprintln!("{:?}", &a);
+            eprintln!("{:?}", &b);
         }
         _ => {
             eprintln!("Installing from repos:");
-            for b in a {
+            for b in &a {
                 eprintln!("{:?}", b);
             }
+        }
+    }
+
+    let r = runas::Command::new("pacman")
+        .arg("-S")
+        .args(&a)
+        .status()
+        .expect("Something has gone wrong.");
+
+    if let Some(x) = r.code() {
+        if verbosity >= 1 {
+            eprintln!("Installing packages: {:?} exited with code {}.", &b, x)
         }
     }
 }
