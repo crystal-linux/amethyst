@@ -4,6 +4,7 @@ mod aur_install;
 mod install;
 mod search;
 mod uninstall;
+mod upgrade;
 
 pub fn install(a: Vec<String>, options: Options) {
     install::install(a, options);
@@ -23,4 +24,8 @@ pub fn aur_install(a: Vec<String>, options: Options) {
 
 pub fn aur_search(a: &str, options: Options) {
     search::aur_search(a, options);
+}
+
+pub fn upgrade(options: Options) {
+    upgrade::upgrade(options);
 }

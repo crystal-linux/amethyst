@@ -1,4 +1,6 @@
 use crate::Options;
+use std::path::Path;
+use std::{env, fs};
 
 pub fn uninstall(mut a: Vec<String>, options: Options) {
     let b = a.clone();
@@ -29,6 +31,21 @@ pub fn uninstall(mut a: Vec<String>, options: Options) {
     if let Some(x) = r.code() {
         if verbosity >= 1 {
             eprintln!("Uninstalling packages: {:?} exited with code {}.", &b, x)
+        }
+    }
+
+    for b in a {
+        crate::database::remove(&b, options);
+        if Path::new(&format!("{}/.cache/ame/{}", env::var("HOME").unwrap(), b)).exists() {
+            if verbosity >= 1 {
+                eprintln!("Old cache directory found, deleting")
+            }
+            fs::remove_dir_all(Path::new(&format!(
+                "{}/.cache/ame/{}",
+                env::var("HOME").unwrap(),
+                b
+            )))
+            .unwrap();
         }
     }
 }

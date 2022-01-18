@@ -72,6 +72,11 @@ fn main() {
                         .index(1),
                 ),
         )
+        .subcommand(
+            SubCommand::with_name("upgrade")
+                .about("Upgrades locally installed packages to their latest versions")
+                .aliases(&["-Syu", "upg"]),
+        )
         .settings(&[
             AppSettings::GlobalVersion,
             AppSettings::VersionlessSubcommands,
@@ -85,6 +90,7 @@ fn main() {
     let options = Options {
         verbosity,
         noconfirm,
+        asdeps: false,
     };
 
     init(options);
@@ -102,8 +108,12 @@ fn main() {
     if let true = matches.is_present("install") {
         let sorted = sort(&packages, options);
 
-        operations::install(sorted.repo, options);
-        operations::aur_install(sorted.aur, options);
+        if !sorted.repo.is_empty() {
+            operations::install(sorted.repo, options);
+        }
+        if !sorted.aur.is_empty() {
+            operations::aur_install(sorted.aur, options);
+        }
         if !sorted.nf.is_empty() {
             eprintln!(
                 "Couldn't find packages: {} in repos or the AUR.",
@@ -115,6 +125,11 @@ fn main() {
 
     if let true = matches.is_present("remove") {
         operations::uninstall(packages, options);
+        exit(0);
+    }
+
+    if let true = matches.is_present("upgrade") {
+        operations::upgrade(options);
         exit(0);
     }
 

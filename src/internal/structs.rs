@@ -19,15 +19,5 @@ impl Sorted {
 pub struct Options {
     pub verbosity: i32,
     pub noconfirm: bool,
-}
-
-impl Options {
-    #[allow(dead_code)]
-    pub fn new(verbosity: i32, noconfirm: bool) -> Self {
-        let a: Options = Options {
-            verbosity,
-            noconfirm,
-        };
-        a
-    }
+    pub asdeps: bool,
 }

@@ -8,11 +8,11 @@ pub struct Package {
     pub version: String,
     #[serde(rename = "Description")]
     pub description: Option<String>,
-    #[serde(default)]
     #[serde(rename = "Depends")]
-    pub depends: Vec<String>,
     #[serde(default)]
+    pub depends: Vec<String>,
     #[serde(rename = "MakeDepends")]
+    #[serde(default)]
     pub make_depends: Vec<String>,
 }
 
@@ -22,26 +22,32 @@ pub struct SearchResults {
     pub results: Vec<Package>,
 }
 
+#[derive(Clone)]
 pub struct InfoResults {
     pub found: bool,
-    pub package: Option<Package>
+    pub package: Option<Package>,
 }
+
+pub const URL: &str = "https://aur.archlinux.org/";
 
 pub fn rpcinfo(pkg: String) -> InfoResults {
     let res = reqwest::blocking::get(&format!(
         "https://aur.archlinux.org/rpc/?v=5&type=info&arg={}",
         pkg
-    )).unwrap().json::<SearchResults>().unwrap();
+    ))
+    .unwrap()
+    .json::<SearchResults>()
+    .unwrap();
 
     if res.results.is_empty() {
         InfoResults {
             found: false,
-            package: None
+            package: None,
         }
     } else {
         InfoResults {
             found: true,
-            package: Some(res.results[0].clone())
+            package: Some(res.results[0].clone()),
         }
     }
 }
@@ -50,5 +56,8 @@ pub fn rpcsearch(pkg: String) -> SearchResults {
     reqwest::blocking::get(&format!(
         "https://aur.archlinux.org/rpc/?v=5&type=search&arg={}",
         pkg
-    )).unwrap().json().unwrap()
+    ))
+    .unwrap()
+    .json()
+    .unwrap()
 }

@@ -20,6 +20,10 @@ pub fn init(options: Options) {
         }
     }
 
+    if !Path::new(&format!("{}/.local/share/ame/db.sqlite", homedir)).exists() {
+        crate::database::init(options);
+    }
+
     if !Path::new(&format!("{}/.cache/ame/", homedir)).exists() {
         let r = std::fs::create_dir_all(format!("{}/.cache/ame", homedir));
         match r {

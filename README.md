@@ -15,18 +15,13 @@ Made for Crystal, compatible with any Arch-based Linux distribution.</p>
 ![](screenshot.png)
 
 ## Basic usage
-| Action | FreeBSD pkg-style alias | Pacman-style flag(s) |
-| ------ | ------ | ------ |
-| Install a package | ame ins | ame -S |
-| Remove a package | ame rm | ame -R |
-| Remove a package with its dependencies | ame purge | ame -Rs |
-| Update repository | ame upd | ame -Sy |
-| Upgrade a package | ame upg | ame -Syu |
-| Search for a package in general | ame sea | ame -Ss |
-| Search for a package in the official arch repos | ame repsea | ame -Sr |
-| Search for a package in aur | ame aursea | ame -Sa |
+| Action               | FreeBSD pkg-style alias | Pacman-style flag(s) |
+|----------------------|-------------------------|----------------------|
+| Install a package    | ame ins/install         | ame -S               |
+| Remove a package     | ame rm/remove           | ame -R/-Rs           |
+| Upgrade a package    | ame upg/upgrade         | ame -Syu             |
+| Search for a package | ame sea                 | ame -Ss              |
 
-You can also use any pacman flag!
 
 ## How to build:
 (Install cargo)
@@ -48,4 +43,3 @@ echo "AME_UWU=YES" >> ~/.zshrc # for zsh
 echo "AME_UWU=YES" >> ~/.bashrc # for bash
 set -Ux AME_UWU YES # for fish
 ```
-self explanatory

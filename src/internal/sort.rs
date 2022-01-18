@@ -25,20 +25,9 @@ pub fn sort(input: &[String], options: Options) -> structs::Sorted {
     }
 
     for b in a {
-        #[cfg(unix)]
         let rs = Command::new("pacman")
             .arg("-Ss")
             .arg(format!("^{}$", &b))
-            .stdout(Stdio::null())
-            .status()
-            .expect("Something has gone wrong.");
-
-        #[cfg(windows)]
-        let rs = Command::new("pwsh")
-            .arg("-nop")
-            .arg("-c")
-            .arg("exit")
-            .arg("1")
             .stdout(Stdio::null())
             .status()
             .expect("Something has gone wrong.");
