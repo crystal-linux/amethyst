@@ -26,11 +26,11 @@ pub fn uninstall(mut a: Vec<String>, options: Options) {
         .arg("-Rs")
         .args(&a)
         .status()
-        .expect("Something has gone wrong.");
+        .expect("Something has gone wrong");
 
     if let Some(x) = r.code() {
         if verbosity >= 1 {
-            eprintln!("Uninstalling packages: {:?} exited with code {}.", &b, x)
+            eprintln!("Uninstalling packages: {:?} exited with code {}", &b, x)
         }
     }
 

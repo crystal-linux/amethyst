@@ -15,7 +15,7 @@ pub fn query(a: &str, options: Options) -> Vec<Package> {
         "{}/.local/share/ame/db.sqlite",
         env::var("HOME").unwrap()
     )))
-    .expect("Couldn't connect to database.");
+    .expect("Couldn't connect to database");
 
     if verbosity >= 1 {
         eprintln!("Querying database for input")
@@ -44,7 +44,7 @@ pub fn query(a: &str, options: Options) -> Vec<Package> {
                     .collect::<Vec<String>>(),
             })
         })
-        .expect("Couldn't query database for packages.");
+        .expect("Couldn't query database for packages");
 
     if verbosity >= 1 {
         eprintln!("Retrieved results");

@@ -12,7 +12,7 @@ fn main() {
     }
 
     if unsafe { geteuid() } == 0 {
-        panic!("Running amethyst as root is disallowed as it can lead to system breakage. Instead, amethyst will prompt you when it needs superuser permissions.")
+        panic!("Running amethyst as root is disallowed as it can lead to system breakage. Instead, amethyst will prompt you when it needs superuser permissions")
     }
 
     let matches = App::new("Amethyst")
@@ -58,7 +58,7 @@ fn main() {
         )
         .subcommand(
             SubCommand::with_name("search")
-                .about("Searches for the relevant packages in both the AUR and repos.")
+                .about("Searches for the relevant packages in both the AUR and repos")
                 .aliases(&["-Ss", "sea"])
                 .arg(
                     Arg::with_name("aur")
@@ -125,7 +125,7 @@ fn main() {
         }
         if !sorted.nf.is_empty() {
             eprintln!(
-                "Couldn't find packages: {} in repos or the AUR.",
+                "Couldn't find packages: {} in repos or the AUR",
                 sorted.nf.join(", ")
             );
         }

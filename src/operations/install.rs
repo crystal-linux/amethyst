@@ -32,7 +32,7 @@ pub fn install(mut a: Vec<String>, options: Options) {
 
     if let Some(x) = r.code() {
         if verbosity >= 1 {
-            eprintln!("Installing packages: {:?} exited with code {}.", &b, x)
+            eprintln!("Installing packages: {:?} exited with code {}", &b, x)
         }
     }
 }

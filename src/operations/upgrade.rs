@@ -19,7 +19,7 @@ pub fn upgrade(options: Options) {
     Command::new("pacman")
         .args(&pacman_args)
         .status()
-        .expect("Something has gone wrong.");
+        .expect("Something has gone wrong");
 
     if verbosity >= 1 {
         eprintln!("Upgrading AUR packages")

@@ -9,7 +9,7 @@ pub fn add(pkg: Package, options: Options) {
         "{}/.local/share/ame/db.sqlite",
         env::var("HOME").unwrap()
     )))
-    .expect("Couldn't connect to database.");
+    .expect("Couldn't connect to database");
 
     if options.verbosity >= 1 {
         eprintln!("Adding package {} to database", pkg.name);

@@ -44,7 +44,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             .arg("clone")
             .arg(format!("{}/{}", url, pkg))
             .status()
-            .expect("Something has gone wrong.");
+            .expect("Something has gone wrong");
 
         if verbosity >= 1 {
             eprintln!(
@@ -73,7 +73,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
 
         if !sorted.nf.is_empty() {
             panic!(
-                "Could not find dependencies {} for package {}. Aborting",
+                "Could not find dependencies {} for package {}, aborting",
                 sorted.nf.join(", "),
                 pkg
             );
@@ -107,7 +107,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         Command::new("makepkg")
             .args(&makepkg_args)
             .status()
-            .expect("Something has gone wrong.");
+            .expect("Something has gone wrong");
 
         if makepkg_args.contains(&"--asdeps") {
             set_current_dir(&cachedir).unwrap();

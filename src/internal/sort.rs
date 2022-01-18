@@ -30,21 +30,21 @@ pub fn sort(input: &[String], options: Options) -> structs::Sorted {
             .arg(format!("^{}$", &b))
             .stdout(Stdio::null())
             .status()
-            .expect("Something has gone wrong.");
+            .expect("Something has gone wrong");
 
         if rpc::rpcinfo(b.to_string()).found {
             if verbosity >= 1 {
-                eprintln!("{} found in AUR.", b);
+                eprintln!("{} found in AUR", b);
             }
             aur.push(b.to_string());
         } else if let Some(0) = rs.code() {
             if verbosity >= 1 {
-                eprintln!("{} found in repos.", b)
+                eprintln!("{} found in repos", b)
             }
             repo.push(b.to_string());
         } else {
             if verbosity >= 1 {
-                eprintln!("{} not found.", b);
+                eprintln!("{} not found", b);
             }
             nf.push(b.to_string());
         }
