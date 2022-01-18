@@ -22,10 +22,10 @@ pub fn query(a: &str, options: Options) -> Vec<Package> {
     }
 
     let mut rs = conn
-        .prepare("SELECT name, version, description, depends, make_depends FROM packages WHERE name LIKE \"?\"")
+        .prepare("SELECT name, version, description, depends, make_depends FROM packages WHERE name LIKE :a;")
         .unwrap();
     let packages_iter = rs
-        .query_map([a], |row| {
+        .query_map(&[(":a", &a)], |row| {
             Ok(Package {
                 name: row.get(0).unwrap(),
                 version: row.get(1).unwrap(),
