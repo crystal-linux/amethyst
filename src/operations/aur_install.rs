@@ -1,11 +1,12 @@
-use crate::internal::crash;
-use crate::internal::rpc::rpcinfo;
-use crate::{info, log, Options};
 use std::env;
 use std::env::set_current_dir;
 use std::fs::remove_dir_all;
 use std::path::Path;
 use std::process::{Command, Stdio};
+
+use crate::internal::crash;
+use crate::internal::rpc::rpcinfo;
+use crate::{info, log, Options};
 
 pub fn aur_install(a: Vec<String>, options: Options) {
     let url = crate::internal::rpc::URL;

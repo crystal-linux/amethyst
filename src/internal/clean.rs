@@ -1,6 +1,7 @@
+use regex::Regex;
+
 use crate::internal::strings::log;
 use crate::Options;
-use regex::Regex;
 
 pub fn clean(a: &[String], options: Options) -> Vec<String> {
     let r = Regex::new(r"(\S+)((?:>=|<=|>|<)\S+$)").unwrap();

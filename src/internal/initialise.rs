@@ -1,7 +1,8 @@
-use crate::internal::strings::{crash, log};
-use crate::Options;
 use std::env;
 use std::path::Path;
+
+use crate::internal::strings::{crash, log};
+use crate::Options;
 
 pub fn init(options: Options) {
     let verbosity = options.verbosity;

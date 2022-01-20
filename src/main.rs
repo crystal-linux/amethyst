@@ -1,14 +1,16 @@
+use std::io;
+use std::process::exit;
+
+use clap::{App, AppSettings, Arg, ArgMatches, ArgSettings, Shell, SubCommand};
+
+use crate::internal::{crash, info, init, log, sort, structs::Options};
+
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 mod database;
 mod internal;
 mod operations;
-
-use crate::internal::{crash, info, init, log, sort, structs::Options};
-use clap::{App, AppSettings, Arg, ArgMatches, ArgSettings, Shell, SubCommand};
-use std::io;
-use std::process::exit;
 
 fn main() {
     extern "C" {

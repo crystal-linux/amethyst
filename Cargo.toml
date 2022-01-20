@@ -1,7 +1,7 @@
 [package]
 name = "Amethyst"
 version = "3.0.0"
-authors = [ "michal <michal@tar.black>", "axtlos <axtlos@tar.black>" ]
+authors = ["michal <michal@tar.black>", "axtlos <axtlos@tar.black>"]
 edition = "2021"
 description = "A fast and efficient AUR helper."
 license-file = "LICENSE.md"
@@ -12,32 +12,32 @@ pkg-warner = []
 [[bin]]
 name = "apt"
 path = "src/bin/apt.rs"
-required-features = [ "pkg-warner" ]
+required-features = ["pkg-warner"]
 
 [[bin]]
 name = "apt-get"
 path = "src/bin/apt-get.rs"
-required-features = [ "pkg-warner" ]
+required-features = ["pkg-warner"]
 
 [[bin]]
 name = "dnf"
 path = "src/bin/dnf.rs"
-required-features = [ "pkg-warner" ]
+required-features = ["pkg-warner"]
 
 [[bin]]
 name = "eopkg"
 path = "src/bin/eopkg.rs"
-required-features = [ "pkg-warner" ]
+required-features = ["pkg-warner"]
 
 [[bin]]
 name = "yum"
 path = "src/bin/yum.rs"
-required-features = [ "pkg-warner" ]
+required-features = ["pkg-warner"]
 
 [[bin]]
 name = "zypper"
 path = "src/bin/zypper.rs"
-required-features = [ "pkg-warner" ]
+required-features = ["pkg-warner"]
 
 [[bin]]
 name = "ame"
@@ -51,10 +51,10 @@ codegen-units = 1
 
 [dependencies]
 mimalloc = { version = "0.1.27", default-features = false }
-clap = { version = "2.34.0", default-features = false, features = [ "suggestions" ] }
-regex = { version = "1.5.4", default-features = false, features = [ "std", "unicode-perl" ] }
+clap = { version = "2.34.0", default-features = false, features = ["suggestions"] }
+regex = { version = "1.5.4", default-features = false, features = ["std", "unicode-perl"] }
 runas = "0.2.1"
 rusqlite = { version = "0.26.3", default-features = false }
-ureq = { version = "2.4.0", default-features = false, features = [ "native-tls", "json" ] }
-serde = { version = "1.0.90", default-features = false, features = [ "derive", "serde_derive" ] }
+ureq = { version = "2.4.0", default-features = false, features = ["native-tls", "json"] }
+serde = { version = "1.0.90", default-features = false, features = ["derive", "serde_derive"] }
 native-tls = "0.2.8"

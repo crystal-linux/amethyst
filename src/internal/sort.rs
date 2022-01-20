@@ -1,7 +1,8 @@
+use std::process::{Command, Stdio};
+
 use crate::internal::strings::log;
 use crate::internal::{clean, rpc, structs};
 use crate::Options;
-use std::process::{Command, Stdio};
 
 pub fn sort(input: &[String], options: Options) -> structs::Sorted {
     let mut repo: Vec<String> = vec![];

@@ -1,6 +1,7 @@
-use crate::{log, Options};
 use std::path::Path;
 use std::{env, fs};
+
+use crate::{log, Options};
 
 pub fn uninstall(mut a: Vec<String>, options: Options) {
     let b = a.clone();

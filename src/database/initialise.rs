@@ -1,7 +1,9 @@
-use crate::{crash, log, Options};
-use rusqlite::Connection;
 use std::env;
 use std::path::Path;
+
+use rusqlite::Connection;
+
+use crate::{crash, log, Options};
 
 pub fn init(options: Options) {
     let path = format!("{}/.local/share/ame/db.sqlite", env::var("HOME").unwrap());

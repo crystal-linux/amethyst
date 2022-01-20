@@ -15,6 +15,7 @@ Made for Crystal, compatible with any Arch-based Linux distribution.</p>
 ![](screenshot.png)
 
 ## Basic usage
+
 | Action               | FreeBSD pkg-style alias | Pacman-style flag(s) |
 |----------------------|-------------------------|----------------------|
 | Install a package    | ame ins/install         | ame -S               |
@@ -22,18 +23,21 @@ Made for Crystal, compatible with any Arch-based Linux distribution.</p>
 | Upgrade a package    | ame upg/upgrade         | ame -Syu             |
 | Search for a package | ame sea                 | ame -Ss              |
 
-
 ## How to build:
+
 (Install cargo)
 
 For release:
-  - `make clean release`
- 
+
+- `make clean release`
+
 For general debug/test:
-  - `make debug`
+
+- `make debug`
 
 Clean all build directories:
-  - `make clean`
+
+- `make clean`
 
 <br>
 <br>

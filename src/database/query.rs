@@ -1,8 +1,10 @@
-use crate::internal::rpc::Package;
-use crate::{log, Options};
-use rusqlite::Connection;
 use std::env;
 use std::path::Path;
+
+use rusqlite::Connection;
+
+use crate::internal::rpc::Package;
+use crate::{log, Options};
 
 pub fn query(a: &str, options: Options) -> Vec<Package> {
     let verbosity = options.verbosity;

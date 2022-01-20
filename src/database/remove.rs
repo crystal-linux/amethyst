@@ -1,7 +1,9 @@
-use crate::{log, Options};
-use rusqlite::Connection;
 use std::env;
 use std::path::Path;
+
+use rusqlite::Connection;
+
+use crate::{log, Options};
 
 pub fn remove(pkg: &str, options: Options) {
     let conn = Connection::open(Path::new(&format!(
