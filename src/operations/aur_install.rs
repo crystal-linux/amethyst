@@ -4,8 +4,8 @@ use std::fs::remove_dir_all;
 use std::path::Path;
 use std::process::{Command, Stdio};
 
-use crate::internal::crash;
 use crate::internal::rpc::rpcinfo;
+use crate::internal::{crash, prompt};
 use crate::{info, log, Options};
 
 pub fn aur_install(a: Vec<String>, options: Options) {
@@ -84,14 +84,20 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         }
 
         if !noconfirm {
+            let p = prompt(
+                "Would you like to view or edit {}'s PKGBUILD?".to_string(),
+                false,
+            );
             let editor = env::var("EDITOR").unwrap_or_else(|_| "nano".parse().unwrap());
 
-            Command::new(editor)
-                .arg(format!("{}/PKGBUILD", pkg))
-                .spawn()
-                .unwrap()
-                .wait()
-                .unwrap();
+            if p {
+                Command::new(editor)
+                    .arg(format!("{}/PKGBUILD", pkg))
+                    .spawn()
+                    .unwrap()
+                    .wait()
+                    .unwrap();
+            }
         }
 
         // dep installing
@@ -122,10 +128,8 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             );
         }
 
-        if makepkg_args.contains(&"--asdeps") {
-            set_current_dir(&cachedir).unwrap();
-            remove_dir_all(format!("{}/{}", cachedir, pkg)).unwrap();
-        }
+        set_current_dir(&cachedir).unwrap();
+        remove_dir_all(format!("{}/{}", cachedir, &pkg)).unwrap();
 
         // pushes package to database
         crate::database::add(rpcres.package.unwrap(), options);

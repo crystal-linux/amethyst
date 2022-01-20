@@ -18,6 +18,6 @@ pub fn init(options: Options) {
     initialise::init(options);
 }
 
-pub fn query(a: &str, options: Options) -> Vec<Package> {
-    query::query(a, options)
+pub fn query(options: Options) -> Vec<Package> {
+    query::query(options)
 }

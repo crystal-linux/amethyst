@@ -2,7 +2,7 @@ use runas::Command;
 
 use crate::internal::rpc::rpcinfo;
 use crate::operations::aur_install::aur_install;
-use crate::{log, Options};
+use crate::{info, log, Options};
 
 pub fn upgrade(options: Options) {
     let verbosity = options.verbosity;
@@ -26,7 +26,11 @@ pub fn upgrade(options: Options) {
         log("Upgrading AUR packages".to_string());
     }
 
-    let res = crate::database::query("\"%\"", options);
+    let res = crate::database::query(options);
+
+    if verbosity >= 1 {
+        log(format!("{:?}", &res));
+    }
 
     let mut aur_upgrades = vec![];
     for r in res {
@@ -37,5 +41,9 @@ pub fn upgrade(options: Options) {
         }
     }
 
-    aur_install(aur_upgrades, options);
+    if !aur_upgrades.is_empty() {
+        aur_install(aur_upgrades, options);
+    } else {
+        info("No upgrades available for installed AUR packages".to_string());
+    }
 }

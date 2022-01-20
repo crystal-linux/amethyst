@@ -6,7 +6,7 @@ use rusqlite::Connection;
 use crate::internal::rpc::Package;
 use crate::{log, Options};
 
-pub fn query(a: &str, options: Options) -> Vec<Package> {
+pub fn query(options: Options) -> Vec<Package> {
     let verbosity = options.verbosity;
 
     if verbosity >= 1 {
@@ -23,11 +23,9 @@ pub fn query(a: &str, options: Options) -> Vec<Package> {
         log("Querying database for input".to_string());
     }
 
-    let mut rs = conn
-        .prepare("SELECT name, version, description, depends, make_depends FROM packages WHERE name LIKE :a;")
-        .unwrap();
+    let mut rs = conn.prepare("SELECT * FROM packages;").unwrap();
     let packages_iter = rs
-        .query_map(&[(":a", &a)], |row| {
+        .query_map([], |row| {
             Ok(Package {
                 name: row.get(0).unwrap(),
                 version: row.get(1).unwrap(),
