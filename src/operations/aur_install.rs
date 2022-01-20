@@ -85,7 +85,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
 
         if !noconfirm {
             let p = prompt(
-                "Would you like to view or edit {}'s PKGBUILD?".to_string(),
+                format!("Would you like to view or edit {}'s PKGBUILD?", pkg),
                 false,
             );
             let editor = env::var("EDITOR").unwrap_or_else(|_| "nano".parse().unwrap());

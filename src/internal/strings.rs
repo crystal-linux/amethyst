@@ -7,7 +7,7 @@ use std::{env, io};
 use crate::uwu;
 
 pub fn info(a: String) {
-    let a = if env::var("AME_UWU").unwrap_or("".to_string()) == "true" {
+    let a = if env::var("AME_UWU").unwrap_or_else(|_| "".to_string()) == "true" {
         uwu!(&a)
     } else {
         a
@@ -17,7 +17,7 @@ pub fn info(a: String) {
 }
 
 pub fn crash(a: String, b: i32) {
-    let a = if env::var("AME_UWU").unwrap_or("".to_string()) == "true" {
+    let a = if env::var("AME_UWU").unwrap_or_else(|_| "".to_string()) == "true" {
         uwu!(&a)
     } else {
         a
@@ -28,8 +28,8 @@ pub fn crash(a: String, b: i32) {
 }
 
 pub fn log(a: String) {
-    let a = if env::var("AME_UWU").unwrap_or("".to_string()) == "true"
-        && env::var("AME_UWU_DEBUG").unwrap_or("".to_string()) == "true"
+    let a = if env::var("AME_UWU").unwrap_or_else(|_| "".to_string()) == "true"
+        && env::var("AME_UWU_DEBUG").unwrap_or_else(|_| "".to_string()) == "true"
     {
         uwu!(&a)
     } else {
@@ -50,7 +50,7 @@ pub fn prompt(a: String, b: bool) -> bool {
     let default = ["[Y/n]", "[y/N]"];
     let i = if b { 0 } else { 1 };
 
-    let a = if env::var("AME_UWU").unwrap_or("".to_string()) == "true" {
+    let a = if env::var("AME_UWU").unwrap_or_else(|_| "".to_string()) == "true" {
         uwu!(&a)
     } else {
         a
