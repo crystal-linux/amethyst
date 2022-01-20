@@ -1,10 +1,11 @@
+use crate::internal::crash;
 use crate::internal::rpc::rpcinfo;
-use crate::Options;
+use crate::{info, Options};
 use std::env;
 use std::env::set_current_dir;
 use std::fs::remove_dir_all;
 use std::path::Path;
-use std::process::Command;
+use std::process::{Command, Stdio};
 
 pub fn aur_install(a: Vec<String>, options: Options) {
     let url = crate::internal::rpc::URL;
@@ -25,6 +26,8 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         }
     }
 
+    info(format!("Installing packages {} from the AUR", a.join(", ")));
+
     for package in a {
         let rpcres = rpcinfo(package);
 
@@ -38,11 +41,13 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             eprintln!("Cloning {} into cachedir", pkg);
         }
 
-        // cloning
+        info("Cloning package source".to_string());
+
         set_current_dir(Path::new(&cachedir)).unwrap();
         Command::new("git")
             .arg("clone")
             .arg(format!("{}/{}", url, pkg))
+            .stdout(Stdio::null())
             .status()
             .expect("Something has gone wrong");
 
@@ -59,10 +64,11 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         }
 
         // dep sorting
+        info("Sorting dependencies".to_string());
         let sorted = crate::internal::sort(&rpcres.package.as_ref().unwrap().depends, options);
 
         if verbosity >= 1 {
-            eprintln!("Sorted depndencies for {} are:\n{:?}", pkg, &sorted)
+            eprintln!("Sorted dependencies for {} are:\n{:?}", pkg, &sorted)
         }
 
         let newopts = Options {
@@ -91,6 +97,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         }
 
         // dep installing
+        info("Moving on to install dependencies".to_string());
         crate::operations::install(sorted.repo, newopts);
         crate::operations::aur_install(sorted.aur, newopts);
 
@@ -103,11 +110,19 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         }
 
         // package building and installing
+        info("Building time!".to_string());
         set_current_dir(format!("{}/{}", cachedir, pkg)).unwrap();
-        Command::new("makepkg")
+        let out = Command::new("makepkg")
             .args(&makepkg_args)
             .status()
             .expect("Something has gone wrong");
+
+        if out.code() != Some(0) {
+            crash(
+                format!("Error encountered while installing {}, aborting", pkg),
+                1,
+            );
+        }
 
         if makepkg_args.contains(&"--asdeps") {
             set_current_dir(&cachedir).unwrap();

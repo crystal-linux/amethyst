@@ -1,6 +1,7 @@
-use crate::Options;
+use crate::{info, Options};
 
 pub fn install(mut a: Vec<String>, options: Options) {
+    info(format!("Installing packages {} from repos", &a.join(", ")));
     let b = a.clone();
     if options.noconfirm {
         a.push("--noconfirm".to_string());
@@ -28,7 +29,7 @@ pub fn install(mut a: Vec<String>, options: Options) {
         .arg("--needed")
         .args(&a)
         .status()
-        .expect("Something has gone wrong.");
+        .expect("Something has gone wrong");
 
     if let Some(x) = r.code() {
         if verbosity >= 1 {

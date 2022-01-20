@@ -1,8 +1,11 @@
+#[global_allocator]
+static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
+
 mod database;
 mod internal;
 mod operations;
 
-use crate::internal::{init, sort, structs::Options};
+use crate::internal::{info, init, sort, structs::Options};
 use clap::{App, AppSettings, Arg, ArgMatches, ArgSettings, Shell, SubCommand};
 use std::io;
 use std::process::exit;
@@ -137,6 +140,11 @@ fn main() {
         let packages = collect_matches(&matches);
         let sorted = sort(&packages, options);
 
+        info(format!(
+            "Attempting to install packages: {}",
+            packages.join(", ")
+        ));
+
         if !sorted.repo.is_empty() {
             operations::install(sorted.repo, options);
         }
@@ -154,11 +162,13 @@ fn main() {
 
     if let true = matches.is_present("remove") {
         let packages = collect_matches(&matches);
+        info(format!("Uninstalling packages: {}", &packages.join(", ")));
         operations::uninstall(packages, options);
         exit(0);
     }
 
     if let true = matches.is_present("upgrade") {
+        info("Performing system upgrade".to_string());
         operations::upgrade(options);
         exit(0);
     }
@@ -170,6 +180,7 @@ fn main() {
             .unwrap()
             .is_present("aur")
         {
+            info(format!("Searching AUR for {}", &packages[0]));
             operations::aur_search(&packages[0], options);
         }
         if matches
@@ -177,6 +188,7 @@ fn main() {
             .unwrap()
             .is_present("repo")
         {
+            info(format!("Searching repos for {}", &packages[0]));
             operations::search(&packages[0], options);
         }
 
@@ -189,6 +201,7 @@ fn main() {
                 .unwrap()
                 .is_present("aur")
         {
+            info(format!("Searching AUR and repos for {}", &packages[0]));
             operations::search(&packages[0], options);
             operations::aur_search(&packages[0], options);
         }

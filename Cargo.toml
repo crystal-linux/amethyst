@@ -1,19 +1,55 @@
 [package]
 name = "Amethyst"
 version = "3.0.0"
-authors = [ "jnats <michal@tar.black>", "axtlos <axtlos@tar.black>" ]
+authors = [ "michal <michal@tar.black>", "axtlos <axtlos@tar.black>" ]
 edition = "2021"
-description = "A fast and efficient aur helper."
+description = "A fast and efficient AUR helper."
 license-file = "LICENSE.md"
 
 [[bin]]
 name = "ame"
 path = "src/main.rs"
 
+[features]
+pkg-warner = []
+
+[[bin]]
+name = "apt"
+path = "src/warn.rs"
+required-features = [ "pkg-warner" ]
+
+[[bin]]
+name = "apt-get"
+path = "src/warn.rs"
+required-features = [ "pkg-warner" ]
+
+[[bin]]
+name = "dnf"
+path = "src/warn.rs"
+required-features = [ "pkg-warner" ]
+
+[[bin]]
+name = "yum"
+path = "src/warn.rs"
+required-features = [ "pkg-warner" ]
+
+[[bin]]
+name = "zypper"
+path = "src/warn.rs"
+required-features = [ "pkg-warner" ]
+
+[profile.release]
+incremental = true
+debug = true
+lto = "fat"
+codegen-units = 1
+
 [dependencies]
-clap = { version = "2.34.0", default-features = false, features = [ "suggestions"] }
-regex = { version = "1.5.4", default-features = false, features = [ "std" ] }
+mimalloc = { version = "0.1.27", default-features = false }
+clap = { version = "2.34.0", default-features = false, features = [ "suggestions" ] }
+regex = { version = "1.5.4", default-features = false, features = [ "std", "unicode-perl" ] }
 runas = "0.2.1"
 rusqlite = { version = "0.26.3", default-features = false }
 reqwest = { version = "0.11.7", default-features = false, features = [ "blocking", "json", "default-tls" ] }
 serde = { version = "1.0.90", default-features = false, features = [ "derive", "serde_derive" ] }
+throbber = { version = "0.1.4", default-features = false }
