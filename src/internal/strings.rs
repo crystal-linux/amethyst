@@ -1,9 +1,10 @@
-use crate::uwu;
 use std::io::Write;
 use std::process::exit;
 use std::str::FromStr;
 use std::time::UNIX_EPOCH;
 use std::{env, io};
+
+use crate::uwu;
 
 pub fn info(a: String) {
     let a = if env::var("AME_UWU").unwrap_or("".to_string()) == "true" {
