@@ -6,10 +6,6 @@ edition = "2021"
 description = "A fast and efficient AUR helper."
 license-file = "LICENSE.md"
 
-[[bin]]
-name = "ame"
-path = "src/main.rs"
-
 [features]
 pkg-warner = []
 
@@ -43,6 +39,10 @@ name = "zypper"
 path = "src/bin/zypper.rs"
 required-features = [ "pkg-warner" ]
 
+[[bin]]
+name = "ame"
+path = "src/main.rs"
+
 [profile.release]
 incremental = true
 debug = true
@@ -57,3 +57,4 @@ runas = "0.2.1"
 rusqlite = { version = "0.26.3", default-features = false }
 ureq = { version = "2.4.0", default-features = false, features = [ "native-tls", "json" ] }
 serde = { version = "1.0.90", default-features = false, features = [ "derive", "serde_derive" ] }
+native-tls = "0.2.8"
