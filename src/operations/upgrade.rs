@@ -1,6 +1,6 @@
 use crate::internal::rpc::rpcinfo;
 use crate::operations::aur_install::aur_install;
-use crate::Options;
+use crate::{log, Options};
 use runas::Command;
 
 pub fn upgrade(options: Options) {
@@ -13,7 +13,7 @@ pub fn upgrade(options: Options) {
     }
 
     if verbosity >= 1 {
-        eprintln!("Upgrading repo packages")
+        log("Upgrading repo packages".to_string());
     }
 
     Command::new("pacman")
@@ -22,7 +22,7 @@ pub fn upgrade(options: Options) {
         .expect("Something has gone wrong");
 
     if verbosity >= 1 {
-        eprintln!("Upgrading AUR packages")
+        log("Upgrading AUR packages".to_string());
     }
 
     let res = crate::database::query("\"%\"", options);

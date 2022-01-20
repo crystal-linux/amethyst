@@ -1,3 +1,4 @@
+use crate::internal::strings::log;
 use crate::Options;
 use regex::Regex;
 
@@ -15,21 +16,8 @@ pub fn clean(a: &[String], options: Options) -> Vec<String> {
         }
     }
 
-    match verbosity {
-        0 => {}
-        1 => {
-            eprintln!("Cleaned: {:?}\nInto: {:?}", a, cleaned);
-        }
-        _ => {
-            eprintln!("Cleaned:");
-            for b in a {
-                eprintln!("{}", b);
-            }
-            eprintln!("Into:");
-            for c in &cleaned {
-                eprintln!("{}", c);
-            }
-        }
+    if verbosity >= 1 {
+        log(format!("Cleaned: {:?}\nInto: {:?}", a, cleaned));
     }
 
     cleaned

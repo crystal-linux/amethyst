@@ -1,3 +1,4 @@
+use crate::internal::strings::{crash, log};
 use crate::Options;
 use std::env;
 use std::path::Path;
@@ -11,11 +12,14 @@ pub fn init(options: Options) {
         match r {
             Ok(_) => {
                 if verbosity >= 1 {
-                    eprintln!("Created path: {}/.local/share/ame", homedir);
+                    log(format!("Created path: {}/.local/share/ame", homedir));
                 }
             }
             Err(e) => {
-                panic!("Couldn't create path: {}/.local/share/ame: {}", homedir, e);
+                crash(
+                    format!("Couldn't create path: {}/.local/share/ame: {}", homedir, e),
+                    1,
+                );
             }
         }
     }
@@ -29,11 +33,14 @@ pub fn init(options: Options) {
         match r {
             Ok(_) => {
                 if verbosity >= 1 {
-                    eprintln!("Created path: {}/.cache/ame", homedir);
+                    log(format!("Created path: {}/.cache/ame", homedir));
                 }
             }
             Err(e) => {
-                panic!("Couldn't create path: {}/.cache/ame: {}", homedir, e);
+                crash(
+                    format!("Couldn't create path: {}/.cache/ame: {}", homedir, e),
+                    1,
+                );
             }
         }
     }

@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 #[derive(serde::Deserialize, Debug, Clone)]
 pub struct Package {
     #[serde(rename = "Name")]
@@ -31,12 +29,13 @@ pub struct InfoResults {
 pub const URL: &str = "https://aur.archlinux.org/";
 
 pub fn rpcinfo(pkg: String) -> InfoResults {
-    let res = reqwest::blocking::get(&format!(
+    let res: SearchResults = ureq::get(&format!(
         "https://aur.archlinux.org/rpc/?v=5&type=info&arg={}",
         pkg
     ))
+    .call()
     .unwrap()
-    .json::<SearchResults>()
+    .into_json()
     .unwrap();
 
     if res.results.is_empty() {
@@ -53,11 +52,12 @@ pub fn rpcinfo(pkg: String) -> InfoResults {
 }
 
 pub fn rpcsearch(pkg: String) -> SearchResults {
-    reqwest::blocking::get(&format!(
+    ureq::get(&format!(
         "https://aur.archlinux.org/rpc/?v=5&type=search&arg={}",
         pkg
     ))
+    .call()
     .unwrap()
-    .json()
+    .into_json::<SearchResults>()
     .unwrap()
 }

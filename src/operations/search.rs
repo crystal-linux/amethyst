@@ -1,5 +1,5 @@
 use crate::internal::rpc::rpcsearch;
-use crate::Options;
+use crate::{log, Options};
 use std::process::Command;
 
 pub fn aur_search(a: &str, options: Options) {
@@ -7,7 +7,10 @@ pub fn aur_search(a: &str, options: Options) {
     let res = rpcsearch(a.to_string());
 
     if verbosity >= 1 {
-        eprintln!("Found {} results for \"{}\" in AUR", res.resultcount, a);
+        log(format!(
+            "Found {} resuls for \"{}\" in AUR",
+            res.resultcount, a
+        ));
     }
 
     for r in &res.results {
@@ -33,11 +36,11 @@ pub fn repo_search(a: &str, options: Options) {
     let str = String::from_utf8(rs.stdout).unwrap();
 
     if verbosity >= 1 {
-        eprintln!(
+        log(format!(
             "Found {} results for \"{}\" in repos",
             &str.split('\n').count() / 2,
             &a
-        );
+        ));
     }
 
     print!("{}", str);

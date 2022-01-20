@@ -5,7 +5,7 @@ mod database;
 mod internal;
 mod operations;
 
-use crate::internal::{info, init, sort, structs::Options};
+use crate::internal::{crash, info, init, log, sort, structs::Options};
 use clap::{App, AppSettings, Arg, ArgMatches, ArgSettings, Shell, SubCommand};
 use std::io;
 use std::process::exit;
@@ -16,7 +16,7 @@ fn main() {
     }
 
     if unsafe { geteuid() } == 0 {
-        panic!("Running amethyst as root is disallowed as it can lead to system breakage. Instead, amethyst will prompt you when it needs superuser permissions")
+        crash("Running amethyst as root is disallowed as it can lead to system breakage. Instead, amethyst will prompt you when it needs superuser permissions".to_string(), 1);
     }
 
     fn build_app() -> App<'static, 'static> {
@@ -152,10 +152,10 @@ fn main() {
             operations::aur_install(sorted.aur, options);
         }
         if !sorted.nf.is_empty() {
-            eprintln!(
+            log(format!(
                 "Couldn't find packages: {} in repos or the AUR",
                 sorted.nf.join(", ")
-            );
+            ));
         }
         exit(0);
     }

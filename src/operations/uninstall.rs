@@ -1,4 +1,4 @@
-use crate::Options;
+use crate::{log, Options};
 use std::path::Path;
 use std::{env, fs};
 
@@ -8,18 +8,8 @@ pub fn uninstall(mut a: Vec<String>, options: Options) {
         a.push("--noconfirm".to_string());
     }
     let verbosity = options.verbosity;
-    match verbosity {
-        0 => {}
-        1 => {
-            eprintln!("Uninstalling:");
-            eprintln!("{:?}", &b);
-        }
-        _ => {
-            eprintln!("Uninstalling:");
-            for b in &a {
-                eprintln!("{}", b);
-            }
-        }
+    if verbosity >= 1 {
+        log(format!("Uninstalling: {:?}", &b));
     }
 
     let r = runas::Command::new("pacman")
@@ -30,7 +20,10 @@ pub fn uninstall(mut a: Vec<String>, options: Options) {
 
     if let Some(x) = r.code() {
         if verbosity >= 1 {
-            eprintln!("Uninstalling packages: {:?} exited with code {}", &b, x)
+            log(format!(
+                "Uninstalling packages: {:?} exited with code {}",
+                &b, x
+            ));
         }
     }
 
@@ -38,7 +31,7 @@ pub fn uninstall(mut a: Vec<String>, options: Options) {
         crate::database::remove(&b, options);
         if Path::new(&format!("{}/.cache/ame/{}", env::var("HOME").unwrap(), b)).exists() {
             if verbosity >= 1 {
-                eprintln!("Old cache directory found, deleting")
+                log("Old cache directory found, deleting".to_string());
             }
             fs::remove_dir_all(Path::new(&format!(
                 "{}/.cache/ame/{}",

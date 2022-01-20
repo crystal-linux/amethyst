@@ -1,4 +1,4 @@
-use crate::{info, Options};
+use crate::{info, log, Options};
 
 pub fn install(mut a: Vec<String>, options: Options) {
     info(format!("Installing packages {} from repos", &a.join(", ")));
@@ -10,18 +10,8 @@ pub fn install(mut a: Vec<String>, options: Options) {
         a.push("--asdeps".to_string());
     }
     let verbosity = options.verbosity;
-    match verbosity {
-        0 => {}
-        1 => {
-            eprintln!("Installing from repos:");
-            eprintln!("{:?}", &b);
-        }
-        _ => {
-            eprintln!("Installing from repos:");
-            for b in &a {
-                eprintln!("{:?}", b);
-            }
-        }
+    if verbosity >= 1 {
+        log(format!("Installing from repos: {:?}", &b));
     }
 
     let r = runas::Command::new("pacman")
@@ -33,7 +23,10 @@ pub fn install(mut a: Vec<String>, options: Options) {
 
     if let Some(x) = r.code() {
         if verbosity >= 1 {
-            eprintln!("Installing packages: {:?} exited with code {}", &b, x)
+            log(format!(
+                "Installing packages: {:?} exited with code {}",
+                &b, x
+            ));
         }
     }
 }

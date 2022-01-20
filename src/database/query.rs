@@ -1,5 +1,5 @@
 use crate::internal::rpc::Package;
-use crate::Options;
+use crate::{log, Options};
 use rusqlite::Connection;
 use std::env;
 use std::path::Path;
@@ -8,7 +8,7 @@ pub fn query(a: &str, options: Options) -> Vec<Package> {
     let verbosity = options.verbosity;
 
     if verbosity >= 1 {
-        eprintln!("Connecting to database");
+        log("Connecting to database".to_string());
     }
 
     let conn = Connection::open(Path::new(&format!(
@@ -18,7 +18,7 @@ pub fn query(a: &str, options: Options) -> Vec<Package> {
     .expect("Couldn't connect to database");
 
     if verbosity >= 1 {
-        eprintln!("Querying database for input")
+        log("Querying database for input".to_string());
     }
 
     let mut rs = conn
@@ -47,7 +47,7 @@ pub fn query(a: &str, options: Options) -> Vec<Package> {
         .expect("Couldn't query database for packages");
 
     if verbosity >= 1 {
-        eprintln!("Retrieved results");
+        log("Retrieved results".to_string());
     }
 
     let mut results: Vec<Package> = vec![];
@@ -57,7 +57,7 @@ pub fn query(a: &str, options: Options) -> Vec<Package> {
     }
 
     if verbosity >= 1 {
-        eprintln!("Collected results")
+        log("Collected results".to_string());
     }
 
     results

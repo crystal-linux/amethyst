@@ -1,6 +1,6 @@
 use crate::internal::crash;
 use crate::internal::rpc::rpcinfo;
-use crate::{info, Options};
+use crate::{info, log, Options};
 use std::env;
 use std::env::set_current_dir;
 use std::fs::remove_dir_all;
@@ -12,18 +12,9 @@ pub fn aur_install(a: Vec<String>, options: Options) {
     let cachedir = format!("{}/.cache/ame/", env::var("HOME").unwrap());
     let verbosity = options.verbosity;
     let noconfirm = options.noconfirm;
-    match verbosity {
-        0 => {}
-        1 => {
-            eprintln!("Installing from AUR:");
-            eprintln!("{:?}", &a);
-        }
-        _ => {
-            eprintln!("Installing from AUR:");
-            for b in &a {
-                eprintln!("{:?}", b);
-            }
-        }
+
+    if verbosity >= 1 {
+        log(format!("Installing from AUR: {:?}", &a));
     }
 
     info(format!("Installing packages {} from the AUR", a.join(", ")));
@@ -38,7 +29,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         let pkg = &rpcres.package.as_ref().unwrap().name;
 
         if verbosity >= 1 {
-            eprintln!("Cloning {} into cachedir", pkg);
+            log(format!("Cloning {} into cachedir", pkg));
         }
 
         info("Cloning package source".to_string());
@@ -52,15 +43,15 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             .expect("Something has gone wrong");
 
         if verbosity >= 1 {
-            eprintln!(
+            log(format!(
                 "Cloned {} into cachedir, moving on to resolving dependencies",
                 pkg
-            );
-            eprintln!(
+            ));
+            log(format!(
                 "Raw dependencies for package {} are:\n{:?}",
                 pkg,
                 rpcres.package.as_ref().unwrap().depends.join(", ")
-            )
+            ));
         }
 
         // dep sorting
@@ -68,7 +59,10 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         let sorted = crate::internal::sort(&rpcres.package.as_ref().unwrap().depends, options);
 
         if verbosity >= 1 {
-            eprintln!("Sorted dependencies for {} are:\n{:?}", pkg, &sorted)
+            log(format!(
+                "Sorted dependencies for {} are:\n{:?}",
+                pkg, &sorted
+            ));
         }
 
         let newopts = Options {
@@ -78,10 +72,13 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         };
 
         if !sorted.nf.is_empty() {
-            panic!(
-                "Could not find dependencies {} for package {}, aborting",
-                sorted.nf.join(", "),
-                pkg
+            crash(
+                format!(
+                    "Could not find dependencies {} for package {}, aborting",
+                    sorted.nf.join(", "),
+                    pkg
+                ),
+                1,
             );
         }
 

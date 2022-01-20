@@ -26,3 +26,7 @@ pub fn info(a: String) {
 pub fn crash(a: String, b: i32) {
     strings::crash(a, b);
 }
+
+pub fn log(a: String) {
+    strings::log(a);
+}

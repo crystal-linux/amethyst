@@ -1,4 +1,4 @@
-use crate::Options;
+use crate::{log, Options};
 use rusqlite::Connection;
 use std::env;
 use std::path::Path;
@@ -13,7 +13,7 @@ pub fn remove(pkg: &str, options: Options) {
     let verbosity = options.verbosity;
 
     if verbosity >= 1 {
-        eprintln!("Removing package {} from database", pkg);
+        log(format!("Removing package {} from database", pkg));
     }
 
     conn.execute(

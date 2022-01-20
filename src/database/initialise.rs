@@ -1,4 +1,4 @@
-use crate::Options;
+use crate::{crash, log, Options};
 use rusqlite::Connection;
 use std::env;
 use std::path::Path;
@@ -9,14 +9,14 @@ pub fn init(options: Options) {
     let verbosity = options.verbosity;
 
     if verbosity >= 1 {
-        eprintln!("Creating database at {}", &path);
+        log(format!("Creating database at {}", &path));
     }
 
     let conn =
         Connection::open(dbpath).expect("Couldn't create database at ~/.local/share/ame/db.sqlite");
 
     if verbosity >= 1 {
-        eprintln!("Populating database with table")
+        log("Populating database with table".to_string());
     }
 
     conn.execute(
@@ -30,6 +30,7 @@ pub fn init(options: Options) {
         [],
     )
     .unwrap_or_else(|e| {
-        panic!("Couldn't initialise database: {}", e);
+        crash(format!("Couldn't initialise database: {}", e), 1);
+        1
     });
 }
