@@ -3,8 +3,8 @@ use std::path::Path;
 
 use rusqlite::Connection;
 
-use crate::internal::rpc::Package;
 use crate::{log, Options};
+use crate::internal::rpc::Package;
 
 pub fn query(options: Options) -> Vec<Package> {
     let verbosity = options.verbosity;
@@ -17,7 +17,7 @@ pub fn query(options: Options) -> Vec<Package> {
         "{}/.local/share/ame/db.sqlite",
         env::var("HOME").unwrap()
     )))
-    .expect("Couldn't connect to database");
+        .expect("Couldn't connect to database");
 
     if verbosity >= 1 {
         log("Querying database for input".to_string());

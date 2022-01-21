@@ -16,9 +16,12 @@
 ### Good Practices
 
 - Try to use .unwrap() as little as possible
-- Try to never use panic!() in production code, always try to have a possible way to resolve errors, even if it's just unwrap_or/_else()
-- Never use println!() or eprintln!() in finalised code. Using string functions (e.g. info() in Amethyst v3.0.0) is preferred
-- Compartmentalise as much as you can, avoid writing the exact same line of code 50 times if you can turn it into a function
+- Try to never use panic!() in production code, always try to have a possible way to resolve errors, even if it's just
+  unwrap_or/_else()
+- Never use println!() or eprintln!() in finalised code. Using string functions (e.g. info() in Amethyst v3.0.0) is
+  preferred
+- Compartmentalise as much as you can, avoid writing the exact same line of code 50 times if you can turn it into a
+  function
 
 ### Examples of these guidelines in practice
 

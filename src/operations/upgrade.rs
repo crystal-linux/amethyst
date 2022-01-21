@@ -1,8 +1,8 @@
 use runas::Command;
 
+use crate::{info, log, Options};
 use crate::internal::rpc::rpcinfo;
 use crate::operations::aur_install::aur_install;
-use crate::{info, log, Options};
 
 pub fn upgrade(options: Options) {
     let verbosity = options.verbosity;

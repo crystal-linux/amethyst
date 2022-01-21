@@ -4,9 +4,9 @@ use std::fs::remove_dir_all;
 use std::path::Path;
 use std::process::{Command, Stdio};
 
-use crate::internal::rpc::rpcinfo;
-use crate::internal::{crash, prompt};
 use crate::{info, log, Options};
+use crate::internal::{crash, prompt};
+use crate::internal::rpc::rpcinfo;
 
 pub fn aur_install(a: Vec<String>, options: Options) {
     let url = crate::internal::rpc::URL;

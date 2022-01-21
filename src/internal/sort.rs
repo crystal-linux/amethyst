@@ -1,7 +1,7 @@
 use std::process::{Command, Stdio};
 
-use crate::internal::strings::log;
 use crate::internal::{clean, rpc, structs};
+use crate::internal::strings::log;
 use crate::Options;
 
 pub fn sort(input: &[String], options: Options) -> structs::Sorted {

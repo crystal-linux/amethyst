@@ -32,7 +32,6 @@ Made for Crystal, compatible with any Arch-based Linux distribution.</p>
 | 6               | User cancelled package installation                      |
 | 7               | Pacman error when installing package                     |
 
-
 ## How to build:
 
 Tested on latest Cargo (1.60.0-nightly)
