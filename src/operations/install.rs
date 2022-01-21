@@ -28,7 +28,7 @@ pub fn install(a: Vec<String>, options: Options) {
                 "An error occured while installing packages: {}, aborting",
                 a.join(", ")
             ),
-            1,
+            7,
         );
     }
 

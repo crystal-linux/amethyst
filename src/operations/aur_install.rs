@@ -79,31 +79,39 @@ pub fn aur_install(a: Vec<String>, options: Options) {
                     sorted.nf.join(", "),
                     pkg
                 ),
-                1,
+                5,
             );
         }
 
         if !noconfirm {
-            let p = prompt(
-                format!("Would you like to view or edit {}'s PKGBUILD?", pkg),
+            let p1 = prompt(
+                format!("Would you like to review {}'s PKGBUILD?", pkg),
                 false,
             );
-            let editor = env::var("EDITOR").unwrap_or_else(|_| "nano".parse().unwrap());
+            let editor = env::var("PAGER").unwrap_or_else(|_| "less".parse().unwrap());
 
-            if p {
+            if p1 {
                 Command::new(editor)
                     .arg(format!("{}/PKGBUILD", pkg))
                     .spawn()
                     .unwrap()
                     .wait()
                     .unwrap();
+                let p2 = prompt(format!("Would you still like to install {}?", pkg), true);
+                if !p2 {
+                    crash("Not proceeding".to_string(), 6);
+                }
             }
         }
 
         // dep installing
         info("Moving on to install dependencies".to_string());
-        crate::operations::install(sorted.repo, newopts);
-        crate::operations::aur_install(sorted.aur, newopts);
+        if !sorted.repo.is_empty() {
+            crate::operations::install(sorted.repo, newopts);
+        }
+        if !sorted.aur.is_empty() {
+            crate::operations::aur_install(sorted.aur, newopts);
+        }
 
         let mut makepkg_args = vec!["-rsic", "--needed"];
         if options.asdeps {
@@ -124,7 +132,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         if out.code() != Some(0) {
             crash(
                 format!("Error encountered while installing {}, aborting", pkg),
-                1,
+                7,
             );
         }
 

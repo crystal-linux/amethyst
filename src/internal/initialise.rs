@@ -19,7 +19,7 @@ pub fn init(options: Options) {
             Err(e) => {
                 crash(
                     format!("Couldn't create path: {}/.local/share/ame: {}", homedir, e),
-                    1,
+                    4,
                 );
             }
         }
@@ -40,7 +40,7 @@ pub fn init(options: Options) {
             Err(e) => {
                 crash(
                     format!("Couldn't create path: {}/.cache/ame: {}", homedir, e),
-                    1,
+                    4,
                 );
             }
         }
