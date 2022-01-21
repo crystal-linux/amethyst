@@ -39,7 +39,7 @@ pub fn uninstall(mut a: Vec<String>, options: Options) {
                 env::var("HOME").unwrap(),
                 b
             )))
-                .unwrap();
+            .unwrap();
         }
     }
 }

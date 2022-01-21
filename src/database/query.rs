@@ -17,7 +17,7 @@ pub fn query(options: Options) -> Vec<Package> {
         "{}/.local/share/ame/db.sqlite",
         env::var("HOME").unwrap()
     )))
-        .expect("Couldn't connect to database");
+    .expect("Couldn't connect to database");
 
     if verbosity >= 1 {
         log("Querying database for input".to_string());

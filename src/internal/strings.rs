@@ -23,7 +23,7 @@ pub fn crash(a: String, b: i32) {
         a
     };
 
-    println!("\x1b[2;22;31m❌\x1b[0m \x1b[1;91m{}\x1b[0m", a);
+    println!("\x1b[2;22;31m❌:\x1b[0m \x1b[1;91m{}\x1b[0m", a);
     exit(b);
 }
 

@@ -10,7 +10,7 @@ pub fn remove(pkg: &str, options: Options) {
         "{}/.local/share/ame/db.sqlite",
         env::var("HOME").unwrap()
     )))
-        .expect("Couldn't connect to database");
+    .expect("Couldn't connect to database");
 
     let verbosity = options.verbosity;
 
@@ -26,5 +26,5 @@ pub fn remove(pkg: &str, options: Options) {
                  WHERE name = ?);",
         [pkg],
     )
-        .expect("Couldn't delete package from database");
+    .expect("Couldn't delete package from database");
 }

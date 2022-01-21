@@ -199,9 +199,9 @@ fn main() {
             .unwrap()
             .is_present("repo")
             && !matches
-            .subcommand_matches("search")
-            .unwrap()
-            .is_present("aur")
+                .subcommand_matches("search")
+                .unwrap()
+                .is_present("aur")
         {
             info(format!("Searching AUR and repos for {}", &packages[0]));
             operations::search(&packages[0], options);
