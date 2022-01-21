@@ -1,8 +1,6 @@
 # Crystal Linux Contributing Guidelines
 
----
-
-####!! Always make sure to `git pull` before doing any work to avoid commit hell !!
+#### !! Always make sure to `git pull` before doing any work to avoid commit hell !!
 
 ### Pre-Commit Checks
 
