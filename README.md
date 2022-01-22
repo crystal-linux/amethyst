@@ -3,15 +3,19 @@
     <img src="https://git.getcryst.al/crystal/branding/raw/branch/main/logos/crystal-logo-minimal.png" alt="Logo" width="150" height="150">
   </a>
 </p>
+
 <h2 align="center"> Amethyst</h2>
-</p>
+
 <p align="center">
-<a href="https://discord.gg/yp4xpZeAgW"><img alt="Discord" src="https://img.shields.io/discord/825473796227858482?color=blue&label=Discord&logo=Discord&logoColor=white"?link=https://discord.gg/yp4xpZeAgW&link=https://discord.gg/yp4xpZeAgW> </p></a>
+    <a href="https://discord.gg/yp4xpZeAgW"><img alt="Discord" src="https://img.shields.io/discord/825473796227858482?color=blue&label=Discord&logo=Discord&logoColor=white"?link=https://discord.gg/yp4xpZeAgW&link=https://discord.gg/yp4xpZeAgW> </a>
+</p>
 
-<p align="center"> Amethyst is a fast, efficient and lightweight AUR helper and Pacman wrapper. 
-Made for Crystal, compatible with any Arch-based Linux distribution.</p>
+<p align="center"> 
+Amethyst is a fast, efficient and lightweight AUR helper and Pacman wrapper.<br> 
+Made for Crystal, compatible with any Arch-based Linux distribution.
+</p>
 
-## Basic usage
+### Basic usage
 
 | Action               | FreeBSD pkg-style alias | Pacman-style flags |
 |----------------------|-------------------------|--------------------|
@@ -20,7 +24,7 @@ Made for Crystal, compatible with any Arch-based Linux distribution.</p>
 | Upgrade a package    | ame upg/upgrade         | ame -Syu           |
 | Search for a package | ame sea                 | ame -Ss            |
 
-## Exit codes overview
+### Exit codes overview
 
 | Exit Code (i32) | Reason                                                   |
 |-----------------|----------------------------------------------------------|
@@ -32,7 +36,7 @@ Made for Crystal, compatible with any Arch-based Linux distribution.</p>
 | 6               | User cancelled package installation                      |
 | 7               | Pacman error when installing package                     |
 
-## How to build:
+### How to build:
 
 Tested on latest Cargo (1.60.0-nightly)
 
