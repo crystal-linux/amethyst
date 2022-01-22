@@ -1,5 +1,5 @@
 use std::io;
-use std::process::exit;
+use std::process::{exit, Command};
 
 use clap::{App, AppSettings, Arg, ArgMatches, ArgSettings, Shell, SubCommand};
 
@@ -87,6 +87,21 @@ fn main() {
                             .required(true)
                             .multiple(false)
                             .index(1),
+                    ),
+            )
+            .subcommand(
+                SubCommand::with_name("query")
+                    .about("Queries installed packages")
+                    .aliases(&["-Q", "ls"])
+                    .arg(
+                        Arg::with_name("aur")
+                            .short("a")
+                            .help("Lists AUR/foreign packages"),
+                    )
+                    .arg(
+                        Arg::with_name("repo")
+                            .short("r")
+                            .help("Lists repo/native packages"),
                     ),
             )
             .subcommand(
@@ -209,6 +224,57 @@ fn main() {
         }
         exit(0);
     }
+
+    if let true = matches.is_present("query") {
+        if matches
+            .subcommand_matches("query")
+            .unwrap()
+            .is_present("aur")
+        {
+            Command::new("pacman")
+                .arg("-Qm")
+                .spawn()
+                .expect("Something has gone wrong")
+                .wait()
+                .unwrap();
+        }
+        if matches
+            .subcommand_matches("query")
+            .unwrap()
+            .is_present("repo")
+        {
+            Command::new("pacman")
+                .arg("-Qn")
+                .spawn()
+                .expect("Something has gone wrong")
+                .wait()
+                .unwrap();
+        }
+        if !matches
+            .subcommand_matches("query")
+            .unwrap()
+            .is_present("aur")
+            && !matches
+                .subcommand_matches("query")
+                .unwrap()
+                .is_present("repo")
+        {
+            Command::new("pacman")
+                .arg("-Qn")
+                .spawn()
+                .expect("Something has gone wrong")
+                .wait()
+                .unwrap();
+            Command::new("pacman")
+                .arg("-Qm")
+                .spawn()
+                .expect("Something has gone wrong")
+                .wait()
+                .unwrap();
+        }
+        exit(0);
+    }
+
     if let true = &matches.is_present("compgen") {
         let mut app = build_app();
         match matches
