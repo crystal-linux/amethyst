@@ -54,9 +54,6 @@ Tested on latest Cargo (1.60.0-nightly)
 
 - `cargo build (--release) --all --features=pkg-warner`
 
-<br>
-<br>
-
 <!--
 
 echo "AME_UWU=true" >> ~/.zshrc
