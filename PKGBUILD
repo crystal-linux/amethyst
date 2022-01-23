@@ -22,6 +22,6 @@ build() {
 
 package() {
     mkdir -p $pkgdir/usr/bin
-    chmod +x ${srcdir}/ame/target/debug/{ame,apt,apt-get,dnf,eopkg,yum,zypper}
-    cp ${srcdir}/ame/{ame,apt,apt-get,dnf,eopkg,yum,zypper}  $pkgdir/usr/bin/.
+    chmod +x ${srcdir}/ame/target/release/{ame,apt,apt-get,dnf,eopkg,yum,zypper}
+    cp ${srcdir}/ame/target/release/{ame,apt,apt-get,dnf,eopkg,yum,zypper}  $pkgdir/usr/bin/.
 }
