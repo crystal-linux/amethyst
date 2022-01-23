@@ -1,25 +1,16 @@
-mod mods;
-use mods::{
-    clearcache::clearcache,
-    clone::clone,
-    database::create_database,
-    help::help,
-    inssort::{inssort, inssort_from_file},
-    install::install,
-    purge::{purge, purge_from_file},
-    search::{a_search, r_search},
-    stat_database::*,
-    statpkgs::*,
-    strs::err_rec,
-    strs::err_unrec,
-    strs::inf,
-    uninstall::{uninstall, uninstall_from_file},
-    update::update,
-    upgrade::upgrade,
-    ver::ver,
-    xargs::*,
-};
-use std::{env, process::exit};
+use std::io;
+use std::process::{exit, Command};
+
+use clap::{App, AppSettings, Arg, ArgMatches, ArgSettings, Shell, SubCommand};
+
+use crate::internal::{crash, info, init, log, sort, structs::Options};
+
+#[global_allocator]
+static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
+
+mod database;
+mod internal;
+mod operations;
 
 fn main() {
     extern "C" {
@@ -27,92 +18,287 @@ fn main() {
     }
 
     if unsafe { geteuid() } == 0 {
-        // check if user runs ame as root
-        err_unrec(
-            "Do not run ame as root! this can cause serious damage to your system!".to_string(),
-        );
+        crash("Running amethyst as root is disallowed as it can lead to system breakage. Instead, amethyst will prompt you when it needs superuser permissions".to_string(), 1);
     }
 
-    let args: Vec<String> = env::args().skip(1).collect();
-    let mut pkgs: Vec<String> = env::args().skip(2).collect();
-
-    if args.is_empty() {
-        help();
-        exit(1);
+    fn build_app() -> App<'static, 'static> {
+        let app = App::new("Amethyst")
+            .version(env!("CARGO_PKG_VERSION"))
+            .about(env!("CARGO_PKG_DESCRIPTION"))
+            .arg(
+                Arg::with_name("verbose")
+                    .short("v")
+                    .long("verbose")
+                    .multiple(true)
+                    .set(ArgSettings::Global)
+                    .help("Sets the level of verbosity"),
+            )
+            .arg(
+                Arg::with_name("noconfirm")
+                    .long("noconfirm")
+                    .set(ArgSettings::Global)
+                    .help("Complete operation without prompting user"),
+            )
+            .subcommand(
+                SubCommand::with_name("install")
+                    .about(
+                        "Installs a package from either the AUR or the PacMan-defined repositories",
+                    )
+                    .aliases(&["-S", "ins"])
+                    .arg(
+                        Arg::with_name("package(s)")
+                            .help("The name of the package(s) to install")
+                            .required(true)
+                            .multiple(true)
+                            .index(1),
+                    ),
+            )
+            .subcommand(
+                SubCommand::with_name("remove")
+                    .about("Removes a previously installed package")
+                    .aliases(&["-R", "-Rs", "rm"])
+                    .arg(
+                        Arg::with_name("package(s)")
+                            .help("The name of the package(s) to remove")
+                            .required(true)
+                            .multiple(true)
+                            .index(1),
+                    ),
+            )
+            .subcommand(
+                SubCommand::with_name("search")
+                    .about("Searches for the relevant packages in both the AUR and repos")
+                    .aliases(&["-Ss", "sea"])
+                    .arg(
+                        Arg::with_name("aur")
+                            .short("a")
+                            .long("aur")
+                            .help("Search only the AUR for the package"),
+                    )
+                    .arg(
+                        Arg::with_name("repo")
+                            .short("r")
+                            .long("repo")
+                            .help("Searches only local repos for the package"),
+                    )
+                    .arg(
+                        Arg::with_name("package(s)")
+                            .help("The name of the package to search for")
+                            .required(true)
+                            .multiple(false)
+                            .index(1),
+                    ),
+            )
+            .subcommand(
+                SubCommand::with_name("query")
+                    .about("Queries installed packages")
+                    .aliases(&["-Q", "ls"])
+                    .arg(
+                        Arg::with_name("aur")
+                            .short("a")
+                            .help("Lists AUR/foreign packages"),
+                    )
+                    .arg(
+                        Arg::with_name("repo")
+                            .short("r")
+                            .help("Lists repo/native packages"),
+                    ),
+            )
+            .subcommand(
+                SubCommand::with_name("upgrade")
+                    .about("Upgrades locally installed packages to their latest versions")
+                    .aliases(&["-Syu", "upg"]),
+            )
+            .subcommand(
+                SubCommand::with_name("compgen")
+                    .about("Generates shell completions for given shell (bash by default)")
+                    .aliases(&["-G", "cg"])
+                    .arg(
+                        Arg::with_name("shell")
+                            .help("The name of the shell you want to generate completions for")
+                            .possible_values(&["bash", "fish", "zsh", "pwsh", "elvish"])
+                            .required(true),
+                    ),
+            )
+            .settings(&[
+                AppSettings::GlobalVersion,
+                AppSettings::VersionlessSubcommands,
+                AppSettings::ArgRequiredElseHelp,
+                AppSettings::InferSubcommands,
+            ]);
+        app
     }
 
-    let file = format!("{}/.local/share/ame/aur_pkgs.db", env::var("HOME").unwrap());
-    if !std::path::Path::new(&file).exists() {
-        create_database();
+    let matches = build_app().get_matches();
+
+    let verbosity: i32 = matches.occurrences_of("verbose") as i32;
+    let noconfirm: bool = matches.is_present("noconfirm");
+
+    let options = Options {
+        verbosity,
+        noconfirm,
+        asdeps: false,
+    };
+
+    init(options);
+
+    fn collect_matches(a: &ArgMatches) -> Vec<String> {
+        a.subcommand()
+            .1
+            .unwrap()
+            .values_of("package(s)")
+            .unwrap()
+            .into_iter()
+            .map(|s| s.to_string())
+            .collect()
     }
 
-    let oper = &args[0];
-    let noconfirm: bool = noconf(&args);
+    if let true = matches.is_present("install") {
+        let packages = collect_matches(&matches);
+        let sorted = sort(&packages, options);
 
-    argssort(&mut pkgs);
-    match oper.as_str() {
-        // match oper
-        "-S" | "-Sn" | "ins" => {
-            inssort(noconfirm, false, pkgs); // install
-        }
-        "-Sl" | "-Sln" | "insl" => {
-            inssort_from_file(noconfirm, false, &pkgs[0]); // install from file
-        }
-        "-B" | "-Bn" | "build" => {
-            rebuild(noconfirm); // install as a dependency
-        }
-        "-R" | "-Rn" | "rm" => {
-            uninstall(noconfirm, pkgs); // uninstall
-        }
-        "-Rs" | "-Rsn" | "purge" => {
-            purge(noconfirm, pkgs); // purge
-        }
-        "-Rl" | "-Rln" | "rml" => {
-            uninstall_from_file(noconfirm, &pkgs[0]); // uninstall from file
-        }
-        "-Rsl" | "-Rsln" | "purgel" => {
-            purge_from_file(noconfirm, &pkgs[0]); // purge from file
-        }
-        "-Syu" | "-Syun" | "upg" => {
-            upgrade(noconfirm); // upgrade
-        }
-        "-Sy" | "upd" => {
-            update(); // update
-        }
-        "-Ss" | "sea" => {
-            r_search(&args[1]); // search for packages in the repository
-            a_search(&args[1]); // search for packages in the aur
-        }
-        "-Sa" | "aursea" => {
-            a_search(&args[1]); // search for packages in the aur
-        }
-        "-Sr" | "repsea" => {
-            r_search(&args[1]); // search for packages in the repository
-        }
-        "-Cc" | "clr" => {
-            clearcache(); // clear cache
-        }
-        "-v" | "-V" | "ver" => {
-            ver(); // version
-        }
-        "-h" | "help" => {
-            help(); // help
-        }
-        _ => {
-            // if oper is not valid it either passes the args to pacman or prints an error
-            let pass = runas::Command::new("pacman")
-                .args(&args)
-                .status()
-                .expect("Something has gone wrong.");
+        info(format!(
+            "Attempting to install packages: {}",
+            packages.join(", ")
+        ));
 
-            match pass.code() {
-                Some(1) => {
-                    err_rec(format!("No such operation \"{}\"", args.join(" ")));
-                    inf("Try running \"ame help\" for an overview of how to use ame".to_string())
-                }
-                Some(_) => {}
-                None => err_unrec("Something has gone terribly wrong.".to_string()),
+        if !sorted.repo.is_empty() {
+            operations::install(sorted.repo, options);
+        }
+        if !sorted.aur.is_empty() {
+            operations::aur_install(sorted.aur, options);
+        }
+        if !sorted.nf.is_empty() {
+            log(format!(
+                "Couldn't find packages: {} in repos or the AUR",
+                sorted.nf.join(", ")
+            ));
+        }
+        exit(0);
+    }
+
+    if let true = matches.is_present("remove") {
+        let packages = collect_matches(&matches);
+        info(format!("Uninstalling packages: {}", &packages.join(", ")));
+        operations::uninstall(packages, options);
+        exit(0);
+    }
+
+    if let true = matches.is_present("upgrade") {
+        info("Performing system upgrade".to_string());
+        operations::upgrade(options);
+        exit(0);
+    }
+
+    if let true = matches.is_present("search") {
+        let packages = collect_matches(&matches);
+        if matches
+            .subcommand_matches("search")
+            .unwrap()
+            .is_present("aur")
+        {
+            info(format!("Searching AUR for {}", &packages[0]));
+            operations::aur_search(&packages[0], options);
+        }
+        if matches
+            .subcommand_matches("search")
+            .unwrap()
+            .is_present("repo")
+        {
+            info(format!("Searching repos for {}", &packages[0]));
+            operations::search(&packages[0], options);
+        }
+
+        if !matches
+            .subcommand_matches("search")
+            .unwrap()
+            .is_present("repo")
+            && !matches
+                .subcommand_matches("search")
+                .unwrap()
+                .is_present("aur")
+        {
+            info(format!("Searching AUR and repos for {}", &packages[0]));
+            operations::search(&packages[0], options);
+            operations::aur_search(&packages[0], options);
+        }
+        exit(0);
+    }
+
+    if let true = matches.is_present("query") {
+        if matches
+            .subcommand_matches("query")
+            .unwrap()
+            .is_present("aur")
+        {
+            Command::new("pacman")
+                .arg("-Qm")
+                .spawn()
+                .expect("Something has gone wrong")
+                .wait()
+                .unwrap();
+        }
+        if matches
+            .subcommand_matches("query")
+            .unwrap()
+            .is_present("repo")
+        {
+            Command::new("pacman")
+                .arg("-Qn")
+                .spawn()
+                .expect("Something has gone wrong")
+                .wait()
+                .unwrap();
+        }
+        if !matches
+            .subcommand_matches("query")
+            .unwrap()
+            .is_present("aur")
+            && !matches
+                .subcommand_matches("query")
+                .unwrap()
+                .is_present("repo")
+        {
+            Command::new("pacman")
+                .arg("-Qn")
+                .spawn()
+                .expect("Something has gone wrong")
+                .wait()
+                .unwrap();
+            Command::new("pacman")
+                .arg("-Qm")
+                .spawn()
+                .expect("Something has gone wrong")
+                .wait()
+                .unwrap();
+        }
+        exit(0);
+    }
+
+    if let true = &matches.is_present("compgen") {
+        let mut app = build_app();
+        match matches
+            .subcommand_matches("compgen")
+            .unwrap()
+            .value_of("shell")
+            .unwrap()
+        {
+            "bash" => {
+                app.gen_completions_to("ame", Shell::Bash, &mut io::stdout());
             }
+            "fish" => {
+                app.gen_completions_to("ame", Shell::Fish, &mut io::stdout());
+            }
+            "zsh" => {
+                app.gen_completions_to("ame", Shell::Zsh, &mut io::stdout());
+            }
+            "pwsh" => {
+                app.gen_completions_to("ame", Shell::PowerShell, &mut io::stdout());
+            }
+            "elvish" => {
+                app.gen_completions_to("ame", Shell::Elvish, &mut io::stdout());
+            }
+            _ => {}
         }
     }
 }
