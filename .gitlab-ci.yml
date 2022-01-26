@@ -8,13 +8,6 @@ default:
 stages:
   - test
 
-test-code:
-  stage: test
-  script:
-    - cargo test
-    - cargo install cargo-tarpaulin
-    - cargo tarpaulin --ignore-tests
-
 lint-code:
   stage: test
   script:
