@@ -53,16 +53,27 @@ pub fn aur_install(a: Vec<String>, options: Options) {
                 pkg,
                 rpcres.package.as_ref().unwrap().depends.join(", ")
             ));
+            log(format!(
+                "Raw makedepends for package {} are:\n{:?}",
+                pkg,
+                rpcres.package.as_ref().unwrap().make_depends.join(", ")
+            ));
         }
 
         // dep sorting
         info("Sorting dependencies".to_string());
         let sorted = crate::internal::sort(&rpcres.package.as_ref().unwrap().depends, options);
+        info("Sorting make dependencies".to_string());
+        let md_sorted = crate::internal::sort(&rpcres.package.as_ref().unwrap().make_depends, options);
 
         if verbosity >= 1 {
             log(format!(
                 "Sorted dependencies for {} are:\n{:?}",
                 pkg, &sorted
+            ));
+            log(format!(
+                "Sorted makedepends for {} are:\n{:?}",
+                pkg, &md_sorted
             ));
         }
 
@@ -72,7 +83,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             asdeps: true,
         };
 
-        if !sorted.nf.is_empty() {
+        if !sorted.nf.is_empty() || !md_sorted.nf.is_empty() {
             crash(
                 format!(
                     "Could not find dependencies {} for package {}, aborting",
@@ -108,9 +119,11 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         info("Moving on to install dependencies".to_string());
         if !sorted.repo.is_empty() {
             crate::operations::install(sorted.repo, newopts);
+            crate::operations::install(md_sorted.repo, newopts);
         }
         if !sorted.aur.is_empty() {
             crate::operations::aur_install(sorted.aur, newopts);
+            crate::operations::aur_install(md_sorted.aur, newopts);
         }
 
         let mut makepkg_args = vec!["-rsic", "--needed"];
