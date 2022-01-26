@@ -1,18 +1,34 @@
 image: "rust:latest"
 
+default:
+  before_script:
+    - rustc --version 
+    - cargo --version
+
 stages:
-  - build
   - test
 
-
-build-job:
-  stage: build
-  script:
-    - cargo build --release
-
-
-lint-test-job:
+test-code:
   stage: test
   script:
-    - cargo clippy
+    - cargo test
+    - cargo install cargo-tarpaulin
+    - cargo tarpaulin --ignore-tests
 
+lint-code:
+  stage: test
+  script:
+    - rustup component add clippy
+    - cargo clippy -- -D warnings
+    
+format-code:
+  stage: test
+  script:
+    - rustup component add rustfmt
+    - cargo fmt -- --check
+
+audit-code:
+  stage: test
+  script:
+    - cargo install cargo-audit
+    - cargo audit
