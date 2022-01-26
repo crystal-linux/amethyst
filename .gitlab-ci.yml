@@ -1,0 +1,18 @@
+image: "rust:latest"
+
+stages:
+  - build
+  - test
+
+
+build-job:
+  stage: build
+  script:
+    - cargo build --release
+
+
+lint-test-job:
+  stage: test
+  script:
+    - cargo clippy
+
