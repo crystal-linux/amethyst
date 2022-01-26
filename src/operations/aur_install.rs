@@ -4,9 +4,9 @@ use std::fs::remove_dir_all;
 use std::path::Path;
 use std::process::{Command, Stdio};
 
-use crate::{info, log, Options};
-use crate::internal::{crash, prompt};
 use crate::internal::rpc::rpcinfo;
+use crate::internal::{crash, prompt};
+use crate::{info, log, Options};
 
 pub fn aur_install(a: Vec<String>, options: Options) {
     let url = crate::internal::rpc::URL;
@@ -64,7 +64,8 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         info("Sorting dependencies".to_string());
         let sorted = crate::internal::sort(&rpcres.package.as_ref().unwrap().depends, options);
         info("Sorting make dependencies".to_string());
-        let md_sorted = crate::internal::sort(&rpcres.package.as_ref().unwrap().make_depends, options);
+        let md_sorted =
+            crate::internal::sort(&rpcres.package.as_ref().unwrap().make_depends, options);
 
         if verbosity >= 1 {
             log(format!(

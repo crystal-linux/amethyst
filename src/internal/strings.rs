@@ -1,8 +1,8 @@
-use std::{env, io};
 use std::io::Write;
 use std::process::exit;
 use std::str::FromStr;
 use std::time::UNIX_EPOCH;
+use std::{env, io};
 
 use crate::uwu;
 

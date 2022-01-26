@@ -1,7 +1,7 @@
 use std::process::Command;
 
-use crate::{log, Options};
 use crate::internal::rpc::rpcsearch;
+use crate::{log, Options};
 
 pub fn aur_search(a: &str, options: Options) {
     let verbosity = options.verbosity;

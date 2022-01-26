@@ -3,8 +3,8 @@ use std::path::Path;
 
 use rusqlite::Connection;
 
-use crate::{crash, log, Options};
 use crate::internal::rpc::Package;
+use crate::{crash, log, Options};
 
 pub fn add(pkg: Package, options: Options) {
     let conn = Connection::open(Path::new(&format!(
