@@ -1,8 +1,8 @@
-use std::env;
 use std::env::set_current_dir;
 use std::fs::remove_dir_all;
 use std::path::Path;
 use std::process::{Command, Stdio};
+use std::{env, fs};
 
 use crate::internal::rpc::rpcinfo;
 use crate::internal::{crash, prompt};
@@ -13,6 +13,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
     let cachedir = format!("{}/.cache/ame/", env::var("HOME").unwrap());
     let verbosity = options.verbosity;
     let noconfirm = options.noconfirm;
+    let skippgp = options.skippgp;
 
     if verbosity >= 1 {
         log(format!("Installing from AUR: {:?}", &a));
@@ -40,7 +41,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             .arg("clone")
             .arg(format!("{}/{}", url, pkg))
             .stdout(Stdio::null())
-            .status()
+            .output()
             .expect("Something has gone wrong");
 
         if verbosity >= 1 {
@@ -82,6 +83,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             verbosity,
             noconfirm,
             asdeps: true,
+            skippgp,
         };
 
         if !sorted.nf.is_empty() || !md_sorted.nf.is_empty() {
@@ -111,6 +113,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
                     .unwrap();
                 let p2 = prompt(format!("Would you still like to install {}?", pkg), true);
                 if !p2 {
+                    fs::remove_dir_all(format!("{}/{}", cachedir, pkg)).unwrap();
                     crash("Not proceeding".to_string(), 6);
                 }
             }
@@ -134,6 +137,9 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         if options.noconfirm {
             makepkg_args.push("--noconfirm")
         }
+        if options.skippgp {
+            makepkg_args.push("--skippgp")
+        }
 
         // package building and installing
         info("Building time!".to_string());
@@ -144,6 +150,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             .expect("Something has gone wrong");
 
         if out.code() != Some(0) {
+            fs::remove_dir_all(format!("{}/{}", cachedir, pkg)).unwrap();
             crash(
                 format!("Error encountered while installing {}, aborting", pkg),
                 7,

@@ -30,7 +30,7 @@ pub fn repo_search(a: &str, options: Options) {
     let verbosity = options.verbosity;
     let rs = Command::new("pacman")
         .arg("-Ss")
-        .arg(format!("^{}$", &a))
+        .arg(&a)
         .output()
         .expect("Something has gone wrong");
 
