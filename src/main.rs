@@ -1,5 +1,6 @@
-use std::io;
+use std::path::Path;
 use std::process::{exit, Command};
+use std::{env, fs, io};
 
 use clap::{App, AppSettings, Arg, ArgMatches, ArgSettings, Shell, SubCommand};
 
@@ -19,6 +20,14 @@ fn main() {
 
     if unsafe { geteuid() } == 0 {
         crash("Running amethyst as root is disallowed as it can lead to system breakage. Instead, amethyst will prompt you when it needs superuser permissions".to_string(), 1);
+    }
+
+    let home = env::var("HOME").unwrap();
+    if !Path::exists(format!("{}/.cache/ame/", home).as_ref()) {
+        fs::create_dir_all(format!("{}/.cache/ame/", home)).unwrap();
+    } else {
+        fs::remove_dir_all(format!("{}/.cache/ame", home)).unwrap();
+        fs::create_dir_all(format!("{}/.cache/ame/", home)).unwrap();
     }
 
     fn build_app() -> App<'static, 'static> {
