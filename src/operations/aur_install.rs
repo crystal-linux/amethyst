@@ -13,7 +13,6 @@ pub fn aur_install(a: Vec<String>, options: Options) {
     let cachedir = format!("{}/.cache/ame/", env::var("HOME").unwrap());
     let verbosity = options.verbosity;
     let noconfirm = options.noconfirm;
-    let skippgp = options.skippgp;
 
     if verbosity >= 1 {
         log(format!("Installing from AUR: {:?}", &a));
@@ -83,7 +82,6 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             verbosity,
             noconfirm,
             asdeps: true,
-            skippgp,
         };
 
         if !sorted.nf.is_empty() || !md_sorted.nf.is_empty() {
@@ -130,15 +128,12 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             crate::operations::aur_install(md_sorted.aur, newopts);
         }
 
-        let mut makepkg_args = vec!["-rsic", "--needed"];
+        let mut makepkg_args = vec!["-rsic", "--needed", "--skippgp"];
         if options.asdeps {
             makepkg_args.push("--asdeps")
         }
         if options.noconfirm {
             makepkg_args.push("--noconfirm")
-        }
-        if options.skippgp {
-            makepkg_args.push("--skippgp")
         }
 
         // package building and installing

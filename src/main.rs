@@ -39,12 +39,6 @@ fn main() {
                     .set(ArgSettings::Global)
                     .help("Complete operation without prompting user"),
             )
-            .arg(
-                Arg::with_name("skippgp")
-                    .long("skippgp")
-                    .set(ArgSettings::Global)
-                    .help("Ignore checking PGP signatures in PKGBUILDs"),
-            )
             .subcommand(
                 SubCommand::with_name("install")
                     .about(
@@ -139,13 +133,11 @@ fn main() {
 
     let verbosity: i32 = matches.occurrences_of("verbose") as i32;
     let noconfirm: bool = matches.is_present("noconfirm");
-    let skippgp: bool = matches.is_present("skippgp");
 
     let options = Options {
         verbosity,
         noconfirm,
         asdeps: false,
-        skippgp,
     };
 
     init(options);
