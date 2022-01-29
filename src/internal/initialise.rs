@@ -44,5 +44,34 @@ pub fn init(options: Options) {
                 );
             }
         }
+    } else {
+        let r = std::fs::remove_dir_all(format!("{}/.cache/ame", homedir));
+        match r {
+            Ok(_) => {
+                if verbosity >= 1 {
+                    log(format!("Removing cache: {}/.cache/ame", homedir));
+                }
+            }
+            Err(e) => {
+                crash(
+                    format!("Couldn't remove path: {}/.cache/ame: {}", homedir, e),
+                    4,
+                );
+            }
+        }
+        let r2 = std::fs::create_dir_all(format!("{}/.cache/ame", homedir));
+        match r2 {
+            Ok(_) => {
+                if verbosity >= 1 {
+                    log(format!("Created path: {}/.cache/ame", homedir));
+                }
+            }
+            Err(e2) => {
+                crash(
+                    format!("Couldn't create path: {}/.cache/ame: {}", homedir, e2),
+                    4,
+                );
+            }
+        }
     }
 }
