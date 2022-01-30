@@ -128,7 +128,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             crate::operations::aur_install(md_sorted.aur, newopts);
         }
 
-        let mut makepkg_args = vec!["-rsic", "--needed", "--skippgp"];
+        let mut makepkg_args = vec!["-rsic", "--skippgp"];
         if options.asdeps {
             makepkg_args.push("--asdeps")
         }

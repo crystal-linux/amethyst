@@ -1,5 +1,5 @@
 use std::process::{exit, Command};
-use std::{env, io};
+use std::{env, io, process};
 
 use clap::{App, AppSettings, Arg, ArgMatches, ArgSettings, Shell, SubCommand};
 
@@ -174,6 +174,17 @@ fn main() {
                 sorted.nf.join(", ")
             ));
         }
+
+        let out = process::Command::new("bash")
+            .args(&["-c", "sudo find /etc -name *.pacnew"])
+            .output()
+            .expect("Something has gone wrong")
+            .stdout;
+
+        if !String::from_utf8((*out).to_owned()).unwrap().is_empty() {
+            info(format!("You have .pacnew files in /etc ({}) that you haven't removed or acted upon, it is recommended you do that now", String::from_utf8((*out).to_owned()).unwrap().split_whitespace().collect::<Vec<&str>>().join(", ")));
+        }
+
         exit(0);
     }
 

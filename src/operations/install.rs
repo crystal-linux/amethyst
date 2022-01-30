@@ -10,29 +10,31 @@ pub fn install(a: Vec<String>, options: Options) {
         opers.push("--asdeps".to_string());
     }
     let verbosity = options.verbosity;
-    if verbosity >= 1 {
-        log(format!("Installing from repos: {:?}", &a));
-    }
+    if !a.is_empty() {
+        if verbosity >= 1 {
+            log(format!("Installing from repos: {:?}", &a));
+        }
 
-    let r = runas::Command::new("pacman")
-        .arg("-S")
-        .arg("--needed")
-        .args(&a)
-        .args(&opers)
-        .status()
-        .expect("Something has gone wrong");
+        let r = runas::Command::new("pacman")
+            .arg("-S")
+            .arg("--needed")
+            .args(&a)
+            .args(&opers)
+            .status()
+            .expect("Something has gone wrong");
 
-    if r.code() != Some(0) {
-        crash(
-            format!(
-                "An error occured while installing packages: {}, aborting",
-                a.join(", ")
-            ),
-            7,
-        );
-    }
+        if r.code() != Some(0) {
+            crash(
+                format!(
+                    "An error occured while installing packages: {}, aborting",
+                    a.join(", ")
+                ),
+                7,
+            );
+        }
 
-    if verbosity >= 1 {
-        log(format!("Installing packages: {:?} was successful", &a));
+        if verbosity >= 1 {
+            log(format!("Installing packages: {:?} was successful", &a));
+        }
     }
 }
