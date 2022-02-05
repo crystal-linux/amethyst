@@ -3,7 +3,7 @@
 # Developer: jnats <jnats[at]salyut[dot]one>
 
 pkgname=amethyst
-pkgver=3.0.0
+pkgver=3.0.1
 pkgrel=1
 pkgdesc="Fast, efficient and lightweight AUR helper/pacman wrapper"
 arch=('any')
