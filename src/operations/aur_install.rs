@@ -97,10 +97,13 @@ pub fn aur_install(a: Vec<String>, options: Options) {
 
         if !noconfirm {
             let p1 = prompt(
-                format!("Would you like to review {}'s PKGBUILD?", pkg),
+                format!(
+                    "Would you like to review {}'s PKGBUILD (and any .install files if present)?",
+                    pkg
+                ),
                 false,
             );
-            let editor = env::var("PAGER").unwrap_or_else(|_| "less".parse().unwrap());
+            let editor: &str = &env::var("PAGER").unwrap_or_else(|_| "less".parse().unwrap());
 
             if p1 {
                 Command::new(editor)
@@ -109,6 +112,21 @@ pub fn aur_install(a: Vec<String>, options: Options) {
                     .unwrap()
                     .wait()
                     .unwrap();
+
+                let out = Command::new("bash")
+                    .args(&["-c", &format!("ls {}/*.install &> /dev/null", pkg)])
+                    .status()
+                    .unwrap();
+
+                if out.code() == Some(0) {
+                    Command::new("bash")
+                        .args(&["-c", &format!("{} {}/*.install", editor, pkg)])
+                        .spawn()
+                        .unwrap()
+                        .wait()
+                        .unwrap();
+                }
+
                 let p2 = prompt(format!("Would you still like to install {}?", pkg), true);
                 if !p2 {
                     fs::remove_dir_all(format!("{}/{}", cachedir, pkg)).unwrap();
