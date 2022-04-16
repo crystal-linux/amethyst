@@ -22,7 +22,7 @@ pub enum Operation {
     Install(InstallArgs),
 
     /// Removes a previously installed package
-    #[clap(name="remove", aliases=&["rm", "-R", "Rs"])]
+    #[clap(name="remove", aliases=&["rm", "-R", "-Rs"])]
     Remove(RemoveArgs),
 
     /// Searches for the relevant packages in both the AUR and repos
