@@ -35,6 +35,8 @@ Made for Crystal, compatible with any Arch-based Linux distribution.
 | 5               | Could not find one or more required package dependencies |
 | 6               | User cancelled package installation                      |
 | 7               | Pacman error when installing package                     |
+| 8               | Git error                                                |
+| 9               | makepkg error                                            |
 
 ### How to build:
 
