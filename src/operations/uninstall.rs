@@ -1,43 +1,52 @@
 use std::path::Path;
 use std::{env, fs};
 
+use crate::internal::commands::ShellCommand;
+use crate::internal::error::SilentUnwrap;
+use crate::internal::exit_code::AppExitCode;
 use crate::{log, Options};
 
-pub fn uninstall(mut a: Vec<String>, options: Options) {
-    let b = a.clone();
+pub fn uninstall(packages: Vec<String>, options: Options) {
+    let mut pacman_args = vec!["-Rs"];
+    pacman_args.append(&mut packages.iter().map(|s| s.as_str()).collect());
+
     if options.noconfirm {
-        a.push("--noconfirm".to_string());
+        pacman_args.push("--noconfirm");
     }
     let verbosity = options.verbosity;
     if verbosity >= 1 {
-        log(format!("Uninstalling: {:?}", &b));
+        log(format!("Uninstalling: {:?}", &packages));
     }
 
-    let r = runas::Command::new("pacman")
-        .arg("-Rs")
-        .args(&a)
-        .status()
-        .expect("Something has gone wrong");
+    ShellCommand::pacman()
+        .elevated()
+        .args(pacman_args)
+        .wait_success()
+        .silent_unwrap(AppExitCode::PacmanError);
 
-    if let Some(x) = r.code() {
-        if verbosity >= 1 {
-            log(format!(
-                "Uninstalling packages: {:?} exited with code {}",
-                &b, x
-            ));
-        }
+    if verbosity >= 1 {
+        log(format!(
+            "Uninstalling packages: {:?} exited with code 0",
+            &packages
+        ));
     }
 
-    for b in a {
-        crate::database::remove(&b, options);
-        if Path::new(&format!("{}/.cache/ame/{}", env::var("HOME").unwrap(), b)).exists() {
+    for package in packages {
+        crate::database::remove(&package, options);
+        if Path::new(&format!(
+            "{}/.cache/ame/{}",
+            env::var("HOME").unwrap(),
+            package
+        ))
+        .exists()
+        {
             if verbosity >= 1 {
                 log("Old cache directory found, deleting".to_string());
             }
             fs::remove_dir_all(Path::new(&format!(
                 "{}/.cache/ame/{}",
                 env::var("HOME").unwrap(),
-                b
+                package
             )))
             .unwrap();
         }

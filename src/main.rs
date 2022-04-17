@@ -1,10 +1,11 @@
 use clap::Parser;
-use std::process;
-use std::process::Command;
 
 use crate::args::{InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs};
 use args::Args;
+use internal::commands::ShellCommand;
+use internal::error::SilentUnwrap;
 
+use crate::internal::exit_code::AppExitCode;
 use crate::internal::{crash, info, init, log, sort, structs::Options};
 
 #[global_allocator]
@@ -21,7 +22,7 @@ fn main() {
     }
 
     if unsafe { geteuid() } == 0 {
-        crash("Running amethyst as root is disallowed as it can lead to system breakage. Instead, amethyst will prompt you when it needs superuser permissions".to_string(), 1);
+        crash("Running amethyst as root is disallowed as it can lead to system breakage. Instead, amethyst will prompt you when it needs superuser permissions".to_string(), AppExitCode::RunAsRoot);
     }
 
     let args: Args = Args::parse();
@@ -65,20 +66,28 @@ fn cmd_install(args: InstallArgs, options: Options) {
         operations::aur_install(sorted.aur, options);
     }
     if !sorted.nf.is_empty() {
-        log(format!(
-            "Couldn't find packages: {} in repos or the AUR",
-            sorted.nf.join(", ")
-        ));
+        crash(
+            format!(
+                "Couldn't find packages: {} in repos or the AUR",
+                sorted.nf.join(", ")
+            ),
+            AppExitCode::PacmanError,
+        );
     }
 
-    let out = process::Command::new("bash")
-        .args(&["-c", "sudo find /etc -name *.pacnew"])
-        .output()
-        .expect("Something has gone wrong")
+    let bash_output = ShellCommand::bash()
+        .arg("-c")
+        .arg("sudo find /etc -name *.pacnew")
+        .wait_with_output()
+        .silent_unwrap(AppExitCode::Other)
         .stdout;
 
-    if !String::from_utf8((*out).to_owned()).unwrap().is_empty() {
-        info(format!("You have .pacnew files in /etc ({}) that you haven't removed or acted upon, it is recommended you do that now", String::from_utf8((*out).to_owned()).unwrap().split_whitespace().collect::<Vec<&str>>().join(", ")));
+    if !bash_output.is_empty() {
+        let pacnew_files = bash_output
+            .split_whitespace()
+            .collect::<Vec<&str>>()
+            .join(", ");
+        info(format!("You have .pacnew files in /etc ({pacnew_files}) that you haven't removed or acted upon, it is recommended you do that now", ));
     }
 }
 
@@ -108,33 +117,25 @@ fn cmd_search(args: SearchArgs, options: Options) {
 
 fn cmd_query(args: QueryArgs) {
     if args.aur {
-        Command::new("pacman")
+        ShellCommand::pacman()
             .arg("-Qm")
-            .spawn()
-            .expect("Something has gone wrong")
-            .wait()
-            .unwrap();
+            .wait_success()
+            .silent_unwrap(AppExitCode::PacmanError);
     }
     if args.repo {
-        Command::new("pacman")
+        ShellCommand::pacman()
             .arg("-Qn")
-            .spawn()
-            .expect("Something has gone wrong")
-            .wait()
-            .unwrap();
+            .wait_success()
+            .silent_unwrap(AppExitCode::PacmanError);
     }
     if !args.repo && !args.aur {
-        Command::new("pacman")
+        ShellCommand::pacman()
             .arg("-Qn")
-            .spawn()
-            .expect("Something has gone wrong")
-            .wait()
-            .unwrap();
-        Command::new("pacman")
+            .wait_success()
+            .silent_unwrap(AppExitCode::PacmanError);
+        ShellCommand::pacman()
             .arg("-Qm")
-            .spawn()
-            .expect("Something has gone wrong")
-            .wait()
-            .unwrap();
+            .wait_success()
+            .silent_unwrap(AppExitCode::PacmanError);
     }
 }

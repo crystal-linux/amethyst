@@ -3,6 +3,7 @@ use std::path::Path;
 
 use rusqlite::Connection;
 
+use crate::internal::exit_code::AppExitCode;
 use crate::{crash, log, Options};
 
 pub fn init(options: Options) {
@@ -32,7 +33,9 @@ pub fn init(options: Options) {
         [],
     )
     .unwrap_or_else(|e| {
-        crash(format!("Couldn't initialise database: {}", e), 3);
-        1
+        crash(
+            format!("Couldn't initialise database: {}", e),
+            AppExitCode::FailedInitDb,
+        )
     });
 }

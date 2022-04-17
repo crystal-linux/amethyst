@@ -1,4 +1,7 @@
 mod clean;
+pub mod commands;
+pub mod error;
+pub mod exit_code;
 mod initialise;
 pub mod rpc;
 mod sort;
@@ -8,12 +11,13 @@ pub mod structs;
 pub use clean::*;
 pub use initialise::*;
 pub use sort::*;
+use std::env;
 pub use strings::*;
 
 #[macro_export]
 macro_rules! uwu {
     ($x:expr) => {{
-        let uwu: String = String::from_str($x).unwrap();
+        let uwu: String = String::from($x);
 
         let uwu = uwu.replace("l", "w");
         let uwu = uwu.replace("L", "W");
@@ -25,4 +29,12 @@ macro_rules! uwu {
 
         uwu
     }};
+}
+
+pub fn uwu_enabled() -> bool {
+    env::var("AME_UWU").unwrap_or_else(|_| "".to_string()) == "true"
+}
+
+pub fn uwu_debug_enabled() -> bool {
+    env::var("AME_UWU_DEBUG").unwrap_or_else(|_| "".to_string()) == "true"
 }

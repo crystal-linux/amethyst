@@ -1,48 +1,49 @@
-use std::process::Command;
-
+use crate::internal::commands::ShellCommand;
+use crate::internal::error::SilentUnwrap;
+use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcsearch;
 use crate::{log, Options};
 
-pub fn aur_search(a: &str, options: Options) {
+pub fn aur_search(query: &str, options: Options) {
     let verbosity = options.verbosity;
-    let res = rpcsearch(a.to_string());
+    let res = rpcsearch(query.to_string());
 
-    if verbosity >= 1 {
-        log(format!(
-            "Found {} resuls for \"{}\" in AUR",
-            res.resultcount, a
-        ));
-    }
-
-    for r in &res.results {
+    for package in &res.results {
         println!(
             "aur/{} {}\n    {}",
-            r.name,
-            r.version,
-            r.description
+            package.name,
+            package.version,
+            package
+                .description
                 .as_ref()
                 .unwrap_or(&"No description".to_string())
         )
     }
+
+    if verbosity >= 1 {
+        log(format!(
+            "Found {} resuls for \"{}\" in AUR",
+            res.resultcount, query
+        ));
+    }
 }
 
-pub fn repo_search(a: &str, options: Options) {
+pub fn repo_search(query: &str, options: Options) {
     let verbosity = options.verbosity;
-    let rs = Command::new("pacman")
+    let output = ShellCommand::pacman()
         .arg("-Ss")
-        .arg(&a)
-        .output()
-        .expect("Something has gone wrong");
-
-    let str = String::from_utf8(rs.stdout).unwrap();
+        .arg(query)
+        .wait_with_output()
+        .silent_unwrap(AppExitCode::PacmanError)
+        .stdout;
 
     if verbosity >= 1 {
         log(format!(
             "Found {} results for \"{}\" in repos",
-            &str.split('\n').count() / 2,
-            &a
+            &output.split('\n').count() / 2,
+            &query
         ));
     }
 
-    print!("{}", str);
+    println!("{}", output)
 }

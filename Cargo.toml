@@ -53,7 +53,6 @@ codegen-units = 1
 mimalloc = { version = "0.1.27", default-features = false }
 clap = { version = "3.1.9", features = [ "derive", "wrap_help"] }
 regex = { version = "1.5.4", default-features = false, features = ["std", "unicode-perl"] }
-runas = "0.2.1"
 rusqlite = { version = "0.26.3", default-features = false }
 ureq = { version = "2.4.0", default-features = false, features = ["native-tls", "json"] }
 serde = { version = "1.0.90", default-features = false, features = ["derive", "serde_derive"] }
