@@ -1,6 +1,7 @@
-use crate::error::SilentUnwrap;
+use crate::internal::commands::ShellCommand;
+use crate::internal::error::SilentUnwrap;
+use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcinfo;
-use crate::internal::sudo_pacman;
 use crate::operations::aur_install::aur_install;
 use crate::{info, log, Options};
 
@@ -17,7 +18,11 @@ pub fn upgrade(options: Options) {
         log("Upgrading repo packages".to_string());
     }
 
-    sudo_pacman(pacman_args).silent_unwrap();
+    ShellCommand::pacman()
+        .elevated()
+        .args(pacman_args)
+        .wait_success()
+        .silent_unwrap(AppExitCode::PacmanError);
 
     if verbosity >= 1 {
         log("Upgrading AUR packages".to_string());

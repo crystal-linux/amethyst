@@ -3,6 +3,7 @@ use std::path::Path;
 
 use rusqlite::Connection;
 
+use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::Package;
 use crate::{crash, log, Options};
 
@@ -20,6 +21,6 @@ pub fn add(pkg: Package, options: Options) {
     conn.execute("INSERT OR REPLACE INTO packages (name, version, description, depends, make_depends) VALUES (?1, ?2, ?3, ?4, ?5)",
                  [&pkg.name, &pkg.version, &pkg.description.unwrap_or_else(|| "No description found.".parse().unwrap()), &pkg.depends.join(" "), &pkg.make_depends.join(" ")],
     ).unwrap_or_else(|e|
-        crash(format!("Failed adding package {} to the database: {}", pkg.name, e), 2)
+        crash(format!("Failed adding package {} to the database: {}", pkg.name, e), AppExitCode::FailedAddingPkg)
     );
 }

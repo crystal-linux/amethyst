@@ -1,8 +1,9 @@
 use std::path::Path;
 use std::{env, fs};
 
-use crate::error::SilentUnwrap;
-use crate::internal::sudo_pacman;
+use crate::internal::commands::ShellCommand;
+use crate::internal::error::SilentUnwrap;
+use crate::internal::exit_code::AppExitCode;
 use crate::{log, Options};
 
 pub fn uninstall(packages: Vec<String>, options: Options) {
@@ -17,7 +18,11 @@ pub fn uninstall(packages: Vec<String>, options: Options) {
         log(format!("Uninstalling: {:?}", &packages));
     }
 
-    sudo_pacman(pacman_args).silent_unwrap();
+    ShellCommand::pacman()
+        .elevated()
+        .args(pacman_args)
+        .wait_success()
+        .silent_unwrap(AppExitCode::PacmanError);
 
     if verbosity >= 1 {
         log(format!(

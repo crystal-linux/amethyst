@@ -1,5 +1,7 @@
 mod clean;
-mod commands;
+pub mod commands;
+pub mod error;
+pub mod exit_code;
 mod initialise;
 pub mod rpc;
 mod sort;
@@ -7,7 +9,6 @@ mod strings;
 pub mod structs;
 
 pub use clean::*;
-pub use commands::*;
 pub use initialise::*;
 pub use sort::*;
 use std::env;
@@ -30,10 +31,10 @@ macro_rules! uwu {
     }};
 }
 
-fn uwu_enabled() -> bool {
+pub fn uwu_enabled() -> bool {
     env::var("AME_UWU").unwrap_or_else(|_| "".to_string()) == "true"
 }
 
-fn uwu_debug_enabled() -> bool {
+pub fn uwu_debug_enabled() -> bool {
     env::var("AME_UWU_DEBUG").unwrap_or_else(|_| "".to_string()) == "true"
 }

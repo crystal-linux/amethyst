@@ -4,10 +4,12 @@ use std::path::Path;
 use std::process::Command;
 use std::{env, fs};
 
-use crate::error::SilentUnwrap;
+use crate::internal::commands::ShellCommand;
+use crate::internal::error::SilentUnwrap;
+use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcinfo;
-use crate::internal::{crash, git, makepkg, prompt};
-use crate::{bash, info, log, Options};
+use crate::internal::{crash, prompt};
+use crate::{info, log, Options};
 
 pub fn aur_install(a: Vec<String>, options: Options) {
     let url = crate::internal::rpc::URL;
@@ -37,7 +39,11 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         info("Cloning package source".to_string());
 
         set_current_dir(Path::new(&cachedir)).unwrap();
-        git(&["clone", &format!("{}/{}", url, pkg)]).silent_unwrap();
+        ShellCommand::git()
+            .arg("clone")
+            .arg(format!("{}/{}", url, pkg))
+            .wait()
+            .silent_unwrap(AppExitCode::GitError);
 
         if verbosity >= 1 {
             log(format!(
@@ -87,7 +93,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
                     sorted.nf.join(", "),
                     pkg
                 ),
-                5,
+                AppExitCode::MissingDeps,
             );
         }
 
@@ -109,16 +115,24 @@ pub fn aur_install(a: Vec<String>, options: Options) {
                     .wait()
                     .unwrap();
 
-                let result = bash(&["-c", &format!("ls {}/*.install &> /dev/null", pkg)]);
+                let status = ShellCommand::bash()
+                    .arg("-c")
+                    .arg(format!("ls {}/*.install &> /dev/null", pkg))
+                    .wait()
+                    .silent_unwrap(AppExitCode::Other);
 
-                if result.is_ok() {
-                    bash(&["-c", &format!("{} {}/*.install", editor, pkg)]).silent_unwrap();
+                if status.success() {
+                    ShellCommand::bash()
+                        .arg("-c")
+                        .arg(format!("{} {}/*.install", editor, pkg))
+                        .wait()
+                        .silent_unwrap(AppExitCode::Other);
                 }
 
                 let p2 = prompt(format!("Would you still like to install {}?", pkg), true);
                 if !p2 {
                     fs::remove_dir_all(format!("{}/{}", cachedir, pkg)).unwrap();
-                    crash("Not proceeding".to_string(), 6);
+                    crash("Not proceeding".to_string(), AppExitCode::UserCancellation);
                 }
             }
         }
@@ -145,13 +159,16 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         // package building and installing
         info("Building time!".to_string());
         set_current_dir(format!("{}/{}", cachedir, pkg)).unwrap();
-        let result = makepkg(&makepkg_args);
+        let status = ShellCommand::makepkg()
+            .args(makepkg_args)
+            .wait()
+            .silent_unwrap(AppExitCode::MakePkgError);
 
-        if result.is_ok() {
+        if !status.success() {
             fs::remove_dir_all(format!("{}/{}", cachedir, pkg)).unwrap();
             crash(
                 format!("Error encountered while installing {}, aborting", pkg),
-                7,
+                AppExitCode::PacmanError,
             );
         }
 

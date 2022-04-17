@@ -1,3 +1,4 @@
+use crate::internal::exit_code::AppExitCode;
 use std::env;
 use std::path::Path;
 
@@ -19,7 +20,7 @@ pub fn init(options: Options) {
             Err(e) => {
                 crash(
                     format!("Couldn't create path: {}/.local/share/ame: {}", homedir, e),
-                    4,
+                    AppExitCode::FailedCreatingPaths,
                 );
             }
         }
@@ -40,7 +41,7 @@ pub fn init(options: Options) {
             Err(e) => {
                 crash(
                     format!("Couldn't create path: {}/.cache/ame: {}", homedir, e),
-                    4,
+                    AppExitCode::FailedCreatingPaths,
                 );
             }
         }
@@ -55,7 +56,7 @@ pub fn init(options: Options) {
             Err(e) => {
                 crash(
                     format!("Couldn't remove path: {}/.cache/ame: {}", homedir, e),
-                    4,
+                    AppExitCode::FailedCreatingPaths,
                 );
             }
         }
@@ -69,7 +70,7 @@ pub fn init(options: Options) {
             Err(e2) => {
                 crash(
                     format!("Couldn't create path: {}/.cache/ame: {}", homedir, e2),
-                    4,
+                    AppExitCode::FailedCreatingPaths,
                 );
             }
         }

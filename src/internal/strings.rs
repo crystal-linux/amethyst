@@ -3,25 +3,26 @@ use std::io::Write;
 use std::process::exit;
 use std::time::UNIX_EPOCH;
 
+use crate::internal::exit_code::AppExitCode;
 use crate::{internal, uwu};
 
-pub fn info<S: ToString>(a: S) {
-    let a = a.to_string();
+pub fn info<S: ToString>(msg: S) {
+    let a = msg.to_string();
     let a = if internal::uwu_enabled() { uwu!(&a) } else { a };
 
     println!("\x1b[2;22;35m❖\x1b[0m \x1b[1;37m{}\x1b[0m", a)
 }
 
-pub fn crash<S: ToString>(a: S, b: i32) -> ! {
-    let a = a.to_string();
+pub fn crash<S: ToString>(msg: S, exit_code: AppExitCode) -> ! {
+    let a = msg.to_string();
     let a = if internal::uwu_enabled() { uwu!(&a) } else { a };
 
     println!("\x1b[2;22;31m❌:\x1b[0m \x1b[1;91m{}\x1b[0m", a);
-    exit(b);
+    exit(exit_code as i32);
 }
 
-pub fn log<S: ToString>(a: S) {
-    let a = a.to_string();
+pub fn log<S: ToString>(msg: S) {
+    let a = msg.to_string();
     let a = if internal::uwu_enabled() && internal::uwu_debug_enabled() {
         uwu!(&a)
     } else {

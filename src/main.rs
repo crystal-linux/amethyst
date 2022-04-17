@@ -2,15 +2,17 @@ use clap::Parser;
 
 use crate::args::{InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs};
 use args::Args;
+use internal::commands::ShellCommand;
+use internal::error::SilentUnwrap;
 
-use crate::internal::{bash, crash, info, init, log, pacman, sort, structs::Options};
+use crate::internal::exit_code::AppExitCode;
+use crate::internal::{crash, info, init, log, sort, structs::Options};
 
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 mod args;
 mod database;
-mod error;
 mod internal;
 mod operations;
 
@@ -20,7 +22,7 @@ fn main() {
     }
 
     if unsafe { geteuid() } == 0 {
-        crash("Running amethyst as root is disallowed as it can lead to system breakage. Instead, amethyst will prompt you when it needs superuser permissions".to_string(), 1);
+        crash("Running amethyst as root is disallowed as it can lead to system breakage. Instead, amethyst will prompt you when it needs superuser permissions".to_string(), AppExitCode::RunAsRoot);
     }
 
     let args: Args = Args::parse();
@@ -64,13 +66,21 @@ fn cmd_install(args: InstallArgs, options: Options) {
         operations::aur_install(sorted.aur, options);
     }
     if !sorted.nf.is_empty() {
-        log(format!(
-            "Couldn't find packages: {} in repos or the AUR",
-            sorted.nf.join(", ")
-        ));
+        crash(
+            format!(
+                "Couldn't find packages: {} in repos or the AUR",
+                sorted.nf.join(", ")
+            ),
+            AppExitCode::PacmanError,
+        );
     }
 
-    let bash_output = bash(&["-c", "sudo find /etc -name *.pacnew"]).unwrap();
+    let bash_output = ShellCommand::bash()
+        .arg("-c")
+        .arg("sudo find /etc -name *.pacnew")
+        .wait_with_output()
+        .silent_unwrap(AppExitCode::Other)
+        .stdout;
 
     if !bash_output.is_empty() {
         let pacnew_files = bash_output
@@ -107,13 +117,25 @@ fn cmd_search(args: SearchArgs, options: Options) {
 
 fn cmd_query(args: QueryArgs) {
     if args.aur {
-        pacman(&["-Qm"]).unwrap();
+        ShellCommand::pacman()
+            .arg("-Qm")
+            .wait_success()
+            .silent_unwrap(AppExitCode::PacmanError);
     }
     if args.repo {
-        pacman(&["-Qn"]).unwrap();
+        ShellCommand::pacman()
+            .arg("-Qn")
+            .wait_success()
+            .silent_unwrap(AppExitCode::PacmanError);
     }
     if !args.repo && !args.aur {
-        pacman(&["-Qn"]).unwrap();
-        pacman(&["-Qm"]).unwrap();
+        ShellCommand::pacman()
+            .arg("-Qn")
+            .wait_success()
+            .silent_unwrap(AppExitCode::PacmanError);
+        ShellCommand::pacman()
+            .arg("-Qm")
+            .wait_success()
+            .silent_unwrap(AppExitCode::PacmanError);
     }
 }

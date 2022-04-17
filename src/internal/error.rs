@@ -1,4 +1,5 @@
 use crate::crash;
+use crate::internal::exit_code::AppExitCode;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 use std::io;
@@ -9,6 +10,7 @@ pub type AppResult<T> = Result<T, AppError>;
 pub enum AppError {
     Io(std::io::Error),
     Other(String),
+    NonZeroExit,
 }
 
 impl Display for AppError {
@@ -16,6 +18,7 @@ impl Display for AppError {
         match self {
             AppError::Io(io) => Display::fmt(io, f),
             AppError::Other(s) => Display::fmt(s, f),
+            AppError::NonZeroExit => Display::fmt("exited with non zero code", f),
         }
     }
 }
@@ -41,14 +44,14 @@ impl From<&str> for AppError {
 }
 
 pub trait SilentUnwrap<T> {
-    fn silent_unwrap(self) -> T;
+    fn silent_unwrap(self, error_code: AppExitCode) -> T;
 }
 
 impl<T> SilentUnwrap<T> for AppResult<T> {
-    fn silent_unwrap(self) -> T {
+    fn silent_unwrap(self, exit_code: AppExitCode) -> T {
         match self {
             Ok(val) => val,
-            Err(_) => crash("an error occurred", 1),
+            Err(_) => crash("an error occurred", exit_code),
         }
     }
 }

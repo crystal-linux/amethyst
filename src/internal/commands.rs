@@ -1,105 +1,125 @@
-use crate::error::{AppError, AppResult};
-use crate::internal::uwu_enabled;
-use crate::uwu;
+use crate::internal::error::{AppError, AppResult};
 use std::ffi::{OsStr, OsString};
-use std::io::{BufRead, BufReader};
-use std::process::{ChildStderr, ChildStdout, Command, Stdio};
+use std::process::{Child, Command, ExitStatus, Stdio};
 
-/// Executes a makepkg command
-#[inline]
-pub fn makepkg<I: IntoIterator<Item = S>, S: AsRef<OsStr>>(args: I) -> AppResult<String> {
-    run_command("makepkg", args)
+pub struct StringOutput {
+    pub stdout: String,
+    pub stderr: String,
+    pub status: ExitStatus,
 }
 
-/// Executes a git command
-#[inline]
-pub fn git<I: IntoIterator<Item = S>, S: AsRef<OsStr>>(args: I) -> AppResult<String> {
-    run_command("git", args)
+/// A wrapper around [std::process::Command] with predefined
+/// commands used in this project as well as elevated access.
+pub struct ShellCommand {
+    command: String,
+    args: Vec<OsString>,
+    elevated: bool,
 }
 
-/// Executes a bash command
-#[inline]
-pub fn bash<I: IntoIterator<Item = S>, S: AsRef<OsStr>>(args: I) -> AppResult<String> {
-    run_command("bash", args)
-}
-
-/// Runs pacman with sudo
-pub fn sudo_pacman<I: IntoIterator<Item = S>, S: AsRef<OsStr>>(args: I) -> AppResult<String> {
-    let mut pacman_args = args
-        .into_iter()
-        .map(|i: S| OsString::from(i.as_ref()))
-        .collect::<Vec<OsString>>();
-    let mut sudo_args = vec![OsString::from("pacman")];
-    sudo_args.append(&mut pacman_args);
-    sudo(sudo_args)
-}
-
-/// Executes a pacman command
-#[inline]
-pub fn pacman<I: IntoIterator<Item = S>, S: AsRef<OsStr>>(args: I) -> AppResult<String> {
-    run_command("pacman", args)
-}
-
-#[inline]
-pub fn sudo<I: IntoIterator<Item = S>, S: AsRef<OsStr>>(args: I) -> AppResult<String> {
-    run_command("sudo", args)
-}
-
-/// Runs a command and parses its output as string
-fn run_command<S1: AsRef<OsStr>, I: IntoIterator<Item = S2>, S2: AsRef<OsStr>>(
-    command: S1,
-    args: I,
-) -> AppResult<String> {
-    let mut child = Command::new(command)
-        .args(args)
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()?;
-    let stdout = child.stdout.as_mut().unwrap();
-    let stderr = child.stderr.as_mut().unwrap();
-    let stdout_str = read_stdout(stdout)?;
-    let stderr_str = read_stderr(stderr)?;
-
-    let status = child.wait()?;
-    if status.success() {
-        Ok(stdout_str)
-    } else {
-        Err(AppError::from(stderr_str))
+impl ShellCommand {
+    pub fn pacman() -> Self {
+        Self::new("pacman")
     }
-}
 
-fn read_stdout(stdout: &mut ChildStdout) -> AppResult<String> {
-    let mut stdout_str = String::new();
-    let stdout_reader = BufReader::new(stdout);
+    pub fn makepkg() -> Self {
+        Self::new("makepkg")
+    }
 
-    for line in stdout_reader.lines() {
-        let line = line?;
-        if uwu_enabled() {
-            println!("{}", uwu!(&*line))
-        } else {
-            println!("{}", &line);
+    pub fn git() -> Self {
+        Self::new("git")
+    }
+
+    pub fn bash() -> Self {
+        Self::new("bash")
+    }
+
+    fn new<S: ToString>(command: S) -> Self {
+        Self {
+            command: command.to_string(),
+            args: Vec::new(),
+            elevated: false,
         }
-        stdout_str.push_str(&line);
-        stdout_str.push_str("\n");
     }
 
-    Ok(stdout_str)
-}
+    /// Adds one argument
+    pub fn arg<S: AsRef<OsStr>>(mut self, arg: S) -> Self {
+        self.args.push(arg.as_ref().to_os_string());
 
-fn read_stderr(stderr: &mut ChildStderr) -> AppResult<String> {
-    let mut stderr_str = String::new();
-    let stderr_reader = BufReader::new(stderr);
+        self
+    }
 
-    for line in stderr_reader.lines() {
-        let line = line?;
-        if uwu_enabled() {
-            eprintln!("{}", uwu!(&line))
+    /// Adds a list of arguments
+    pub fn args<I: IntoIterator<Item = S>, S: AsRef<OsStr>>(mut self, args: I) -> Self {
+        self.args.append(
+            &mut args
+                .into_iter()
+                .map(|a: S| a.as_ref().to_os_string())
+                .collect(),
+        );
+
+        self
+    }
+
+    /// Runs the command with sudo
+    pub fn elevated(mut self) -> Self {
+        self.elevated = true;
+
+        self
+    }
+
+    /// Waits for the child to exit but returns an error when it exists with a non-zero status code
+    pub fn wait_success(self) -> AppResult<()> {
+        let status = self.wait()?;
+        if status.success() {
+            Ok(())
         } else {
-            eprintln!("{}", &line);
+            Err(AppError::NonZeroExit)
         }
-        stderr_str.push_str(&line);
-        stderr_str.push_str("\n");
     }
 
-    Ok(stderr_str)
+    /// Waits for the child to exit and returns the output status
+    pub fn wait(self) -> AppResult<ExitStatus> {
+        let mut child = self.spawn(false)?;
+
+        child.wait().map_err(AppError::from)
+    }
+
+    /// Waits with output until the program completed and
+    /// returns the string output object
+    pub fn wait_with_output(self) -> AppResult<StringOutput> {
+        let child = self.spawn(true)?;
+        let output = child.wait_with_output()?;
+        let stdout = String::from_utf8(output.stdout).map_err(|e| AppError::from(e.to_string()))?;
+        let stderr = String::from_utf8(output.stderr).map_err(|e| AppError::from(e.to_string()))?;
+
+        Ok(StringOutput {
+            status: output.status,
+            stdout,
+            stderr,
+        })
+    }
+
+    fn spawn(self, piped: bool) -> AppResult<Child> {
+        let (stdout, stderr) = if piped {
+            (Stdio::piped(), Stdio::piped())
+        } else {
+            (Stdio::inherit(), Stdio::inherit())
+        };
+        let child = if self.elevated {
+            Command::new("sudo")
+                .arg(self.command)
+                .args(self.args)
+                .stdout(stdout)
+                .stderr(stderr)
+                .spawn()?
+        } else {
+            Command::new(self.command)
+                .args(self.args)
+                .stdout(stdout)
+                .stderr(stderr)
+                .spawn()?
+        };
+
+        Ok(child)
+    }
 }
