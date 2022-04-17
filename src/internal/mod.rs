@@ -38,3 +38,9 @@ pub fn uwu_enabled() -> bool {
 pub fn uwu_debug_enabled() -> bool {
     env::var("AME_UWU_DEBUG").unwrap_or_else(|_| "".to_string()) == "true"
 }
+
+/// Checks if we're running in a tty. If we do we can assume that
+/// the output can safely be colorized.
+pub fn is_tty() -> bool {
+    (unsafe { libc::isatty(libc::STDIN_FILENO as i32) } != 0)
+}

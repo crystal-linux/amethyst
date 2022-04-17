@@ -17,11 +17,7 @@ mod internal;
 mod operations;
 
 fn main() {
-    extern "C" {
-        fn geteuid() -> u32;
-    }
-
-    if unsafe { geteuid() } == 0 {
+    if unsafe { libc::geteuid() } == 0 {
         crash("Running amethyst as root is disallowed as it can lead to system breakage. Instead, amethyst will prompt you when it needs superuser permissions".to_string(), AppExitCode::RunAsRoot);
     }
 

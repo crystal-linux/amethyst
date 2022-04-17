@@ -1,4 +1,5 @@
 use crate::internal::error::{AppError, AppResult};
+use crate::internal::is_tty;
 use std::ffi::{OsStr, OsString};
 use std::process::{Child, Command, ExitStatus, Stdio};
 
@@ -18,7 +19,13 @@ pub struct ShellCommand {
 
 impl ShellCommand {
     pub fn pacman() -> Self {
-        Self::new("pacman")
+        let pacman_cmd = Self::new("pacman");
+
+        if is_tty() {
+            pacman_cmd.arg("--color=always")
+        } else {
+            pacman_cmd
+        }
     }
 
     pub fn makepkg() -> Self {
