@@ -1,6 +1,6 @@
-use runas::Command;
-
+use crate::error::SilentUnwrap;
 use crate::internal::rpc::rpcinfo;
+use crate::internal::sudo_pacman;
 use crate::operations::aur_install::aur_install;
 use crate::{info, log, Options};
 
@@ -17,10 +17,7 @@ pub fn upgrade(options: Options) {
         log("Upgrading repo packages".to_string());
     }
 
-    Command::new("pacman")
-        .args(&pacman_args)
-        .status()
-        .expect("Something has gone wrong");
+    sudo_pacman(pacman_args).silent_unwrap();
 
     if verbosity >= 1 {
         log("Upgrading AUR packages".to_string());

@@ -1,12 +1,13 @@
 use std::env::set_current_dir;
 use std::fs::remove_dir_all;
 use std::path::Path;
-use std::process::{Command, Stdio};
+use std::process::Command;
 use std::{env, fs};
 
+use crate::error::SilentUnwrap;
 use crate::internal::rpc::rpcinfo;
-use crate::internal::{crash, prompt};
-use crate::{info, log, Options};
+use crate::internal::{crash, git, makepkg, prompt};
+use crate::{bash, info, log, Options};
 
 pub fn aur_install(a: Vec<String>, options: Options) {
     let url = crate::internal::rpc::URL;
@@ -36,12 +37,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         info("Cloning package source".to_string());
 
         set_current_dir(Path::new(&cachedir)).unwrap();
-        Command::new("git")
-            .arg("clone")
-            .arg(format!("{}/{}", url, pkg))
-            .stdout(Stdio::null())
-            .output()
-            .expect("Something has gone wrong");
+        git(&["clone", &format!("{}/{}", url, pkg)]).silent_unwrap();
 
         if verbosity >= 1 {
             log(format!(
@@ -113,18 +109,10 @@ pub fn aur_install(a: Vec<String>, options: Options) {
                     .wait()
                     .unwrap();
 
-                let out = Command::new("bash")
-                    .args(&["-c", &format!("ls {}/*.install &> /dev/null", pkg)])
-                    .status()
-                    .unwrap();
+                let result = bash(&["-c", &format!("ls {}/*.install &> /dev/null", pkg)]);
 
-                if out.code() == Some(0) {
-                    Command::new("bash")
-                        .args(&["-c", &format!("{} {}/*.install", editor, pkg)])
-                        .spawn()
-                        .unwrap()
-                        .wait()
-                        .unwrap();
+                if result.is_ok() {
+                    bash(&["-c", &format!("{} {}/*.install", editor, pkg)]).silent_unwrap();
                 }
 
                 let p2 = prompt(format!("Would you still like to install {}?", pkg), true);
@@ -157,12 +145,9 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         // package building and installing
         info("Building time!".to_string());
         set_current_dir(format!("{}/{}", cachedir, pkg)).unwrap();
-        let out = Command::new("makepkg")
-            .args(&makepkg_args)
-            .status()
-            .expect("Something has gone wrong");
+        let result = makepkg(&makepkg_args);
 
-        if out.code() != Some(0) {
+        if result.is_ok() {
             fs::remove_dir_all(format!("{}/{}", cachedir, pkg)).unwrap();
             crash(
                 format!("Error encountered while installing {}, aborting", pkg),

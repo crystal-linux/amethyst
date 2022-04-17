@@ -1,13 +1,14 @@
+use crate::internal::sudo_pacman;
 use crate::{crash, info, log, Options};
 
 pub fn install(a: Vec<String>, options: Options) {
     info(format!("Installing packages {} from repos", &a.join(", ")));
-    let mut opers = vec![];
+    let mut opers = vec!["-S", "--needed"];
     if options.noconfirm {
-        opers.push("--noconfirm".to_string());
+        opers.push("--noconfirm");
     }
     if options.asdeps {
-        opers.push("--asdeps".to_string());
+        opers.push("--asdeps");
     }
     let verbosity = options.verbosity;
     if !a.is_empty() {
@@ -15,15 +16,7 @@ pub fn install(a: Vec<String>, options: Options) {
             log(format!("Installing from repos: {:?}", &a));
         }
 
-        let r = runas::Command::new("pacman")
-            .arg("-S")
-            .arg("--needed")
-            .args(&a)
-            .args(&opers)
-            .status()
-            .expect("Something has gone wrong");
-
-        if r.code() != Some(0) {
+        if let Err(_e) = sudo_pacman(&opers) {
             crash(
                 format!(
                     "An error occured while installing packages: {}, aborting",

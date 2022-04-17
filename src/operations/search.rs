@@ -1,18 +1,10 @@
-use std::process::Command;
-
+use crate::error::SilentUnwrap;
 use crate::internal::rpc::rpcsearch;
-use crate::{log, Options};
+use crate::{log, pacman, Options};
 
 pub fn aur_search(a: &str, options: Options) {
     let verbosity = options.verbosity;
     let res = rpcsearch(a.to_string());
-
-    if verbosity >= 1 {
-        log(format!(
-            "Found {} resuls for \"{}\" in AUR",
-            res.resultcount, a
-        ));
-    }
 
     for r in &res.results {
         println!(
@@ -24,25 +16,24 @@ pub fn aur_search(a: &str, options: Options) {
                 .unwrap_or(&"No description".to_string())
         )
     }
+
+    if verbosity >= 1 {
+        log(format!(
+            "Found {} resuls for \"{}\" in AUR",
+            res.resultcount, a
+        ));
+    }
 }
 
 pub fn repo_search(a: &str, options: Options) {
     let verbosity = options.verbosity;
-    let rs = Command::new("pacman")
-        .arg("-Ss")
-        .arg(&a)
-        .output()
-        .expect("Something has gone wrong");
-
-    let str = String::from_utf8(rs.stdout).unwrap();
+    let output = pacman(&["-Ss", a]).silent_unwrap();
 
     if verbosity >= 1 {
         log(format!(
             "Found {} results for \"{}\" in repos",
-            &str.split('\n').count() / 2,
+            &output.split('\n').count() / 2,
             &a
         ));
     }
-
-    print!("{}", str);
 }

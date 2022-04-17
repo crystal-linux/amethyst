@@ -31,8 +31,5 @@ pub fn init(options: Options) {
                 )",
         [],
     )
-    .unwrap_or_else(|e| {
-        crash(format!("Couldn't initialise database: {}", e), 3);
-        1
-    });
+    .unwrap_or_else(|e| crash(format!("Couldn't initialise database: {}", e), 3));
 }

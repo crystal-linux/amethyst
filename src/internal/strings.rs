@@ -1,36 +1,28 @@
+use std::io;
 use std::io::Write;
 use std::process::exit;
-use std::str::FromStr;
 use std::time::UNIX_EPOCH;
-use std::{env, io};
 
-use crate::uwu;
+use crate::{internal, uwu};
 
-pub fn info(a: String) {
-    let a = if env::var("AME_UWU").unwrap_or_else(|_| "".to_string()) == "true" {
-        uwu!(&a)
-    } else {
-        a
-    };
+pub fn info<S: ToString>(a: S) {
+    let a = a.to_string();
+    let a = if internal::uwu_enabled() { uwu!(&a) } else { a };
 
     println!("\x1b[2;22;35m❖\x1b[0m \x1b[1;37m{}\x1b[0m", a)
 }
 
-pub fn crash(a: String, b: i32) {
-    let a = if env::var("AME_UWU").unwrap_or_else(|_| "".to_string()) == "true" {
-        uwu!(&a)
-    } else {
-        a
-    };
+pub fn crash<S: ToString>(a: S, b: i32) -> ! {
+    let a = a.to_string();
+    let a = if internal::uwu_enabled() { uwu!(&a) } else { a };
 
     println!("\x1b[2;22;31m❌:\x1b[0m \x1b[1;91m{}\x1b[0m", a);
     exit(b);
 }
 
-pub fn log(a: String) {
-    let a = if env::var("AME_UWU").unwrap_or_else(|_| "".to_string()) == "true"
-        && env::var("AME_UWU_DEBUG").unwrap_or_else(|_| "".to_string()) == "true"
-    {
+pub fn log<S: ToString>(a: S) {
+    let a = a.to_string();
+    let a = if internal::uwu_enabled() && internal::uwu_debug_enabled() {
         uwu!(&a)
     } else {
         a
@@ -46,15 +38,12 @@ pub fn log(a: String) {
     );
 }
 
-pub fn prompt(a: String, b: bool) -> bool {
+pub fn prompt<S: ToString>(a: S, b: bool) -> bool {
+    let a = a.to_string();
     let default = ["[Y/n]", "[y/N]"];
     let i = if b { 0 } else { 1 };
 
-    let a = if env::var("AME_UWU").unwrap_or_else(|_| "".to_string()) == "true" {
-        uwu!(&a)
-    } else {
-        a
-    };
+    let a = if internal::uwu_enabled() { uwu!(&a) } else { a };
 
     print!(
         "\x1b[2;22;35m?\x1b[0m \x1b[1;37m{}\x1b[0m \x1b[2;22;37m{}\x1b[0m: ",

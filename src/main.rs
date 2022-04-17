@@ -1,17 +1,16 @@
 use clap::Parser;
-use std::process;
-use std::process::Command;
 
 use crate::args::{InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs};
 use args::Args;
 
-use crate::internal::{crash, info, init, log, sort, structs::Options};
+use crate::internal::{bash, crash, info, init, log, pacman, sort, structs::Options};
 
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 mod args;
 mod database;
+mod error;
 mod internal;
 mod operations;
 
@@ -71,14 +70,14 @@ fn cmd_install(args: InstallArgs, options: Options) {
         ));
     }
 
-    let out = process::Command::new("bash")
-        .args(&["-c", "sudo find /etc -name *.pacnew"])
-        .output()
-        .expect("Something has gone wrong")
-        .stdout;
+    let bash_output = bash(&["-c", "sudo find /etc -name *.pacnew"]).unwrap();
 
-    if !String::from_utf8((*out).to_owned()).unwrap().is_empty() {
-        info(format!("You have .pacnew files in /etc ({}) that you haven't removed or acted upon, it is recommended you do that now", String::from_utf8((*out).to_owned()).unwrap().split_whitespace().collect::<Vec<&str>>().join(", ")));
+    if !bash_output.is_empty() {
+        let pacnew_files = bash_output
+            .split_whitespace()
+            .collect::<Vec<&str>>()
+            .join(", ");
+        info(format!("You have .pacnew files in /etc ({pacnew_files}) that you haven't removed or acted upon, it is recommended you do that now", ));
     }
 }
 
@@ -108,33 +107,13 @@ fn cmd_search(args: SearchArgs, options: Options) {
 
 fn cmd_query(args: QueryArgs) {
     if args.aur {
-        Command::new("pacman")
-            .arg("-Qm")
-            .spawn()
-            .expect("Something has gone wrong")
-            .wait()
-            .unwrap();
+        pacman(&["-Qm"]).unwrap();
     }
     if args.repo {
-        Command::new("pacman")
-            .arg("-Qn")
-            .spawn()
-            .expect("Something has gone wrong")
-            .wait()
-            .unwrap();
+        pacman(&["-Qn"]).unwrap();
     }
     if !args.repo && !args.aur {
-        Command::new("pacman")
-            .arg("-Qn")
-            .spawn()
-            .expect("Something has gone wrong")
-            .wait()
-            .unwrap();
-        Command::new("pacman")
-            .arg("-Qm")
-            .spawn()
-            .expect("Something has gone wrong")
-            .wait()
-            .unwrap();
+        pacman(&["-Qn"]).unwrap();
+        pacman(&["-Qm"]).unwrap();
     }
 }
