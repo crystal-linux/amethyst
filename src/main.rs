@@ -6,7 +6,7 @@ use internal::commands::ShellCommand;
 use internal::error::SilentUnwrap;
 
 use crate::internal::exit_code::AppExitCode;
-use crate::internal::{crash, info, init, log, sort, structs::Options};
+use crate::internal::{crash, info, init, log, sort, start_sudoloop, structs::Options};
 
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
@@ -33,6 +33,10 @@ fn main() {
     };
 
     init(options);
+
+    if args.sudoloop {
+        start_sudoloop();
+    }
 
     match args.subcommand.unwrap_or_default() {
         Operation::Install(install_args) => cmd_install(install_args, options),

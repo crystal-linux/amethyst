@@ -13,6 +13,10 @@ pub struct Args {
     /// Complete operation without prompting user
     #[clap(long = "noconfirm")]
     pub no_confirm: bool,
+
+    /// Loops sudo in the background to ensure it doesn't time out during long builds
+    #[clap(long = "sudoloop")]
+    pub sudoloop: bool,
 }
 
 #[derive(Debug, Clone, Subcommand)]
@@ -76,10 +80,10 @@ pub struct SearchArgs {
 #[derive(Default, Debug, Clone, Parser)]
 pub struct QueryArgs {
     /// Lists AUR/foreign packages
-    #[clap(long, short)]
+    #[clap(long, short, from_global)]
     pub aur: bool,
 
     /// Lists repo/native packages
-    #[clap(long, short)]
+    #[clap(long, short, from_global)]
     pub repo: bool,
 }

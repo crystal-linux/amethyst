@@ -40,6 +40,10 @@ impl ShellCommand {
         Self::new("bash")
     }
 
+    pub fn sudo() -> Self {
+        Self::new("sudo")
+    }
+
     fn new<S: ToString>(command: S) -> Self {
         Self {
             command: command.to_string(),
