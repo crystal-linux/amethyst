@@ -96,7 +96,7 @@ pub fn init(options: Options) {
                     "Couldn't set permissions for path: {}/.cache/ame: {}",
                     homedir, e
                 ),
-                5,
+                4,
             );
         }
     };
@@ -120,7 +120,7 @@ pub fn init(options: Options) {
                     "Couldn't set permissions for path: {}/.local/share/ame: {}",
                     homedir, e
                 ),
-                5,
+                4,
             );
         }
     };
