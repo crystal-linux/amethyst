@@ -21,12 +21,14 @@
           pkg-config
         ];
       };
+      
       defaultPackage = packages.amethyst;
 
       apps.amethyst = utils.lib.mkApp {
         drv = packages.amethyst;
       };
-      defaultApp = apps.amethyst;
+      
+      apps.default = apps.amethyst;
 
       devShell = pkgs.mkShell {
         nativeBuildInputs = with pkgs; [
@@ -38,5 +40,3 @@
       };
     });
 }
-
-
