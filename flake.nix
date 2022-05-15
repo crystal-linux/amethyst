@@ -12,21 +12,21 @@
       naersk-lib = naersk.lib."${system}";
     in rec 
     {
-      packages.amethyst = naersk-lib.buildPackage {
+      packages.ame = naersk-lib.buildPackage {
         pname = "amethyst";
         root = ./.;
         nativeBuildInputs = with pkgs; [
           openssl
-          libsqlite
+          sqlite
           pkg-config
         ];
       };
-      defaultPackages = packages.amethyst;
+      defaultPackage = packages.ame;
 
-      apps.amethyst = utils.lib.mkApp {
+      apps.ame = utils.lib.mkApp {
         drv = packages.amethyst;
       };
-      defaultApp = apps.amethyst;
+      defaultApp = apps.ame;
 
       devShell = pkgs.mkShell {
         nativeBuildInputs = with pkgs; [
