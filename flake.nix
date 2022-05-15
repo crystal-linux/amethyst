@@ -12,8 +12,8 @@
       naersk-lib = naersk.lib."${system}";
     in rec 
     {
-      packages.ame = naersk-lib.buildPackage {
-        pname = "amethyst";
+      packages.amethyst = naersk-lib.buildPackage {
+        pname = "ame";
         root = ./.;
         nativeBuildInputs = with pkgs; [
           openssl
@@ -21,12 +21,12 @@
           pkg-config
         ];
       };
-      defaultPackage = packages.ame;
+      defaultPackage = packages.amethyst;
 
-      apps.ame = utils.lib.mkApp {
+      apps.amethyst = utils.lib.mkApp {
         drv = packages.amethyst;
       };
-      defaultApp = apps.ame;
+      defaultApp = apps.amethyst;
 
       devShell = pkgs.mkShell {
         nativeBuildInputs = with pkgs; [
