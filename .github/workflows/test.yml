@@ -1,0 +1,26 @@
+name: Run checks and tess
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        if: ${{ !env.ACT }}
+
+      - name: Check
+        run: cargo check --all-features
+
+      - name: Lint
+        run: cargo clippy -- -D warnings
+
+      - name: Test
+        run : cargo test --all-features
