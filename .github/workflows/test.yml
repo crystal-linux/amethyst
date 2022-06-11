@@ -2,7 +2,7 @@ name: Run checks and tess
 on:
   workflow_dispatch:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, feature/gh-actions ]
   pull_request:
     branches: [ main, develop ]
 
