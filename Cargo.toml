@@ -1,9 +1,9 @@
 [package]
 name = "Amethyst"
-version = "3.0.1"
+version = "3.1.0"
 authors = ["michal <michal@tar.black>", "axtlos <axtlos@tar.black>"]
 edition = "2021"
-description = "A fast and efficient AUR helper."
+description = "A fast and efficient AUR helper"
 license-file = "LICENSE.md"
 
 [features]

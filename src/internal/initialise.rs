@@ -1,6 +1,7 @@
 use crate::internal::exit_code::AppExitCode;
 use std::env;
 use std::path::Path;
+use std::process::Command;
 
 use crate::internal::strings::{crash, log};
 use crate::Options;
@@ -75,4 +76,53 @@ pub fn init(options: Options) {
             }
         }
     }
+
+    let r = Command::new("chmod")
+        .arg("-R")
+        .arg("770")
+        .arg(format!("{}/.cache/ame", homedir))
+        .status();
+    match r {
+        Ok(_) => {
+            if verbosity >= 1 {
+                log(format!(
+                    "Set correct permissions for path: {}/.cache/ame",
+                    homedir
+                ));
+            }
+        }
+        Err(e) => {
+            crash(
+                format!(
+                    "Couldn't set permissions for path: {}/.cache/ame: {}",
+                    homedir, e
+                ),
+                4,
+            );
+        }
+    };
+    let r = Command::new("chmod")
+        .arg("-R")
+        .arg("770")
+        .arg(format!("{}/.local/share/ame", homedir))
+        .status();
+    match r {
+        Ok(_) => {
+            if verbosity >= 1 {
+                log(format!(
+                    "Set correct permissions for path: {}/.local/share/ame",
+                    homedir
+                ));
+            }
+        }
+        Err(e) => {
+            crash(
+                format!(
+                    "Couldn't set permissions for path: {}/.local/share/ame: {}",
+                    homedir, e
+                ),
+                4,
+            );
+        }
+    };
 }

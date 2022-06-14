@@ -3,12 +3,12 @@
 # Developer: jnats <jnats[at]salyut[dot]one>
 
 pkgname=amethyst
-pkgver=3.0.1
+pkgver=3.1.0
 pkgrel=1
 pkgdesc="Fast, efficient and lightweight AUR helper/pacman wrapper"
 arch=('any')
 url="https://git.tar.black/crystal/ame"
-license=('Nolicense')
+license=('GPL3')
 source=("git+https://git.tar.black/crystal/ame")
 sha256sums=('SKIP')
 depends=('git' 'binutils' 'fakeroot')

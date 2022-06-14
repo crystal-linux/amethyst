@@ -18,23 +18,27 @@ pub struct Args {
 #[derive(Debug, Clone, Subcommand)]
 pub enum Operation {
     /// Installs a package from either the AUR or the PacMan-defined repositories
+<<<<<<< HEAD
     #[clap(name="install", aliases=&["i", "ins", "-S"])]
+=======
+    #[clap(name="install", aliases=&["ins", "in", "i", "-S"])]
+>>>>>>> 89ce64b91730d93806b58605d8fd03a21c2f5bfd
     Install(InstallArgs),
 
     /// Removes a previously installed package
-    #[clap(name="remove", aliases=&["rm", "-R", "-Rs"])]
+    #[clap(name="remove", aliases=&["rm", "r", "-R", "-Rs"])]
     Remove(RemoveArgs),
 
     /// Searches for the relevant packages in both the AUR and repos
-    #[clap(name="search", aliases=&["sea", "-Ss"])]
+    #[clap(name="search", aliases=&["sea", "se", "s", "-Ss"])]
     Search(SearchArgs),
 
     /// Queries installed packages
-    #[clap(name="query", aliases=&["ls", "-Q"])]
+    #[clap(name="query", aliases=&["ls", "l", "-Q"])]
     Query(QueryArgs),
 
     /// Upgrades locally installed packages to their latest versions
-    #[clap(name="upgrade", aliases=&["upg", "-Syu"])]
+    #[clap(name="upgrade", aliases=&["upg", "up", "u", "-Syu"])]
     Upgrade,
 }
 

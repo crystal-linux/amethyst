@@ -1,0 +1,40 @@
+name: Run checks and tests
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, develop, feature/gh-actions ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        if: ${{ !env.ACT }}
+
+      - name: Cache build data
+        if: ${{ !env.ACT }}
+        uses: actions/cache@v2
+        with:
+          path: |
+            target
+            ~/.cargo/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Fetch
+        run: cargo fetch
+
+      - name: Check
+        run: cargo check --all-features
+
+      - name: Lint
+        run: cargo clippy -- -D warnings
+
+      - name: Test
+        run : cargo test --all-features
