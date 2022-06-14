@@ -97,7 +97,7 @@ pub fn init(options: Options) {
                     "Couldn't set permissions for path: {}/.cache/ame: {}",
                     homedir, e
                 ),
-                4,
+                AppExitCode::FailedCreatingPaths,
             );
         }
     };
@@ -121,7 +121,7 @@ pub fn init(options: Options) {
                     "Couldn't set permissions for path: {}/.local/share/ame: {}",
                     homedir, e
                 ),
-                4,
+                AppExitCode::FailedCreatingPaths,
             );
         }
     };

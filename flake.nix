@@ -35,7 +35,11 @@
           rustc
           cargo
           rustfmt
+          cargo-audit
           clippy
+          openssl
+          sqlite
+          pkg-config
         ];
       };
     });

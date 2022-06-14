@@ -18,11 +18,7 @@ pub struct Args {
 #[derive(Debug, Clone, Subcommand)]
 pub enum Operation {
     /// Installs a package from either the AUR or the PacMan-defined repositories
-<<<<<<< HEAD
-    #[clap(name="install", aliases=&["i", "ins", "-S"])]
-=======
     #[clap(name="install", aliases=&["ins", "in", "i", "-S"])]
->>>>>>> 89ce64b91730d93806b58605d8fd03a21c2f5bfd
     Install(InstallArgs),
 
     /// Removes a previously installed package
