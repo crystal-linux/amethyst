@@ -8,6 +8,7 @@
 
 <p align="center">
     <a href="https://discord.gg/yp4xpZeAgW"><img alt="Discord" src="https://img.shields.io/discord/825473796227858482?color=blue&label=Discord&logo=Discord&logoColor=white"?link=https://discord.gg/yp4xpZeAgW&link=https://discord.gg/yp4xpZeAgW> </a>
+    <img src="https://img.shields.io/badge/Maintainer-@ihatethefrench-brightgreen" alt=The maintainer of this repository" href="https://github.com/ihatethefrench">
 </p>
 
 <p align="center"> 
