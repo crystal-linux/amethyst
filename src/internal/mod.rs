@@ -1,5 +1,6 @@
 mod clean;
 pub mod commands;
+mod detect;
 pub mod error;
 pub mod exit_code;
 mod initialise;
@@ -7,14 +8,13 @@ pub mod rpc;
 mod sort;
 mod strings;
 pub mod structs;
-mod detect;
 
 pub use clean::*;
+pub use detect::*;
 pub use initialise::*;
 pub use sort::*;
 use std::env;
 pub use strings::*;
-pub use detect::*;
 
 #[macro_export]
 macro_rules! uwu {

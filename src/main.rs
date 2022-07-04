@@ -5,10 +5,10 @@ use args::Args;
 use internal::commands::ShellCommand;
 use internal::error::SilentUnwrap;
 
+use crate::internal::detect;
 use crate::internal::exit_code::AppExitCode;
 #[allow(unused_imports)]
 use crate::internal::{crash, info, init, log, prompt, sort, structs::Options, warn};
-use crate::internal::detect;
 
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;

@@ -1,7 +1,7 @@
-use crate::internal::strings::prompt;
+use crate::internal::commands::ShellCommand;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
-use crate::internal::commands::ShellCommand;
+use crate::internal::strings::prompt;
 
 pub fn detect() {
     let mut pacnew = vec![];
@@ -9,7 +9,8 @@ pub fn detect() {
     for entry in std::fs::read_dir("/etc").unwrap() {
         let entry = entry.unwrap();
         let path = entry.path();
-        if path.to_str().unwrap().contains(".pacnew") || path.to_str().unwrap().contains(".pacsave")  {
+        if path.to_str().unwrap().contains(".pacnew") || path.to_str().unwrap().contains(".pacsave")
+        {
             pacnew.push(path);
         }
     }
