@@ -12,7 +12,7 @@ pub fn clean(options: Options) {
     let noconfirm = options.noconfirm;
 
     let orphaned_packages = ShellCommand::pacman()
-        .arg("-Qdt")
+        .arg("-Qdtq")
         .wait_with_output()
         .silent_unwrap(AppExitCode::PacmanError);
 
@@ -31,8 +31,15 @@ pub fn clean(options: Options) {
         pacman_args.push("--noconfirm");
     }
 
+    let orphaned_packages_vec = orphaned_packages.stdout.split('\n').collect::<Vec<&str>>();
+    for package in &orphaned_packages_vec {
+        if package.len() > 0 {
+            pacman_args.push(package);
+        }
+    }
+
     if verbosity >= 1 {
-        log("Removing orphans".to_string());
+        log(format!("Removing orphans: {:?}", orphaned_packages_vec));
     }
 
     let pacman_result = ShellCommand::pacman()
