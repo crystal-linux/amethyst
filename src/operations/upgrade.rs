@@ -3,7 +3,7 @@ use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcinfo;
 use crate::operations::aur_install::aur_install;
-use crate::{info, log, Options};
+use crate::{info, log, prompt, Options};
 
 pub fn upgrade(options: Options) {
     let verbosity = options.verbosity;
@@ -18,11 +18,22 @@ pub fn upgrade(options: Options) {
         log("Upgrading repo packages".to_string());
     }
 
-    ShellCommand::pacman()
+    let pacman_result = ShellCommand::pacman()
         .elevated()
         .args(pacman_args)
-        .wait_success()
+        .wait()
         .silent_unwrap(AppExitCode::PacmanError);
+
+    if pacman_result.success() {
+        info("Successfully upgraded repo packages".to_string());
+    } else {
+        let cont = prompt("Failed to upgrade repo packages, continue to upgrading AUR packages?".to_string(), false);
+        if !cont {
+            info("Exiting".to_string());
+            std::process::exit(AppExitCode::PacmanError as i32);
+        }
+    }
+
 
     if verbosity >= 1 {
         log("Upgrading AUR packages".to_string());

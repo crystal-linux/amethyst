@@ -22,7 +22,7 @@
         ];
       };
       
-      defaultPackage = packages.amethyst;
+      packages.default = packages.amethyst;
 
       apps.amethyst = utils.lib.mkApp {
         drv = packages.amethyst;
@@ -30,7 +30,7 @@
       
       apps.default = apps.amethyst;
 
-      devShell = pkgs.mkShell {
+      devShells.default = pkgs.mkShell {
         nativeBuildInputs = with pkgs; [
           rustc
           cargo

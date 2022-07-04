@@ -13,6 +13,14 @@ pub fn info<S: ToString>(msg: S) {
     println!("\x1b[2;22;35m❖\x1b[0m \x1b[1;37m{}\x1b[0m", a)
 }
 
+#[allow(dead_code)]
+pub fn warn<S: ToString>(msg: S) {
+    let a = msg.to_string();
+    let a = if internal::uwu_enabled() { uwu!(&a) } else { a };
+
+    println!("\x1b[2;22;33m!\x1b[0m \x1b[1;37m{}\x1b[0m", a)
+}
+
 pub fn crash<S: ToString>(msg: S, exit_code: AppExitCode) -> ! {
     let a = msg.to_string();
     let a = if internal::uwu_enabled() { uwu!(&a) } else { a };

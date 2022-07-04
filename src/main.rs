@@ -6,7 +6,8 @@ use internal::commands::ShellCommand;
 use internal::error::SilentUnwrap;
 
 use crate::internal::exit_code::AppExitCode;
-use crate::internal::{crash, info, init, log, sort, structs::Options};
+#[allow(unused_imports)]
+use crate::internal::{crash, warn, prompt, info, init, log, sort, structs::Options};
 
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
