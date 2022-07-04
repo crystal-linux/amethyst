@@ -28,6 +28,10 @@ impl ShellCommand {
         }
     }
 
+    pub fn pacdiff() -> Self {
+        Self::new("pacdiff")
+    }
+
     pub fn makepkg() -> Self {
         Self::new("makepkg")
     }
