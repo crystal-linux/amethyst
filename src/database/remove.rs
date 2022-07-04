@@ -1,7 +1,6 @@
+use rusqlite::Connection;
 use std::env;
 use std::path::Path;
-
-use rusqlite::Connection;
 
 use crate::{log, Options};
 

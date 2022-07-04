@@ -1,10 +1,9 @@
-use clap::Parser;
-
-use crate::args::{InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs};
 use args::Args;
+use clap::Parser;
 use internal::commands::ShellCommand;
 use internal::error::SilentUnwrap;
 
+use crate::args::{InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs};
 use crate::internal::detect;
 use crate::internal::exit_code::AppExitCode;
 #[allow(unused_imports)]
