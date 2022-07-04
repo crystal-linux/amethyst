@@ -63,6 +63,10 @@ Tested on latest Cargo (1.60.0-nightly)
 
 - `cargo build (--release) --all --features=pkg-warner`
 
+### TODO:
+
+- Implement some sort of spinner for longer operations
+
 <!--
 
 echo "AME_UWU=true" >> ~/.zshrc
