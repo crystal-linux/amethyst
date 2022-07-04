@@ -7,7 +7,7 @@ use internal::error::SilentUnwrap;
 
 use crate::internal::exit_code::AppExitCode;
 #[allow(unused_imports)]
-use crate::internal::{crash, warn, prompt, info, init, log, sort, structs::Options};
+use crate::internal::{crash, info, init, log, prompt, sort, structs::Options, warn};
 
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
@@ -43,6 +43,10 @@ fn main() {
         Operation::Upgrade => {
             info("Performing system upgrade".to_string());
             operations::upgrade(options);
+        }
+        Operation::Clean => {
+            info("Removing orphaned packages".to_string());
+            operations::clean(options);
         }
     }
 }

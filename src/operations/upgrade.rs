@@ -27,13 +27,15 @@ pub fn upgrade(options: Options) {
     if pacman_result.success() {
         info("Successfully upgraded repo packages".to_string());
     } else {
-        let cont = prompt("Failed to upgrade repo packages, continue to upgrading AUR packages?".to_string(), false);
+        let cont = prompt(
+            "Failed to upgrade repo packages, continue to upgrading AUR packages?".to_string(),
+            false,
+        );
         if !cont {
             info("Exiting".to_string());
             std::process::exit(AppExitCode::PacmanError as i32);
         }
     }
-
 
     if verbosity >= 1 {
         log("Upgrading AUR packages".to_string());

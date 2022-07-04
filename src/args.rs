@@ -36,6 +36,10 @@ pub enum Operation {
     /// Upgrades locally installed packages to their latest versions
     #[clap(name="upgrade", aliases=&["upg", "up", "u", "-Syu"])]
     Upgrade,
+
+    /// Removes all orphaned packages
+    #[clap(name="clean", aliases=&["cln", "cl", "-Sc"])]
+    Clean,
 }
 
 impl Default for Operation {
