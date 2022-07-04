@@ -1,27 +1,37 @@
-# Maintainer: Matt C <mdc028[at]bucknell[dot]edu>
-# Developer: axtlos <axtlos[at]salyut[dot]one>
-# Developer: jnats <jnats[at]salyut[dot]one>
+# Maintainer: Matt C     <matt[at]tar[dot]black>
+# Developer:  axtlos   <axtlos[at]tar[dot]black>
+# Developer:  Michal S <michal[at]tar[dot]black>
 
 pkgname=amethyst
-pkgver=3.2.0
+pkgver=3.3.0
 pkgrel=1
-pkgdesc="Fast, efficient and lightweight AUR helper/pacman wrapper"
-arch=('any')
-url="https://git.tar.black/crystal/ame"
+pkgdesc="A fast and efficient AUR helper"
+arch=('$CARCH')
+url="https://github.com/crystal-linux/amethyst"
 license=('GPL3')
-source=("git+https://git.tar.black/crystal/ame")
+source=("git+$url")
 sha256sums=('SKIP')
 depends=('git' 'binutils' 'fakeroot')
 makedepends=('cargo' 'make')
 conflicts=('ame')
 
+prepare() {
+    cd "$srcdir/$pkgname"
+    cargo fetch --locked --target "$CARCH-unknown-linux-gnu"
+}
+
 build() {
-    cd ${srcdir}/ame
-    cargo build --release --all-features
+    cd "$srcdir/$pkgname"
+    export RUSTUP_TOOLCHAIN=stable
+    export CARGO_TARGET_DIR=target
+    cargo build --frozen --release --all-features
 }
 
 package() {
-    mkdir -p $pkgdir/usr/bin
-    chmod +x ${srcdir}/ame/target/release/{ame,apt,apt-get,dnf,eopkg,yum,zypper}
-    cp ${srcdir}/ame/target/release/{ame,apt,apt-get,dnf,eopkg,yum,zypper}  $pkgdir/usr/bin/.
+    cd "$srcdir/$pkgname"
+    find target/release \
+        -maxdepth 1 \
+        -executable \
+        -type f \
+        -exec install -Dm0755 {} "${pkgdir}/usr/bin/" {} +
 }
