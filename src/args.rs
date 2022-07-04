@@ -26,11 +26,11 @@ pub enum Operation {
     Remove(RemoveArgs),
 
     /// Searches for the relevant packages in both the AUR and repos
-    #[clap(name = "search", aliases = & ["sea", "se", "s", "-Ss"])]
+    #[clap(name = "search", aliases = & ["sea", "sear", se", "s", "-Ss"])]
     Search(SearchArgs),
 
     /// Queries installed packages
-    #[clap(name = "query", aliases = & ["ls", "l", "-Q"])]
+    #[clap(name = "query", aliases = & ["q", "qu", "l", "ls" "-Q"])]
     Query(QueryArgs),
 
     /// Upgrades locally installed packages to their latest versions
