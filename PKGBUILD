@@ -11,8 +11,8 @@ url="https://github.com/crystal-linux/amethyst"
 license=('GPL3')
 source=("git+$url")
 sha256sums=('SKIP')
-depends=('git' 'binutils' 'fakeroot')
-makedepends=('cargo' 'make')
+depends=('git' 'binutils' 'fakeroot' 'pacman-contrib')
+makedepends=('cargo')
 conflicts=('ame')
 
 prepare() {
