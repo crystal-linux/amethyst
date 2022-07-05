@@ -9,6 +9,7 @@ use colored::*;
 
 const OK_SYMBOL: &str = "❖";
 const ERR_SYMBOL: &str = "❌";
+const WARN_SYMBOL: &str = "!";
 const PROMPT_SYMBOL: &str = "?";
 
 const PROMPT_YN_DEFAULT_TRUE: &str = "[Y/n]";
@@ -18,6 +19,13 @@ const PROMPT_YN_DEFAULT_FALSE: &str = "[y/N]";
 macro_rules! info {
     ($($arg:tt)+) => {
         $crate::internal::utils::log_info(format!($($arg)+))
+    }
+}
+
+#[macro_export]
+macro_rules! warn {
+    ($($arg:tt)+) => {
+        $crate::internal::utils::log_warn(format!($($arg)+))
     }
 }
 
@@ -51,6 +59,17 @@ pub fn log_info<S: ToString>(msg: S) {
     };
 
     println!("{} {}", OK_SYMBOL.purple(), msg.bold())
+}
+
+pub fn log_warn<S: ToString>(msg: S) {
+    let msg = msg.to_string();
+    let msg = if internal::uwu_enabled() {
+        uwu!(&msg)
+    } else {
+        msg
+    };
+
+    println!("{} {}", WARN_SYMBOL.yellow(), msg.bold())
 }
 
 pub fn log_and_crash<S: ToString>(msg: S, exit_code: AppExitCode) -> ! {

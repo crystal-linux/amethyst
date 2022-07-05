@@ -1,9 +1,8 @@
-use crate::internal::exit_code::AppExitCode;
 use std::env;
 use std::path::Path;
 use std::process::Command;
 
-use crate::{crash, log, Options};
+use crate::{crash, internal::exit_code::AppExitCode, log, Options};
 
 pub fn init(options: Options) {
     let verbosity = options.verbosity;

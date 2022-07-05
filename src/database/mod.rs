@@ -1,9 +1,9 @@
-mod add;
-mod initialise;
-mod query;
-mod remove;
-
 use std::{env, path::PathBuf};
+
+pub mod add;
+pub mod initialise;
+pub mod query;
+pub mod remove;
 
 pub use add::*;
 pub use initialise::*;

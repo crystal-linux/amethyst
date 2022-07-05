@@ -1,7 +1,8 @@
-use crate::internal::error::{AppError, AppResult};
-use crate::internal::is_tty;
 use std::ffi::{OsStr, OsString};
 use std::process::{Child, Command, ExitStatus, Stdio};
+
+use crate::internal::error::{AppError, AppResult};
+use crate::internal::is_tty;
 
 pub struct StringOutput {
     pub stdout: String,
@@ -26,6 +27,10 @@ impl ShellCommand {
         } else {
             pacman_cmd
         }
+    }
+
+    pub fn pacdiff() -> Self {
+        Self::new("pacdiff")
     }
 
     pub fn makepkg() -> Self {
