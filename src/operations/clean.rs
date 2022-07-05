@@ -63,7 +63,11 @@ pub fn clean(options: Options) {
         }
     }
 
-    let clear_cache = prompt("Also clear pacman's package cache?".to_string(), false);
+    let clear_cache = if !noconfirm {
+        prompt("Also clear pacman's package cache?".to_string(), false)
+    } else {
+        true
+    };
     if clear_cache {
         let mut pacman_args = vec!["-Sc"];
         if noconfirm {

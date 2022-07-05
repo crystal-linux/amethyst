@@ -7,38 +7,38 @@ pub struct Args {
     pub subcommand: Option<Operation>,
 
     /// Sets the level of verbosity
-    #[clap(long, short, parse(from_occurrences))]
+    #[clap(long, short, parse(from_occurrences), global = true)]
     pub verbose: usize,
 
     /// Complete operation without prompting user
-    #[clap(long = "noconfirm")]
+    #[clap(long = "noconfirm", global = true)]
     pub no_confirm: bool,
 }
 
 #[derive(Debug, Clone, Subcommand)]
 pub enum Operation {
     /// Installs a package from either the AUR or the PacMan-defined repositories
-    #[clap(name = "install", aliases = &["ins", "in", "i", "-S"])]
+    #[clap(name = "install", aliases = & ["ins", "in", "i", "-S"])]
     Install(InstallArgs),
 
     /// Removes a previously installed package
-    #[clap(name = "remove", aliases = &["rm", "r", "-R", "-Rs"])]
+    #[clap(name = "remove", aliases = & ["rm", "r", "-R", "-Rs"])]
     Remove(RemoveArgs),
 
     /// Searches for the relevant packages in both the AUR and repos
-    #[clap(name = "search", aliases = &["sea", "sear", "se", "s", "-Ss"])]
+    #[clap(name = "search", aliases = & ["sea", "sear", "se", "s", "-Ss"])]
     Search(SearchArgs),
 
     /// Queries installed packages
-    #[clap(name = "query", aliases = &["q", "qu", "l", "ls", "-Q"])]
+    #[clap(name = "query", aliases = & ["q", "qu", "l", "ls", "-Q"])]
     Query(QueryArgs),
 
     /// Upgrades locally installed packages to their latest versions
-    #[clap(name = "upgrade", aliases = &["upg", "up", "u", "-Syu"])]
+    #[clap(name = "upgrade", aliases = & ["upg", "up", "u", "-Syu"])]
     Upgrade,
 
     /// Removes all orphaned packages
-    #[clap(name = "clean", aliases = &["cln", "cl", "-Sc"])]
+    #[clap(name = "clean", aliases = & ["cln", "cl", "-Sc"])]
     Clean,
 }
 
