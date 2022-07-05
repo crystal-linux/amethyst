@@ -77,21 +77,6 @@ fn cmd_install(args: InstallArgs, options: Options) {
             AppExitCode::PacmanError,
         );
     }
-
-    let bash_output = ShellCommand::bash()
-        .arg("-c")
-        .arg("sudo find /etc -name *.pacnew")
-        .wait_with_output()
-        .silent_unwrap(AppExitCode::Other)
-        .stdout;
-
-    if !bash_output.is_empty() {
-        let pacnew_files = bash_output
-            .split_whitespace()
-            .collect::<Vec<&str>>()
-            .join(", ");
-        info(format!("You have .pacnew files in /etc ({pacnew_files}) that you haven't removed or acted upon, it is recommended you do that now", ));
-    }
 }
 
 fn cmd_remove(args: RemoveArgs, options: Options) {
