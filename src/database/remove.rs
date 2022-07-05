@@ -1,20 +1,14 @@
-use rusqlite::Connection;
-use std::env;
-use std::path::Path;
-
 use crate::{log, Options};
 
+use super::get_database_connection;
+
 pub fn remove(pkg: &str, options: Options) {
-    let conn = Connection::open(Path::new(&format!(
-        "{}/.local/share/ame/db.sqlite",
-        env::var("HOME").unwrap()
-    )))
-    .expect("Couldn't connect to database");
+    let conn = get_database_connection();
 
     let verbosity = options.verbosity;
 
     if verbosity >= 1 {
-        log(format!("Removing package {} from database", pkg));
+        log!("Removing package {} from database", pkg);
     }
 
     conn.execute(

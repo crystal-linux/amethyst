@@ -19,15 +19,15 @@ pub fn clean(options: Options) {
         .silent_unwrap(AppExitCode::PacmanError);
 
     if orphaned_packages.stdout.as_str() == "" {
-        info("No orphaned packages found".to_string());
+        info!("No orphaned packages found");
     } else {
-        info(format!(
+        info!(
             "Removing orphans would uninstall the following packages: \n{}",
             &orphaned_packages.stdout
-        ));
-        let cont = prompt("Continue?".to_string(), false);
+        );
+        let cont = prompt!(default false, "Continue?");
         if !cont {
-            info("Exiting".to_string());
+            info!("Exiting");
             std::process::exit(AppExitCode::PacmanError as i32);
         }
 
@@ -44,7 +44,7 @@ pub fn clean(options: Options) {
         }
 
         if verbosity >= 1 {
-            log(format!("Removing orphans: {:?}", orphaned_packages_vec));
+            log!("Removing orphans: {:?}", orphaned_packages_vec);
         }
 
         let pacman_result = ShellCommand::pacman()
@@ -54,17 +54,14 @@ pub fn clean(options: Options) {
             .silent_unwrap(AppExitCode::PacmanError);
 
         if pacman_result.success() {
-            info("Successfully removed orphans".to_string());
+            info!("Successfully removed orphans");
         } else {
-            crash(
-                "Failed to remove orphans".to_string(),
-                AppExitCode::PacmanError,
-            );
+            crash!(AppExitCode::PacmanError, "Failed to remove orphans",);
         }
     }
 
     let clear_cache = if !noconfirm {
-        prompt("Also clear pacman's package cache?".to_string(), false)
+        prompt!(default false, "Also clear pacman's package cache?")
     } else {
         true
     };
@@ -80,7 +77,7 @@ pub fn clean(options: Options) {
         }
 
         if verbosity >= 1 {
-            log("Clearing using `paccache -r`".to_string());
+            log!("Clearing using `paccache -r`");
         }
 
         Command::new("sudo")
@@ -88,16 +85,17 @@ pub fn clean(options: Options) {
             .args(paccache_args)
             .spawn()
             .unwrap_or_else(|e| {
-                crash(
-                    format!("Couldn't clear cache using `paccache -r`, {}", e),
+                crash!(
                     AppExitCode::PacmanError,
+                    "Couldn't clear cache using `paccache -r`, {}",
+                    e,
                 )
             })
             .wait()
             .unwrap();
 
         if verbosity >= 1 {
-            log("Clearing using `pacman -Sc`".to_string());
+            log!("Clearing using `pacman -Sc`");
         }
 
         let pacman_result = ShellCommand::pacman()
@@ -107,12 +105,9 @@ pub fn clean(options: Options) {
             .silent_unwrap(AppExitCode::PacmanError);
 
         if pacman_result.success() {
-            info("Successfully cleared package cache".to_string());
+            info!("Successfully cleared package cache");
         } else {
-            crash(
-                "Failed to clear package cache".to_string(),
-                AppExitCode::PacmanError,
-            );
+            crash!(AppExitCode::PacmanError, "Failed to clear package cache",);
         }
     }
 }

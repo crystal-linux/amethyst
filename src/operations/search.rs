@@ -21,10 +21,7 @@ pub fn aur_search(query: &str, options: Options) {
     }
 
     if verbosity >= 1 {
-        log(format!(
-            "Found {} resuls for \"{}\" in AUR",
-            res.resultcount, query
-        ));
+        log!("Found {} resuls for \"{}\" in AUR", res.resultcount, query);
     }
 }
 
@@ -38,11 +35,11 @@ pub fn repo_search(query: &str, options: Options) {
         .stdout;
 
     if verbosity >= 1 {
-        log(format!(
+        log!(
             "Found {} results for \"{}\" in repos",
             &output.split('\n').count() / 2,
             &query
-        ));
+        );
     }
 
     println!("{}", output)
