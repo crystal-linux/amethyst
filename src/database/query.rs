@@ -10,7 +10,7 @@ pub fn query(options: Options) -> Vec<Package> {
     let verbosity = options.verbosity;
 
     if verbosity >= 1 {
-        log("Connecting to database".to_string());
+        log!("Connecting to database");
     }
 
     let conn = Connection::open(Path::new(&format!(
@@ -20,7 +20,7 @@ pub fn query(options: Options) -> Vec<Package> {
     .expect("Couldn't connect to database");
 
     if verbosity >= 1 {
-        log("Querying database for input".to_string());
+        log!("Querying database for input");
     }
 
     let mut rs = conn.prepare("SELECT * FROM packages;").unwrap();
@@ -47,7 +47,7 @@ pub fn query(options: Options) -> Vec<Package> {
         .expect("Couldn't query database for packages");
 
     if verbosity >= 1 {
-        log("Retrieved results".to_string());
+        log!("Retrieved results");
     }
 
     let mut results: Vec<Package> = vec![];
@@ -57,7 +57,7 @@ pub fn query(options: Options) -> Vec<Package> {
     }
 
     if verbosity >= 1 {
-        log("Collected results".to_string());
+        log!("Collected results");
     }
 
     results

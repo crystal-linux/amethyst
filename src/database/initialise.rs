@@ -12,14 +12,14 @@ pub fn init(options: Options) {
     let verbosity = options.verbosity;
 
     if verbosity >= 1 {
-        log(format!("Creating database at {}", &path));
+        log!("Creating database at {}", &path);
     }
 
     let conn =
         Connection::open(dbpath).expect("Couldn't create database at ~/.local/share/ame/db.sqlite");
 
     if verbosity >= 1 {
-        log("Populating database with table".to_string());
+        log!("Populating database with table");
     }
 
     conn.execute(
@@ -33,9 +33,10 @@ pub fn init(options: Options) {
         [],
     )
     .unwrap_or_else(|e| {
-        crash(
-            format!("Couldn't initialise database: {}", e),
+        crash!(
             AppExitCode::FailedInitDb,
+            "Couldn't initialise database: {}",
+            e,
         )
     });
 }

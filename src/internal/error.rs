@@ -1,5 +1,5 @@
-use crate::crash;
 use crate::internal::exit_code::AppExitCode;
+use crate::log_and_crash;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 use std::io;
@@ -51,7 +51,7 @@ impl<T> SilentUnwrap<T> for AppResult<T> {
     fn silent_unwrap(self, exit_code: AppExitCode) -> T {
         match self {
             Ok(val) => val,
-            Err(_) => crash("an error occurred", exit_code),
+            Err(_) => log_and_crash("an error occurred", exit_code),
         }
     }
 }

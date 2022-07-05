@@ -1,7 +1,6 @@
 use regex::Regex;
 
-use crate::internal::strings::log;
-use crate::Options;
+use crate::{log, Options};
 
 pub fn clean(a: &[String], options: Options) -> Vec<String> {
     let r = Regex::new(r"(\S+)((?:>=|<=|>|<)\S+$)").unwrap();
@@ -18,7 +17,7 @@ pub fn clean(a: &[String], options: Options) -> Vec<String> {
     }
 
     if verbosity >= 1 {
-        log(format!("Cleaned: {:?}\nInto: {:?}", a, cleaned));
+        log!("Cleaned: {:?}\nInto: {:?}", a, cleaned);
     }
 
     cleaned

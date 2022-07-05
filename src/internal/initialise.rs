@@ -3,8 +3,7 @@ use std::env;
 use std::path::Path;
 use std::process::Command;
 
-use crate::internal::strings::{crash, log};
-use crate::Options;
+use crate::{crash, log, Options};
 
 pub fn init(options: Options) {
     let verbosity = options.verbosity;
@@ -15,13 +14,15 @@ pub fn init(options: Options) {
         match r {
             Ok(_) => {
                 if verbosity >= 1 {
-                    log(format!("Created path: {}/.local/share/ame", homedir));
+                    log!("Created path: {}/.local/share/ame", homedir);
                 }
             }
             Err(e) => {
-                crash(
-                    format!("Couldn't create path: {}/.local/share/ame: {}", homedir, e),
+                crash!(
                     AppExitCode::FailedCreatingPaths,
+                    "Couldn't create path: {}/.local/share/ame: {}",
+                    homedir,
+                    e,
                 );
             }
         }
@@ -36,13 +37,15 @@ pub fn init(options: Options) {
         match r {
             Ok(_) => {
                 if verbosity >= 1 {
-                    log(format!("Created path: {}/.cache/ame", homedir));
+                    log!("Created path: {}/.cache/ame", homedir);
                 }
             }
             Err(e) => {
-                crash(
-                    format!("Couldn't create path: {}/.cache/ame: {}", homedir, e),
+                crash!(
                     AppExitCode::FailedCreatingPaths,
+                    "Couldn't create path: {}/.cache/ame: {}",
+                    homedir,
+                    e,
                 );
             }
         }
@@ -51,13 +54,15 @@ pub fn init(options: Options) {
         match r {
             Ok(_) => {
                 if verbosity >= 1 {
-                    log(format!("Removing cache: {}/.cache/ame", homedir));
+                    log!("Removing cache: {}/.cache/ame", homedir);
                 }
             }
             Err(e) => {
-                crash(
-                    format!("Couldn't remove path: {}/.cache/ame: {}", homedir, e),
+                crash!(
                     AppExitCode::FailedCreatingPaths,
+                    "Couldn't remove path: {}/.cache/ame: {}",
+                    homedir,
+                    e,
                 );
             }
         }
@@ -65,13 +70,15 @@ pub fn init(options: Options) {
         match r2 {
             Ok(_) => {
                 if verbosity >= 1 {
-                    log(format!("Created path: {}/.cache/ame", homedir));
+                    log!("Created path: {}/.cache/ame", homedir);
                 }
             }
             Err(e2) => {
-                crash(
-                    format!("Couldn't create path: {}/.cache/ame: {}", homedir, e2),
+                crash!(
                     AppExitCode::FailedCreatingPaths,
+                    "Couldn't create path: {}/.cache/ame: {}",
+                    homedir,
+                    e2,
                 );
             }
         }
@@ -85,19 +92,15 @@ pub fn init(options: Options) {
     match r {
         Ok(_) => {
             if verbosity >= 1 {
-                log(format!(
-                    "Set correct permissions for path: {}/.cache/ame",
-                    homedir
-                ));
+                log!("Set correct permissions for path: {}/.cache/ame", homedir);
             }
         }
         Err(e) => {
-            crash(
-                format!(
-                    "Couldn't set permissions for path: {}/.cache/ame: {}",
-                    homedir, e
-                ),
+            crash!(
                 AppExitCode::FailedCreatingPaths,
+                "Couldn't set permissions for path: {}/.cache/ame: {}",
+                homedir,
+                e,
             );
         }
     };
@@ -109,19 +112,18 @@ pub fn init(options: Options) {
     match r {
         Ok(_) => {
             if verbosity >= 1 {
-                log(format!(
+                log!(
                     "Set correct permissions for path: {}/.local/share/ame",
                     homedir
-                ));
+                );
             }
         }
         Err(e) => {
-            crash(
-                format!(
-                    "Couldn't set permissions for path: {}/.local/share/ame: {}",
-                    homedir, e
-                ),
+            crash!(
                 AppExitCode::FailedCreatingPaths,
+                "Couldn't set permissions for path: {}/.local/share/ame: {}",
+                homedir,
+                e,
             );
         }
     };

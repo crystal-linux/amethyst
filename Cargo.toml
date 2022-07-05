@@ -58,3 +58,4 @@ ureq = { version = "2.4.0", default-features = false, features = ["native-tls", 
 serde = { version = "1.0.90", default-features = false, features = ["derive", "serde_derive"] }
 native-tls = "0.2.8"
 libc = "0.2.123"
+colored = "2.0.0"

@@ -1,26 +1,21 @@
-use std::env;
-use std::path::Path;
-
-use rusqlite::Connection;
-
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::Package;
 use crate::{crash, log, Options};
 
+use super::get_database_connection;
+
 pub fn add(pkg: Package, options: Options) {
-    let conn = Connection::open(Path::new(&format!(
-        "{}/.local/share/ame/db.sqlite",
-        env::var("HOME").unwrap()
-    )))
-    .expect("Couldn't connect to database");
+    let conn = get_database_connection();
 
     if options.verbosity >= 1 {
-        log(format!("Adding package {} to database", pkg.name));
+        log!("Adding package {} to database", pkg.name);
     }
-
+    let pkg_description = pkg
+        .description
+        .unwrap_or_else(|| "No description found.".parse().unwrap());
     conn.execute("INSERT OR REPLACE INTO packages (name, version, description, depends, make_depends) VALUES (?1, ?2, ?3, ?4, ?5)",
-                 [&pkg.name, &pkg.version, &pkg.description.unwrap_or_else(|| "No description found.".parse().unwrap()), &pkg.depends.join(" "), &pkg.make_depends.join(" ")],
+                 [&pkg.name, &pkg.version, &pkg_description, &pkg.depends.join(" "), &pkg.make_depends.join(" ")],
     ).unwrap_or_else(|e|
-        crash(format!("Failed adding package {} to the database: {}", pkg.name, e), AppExitCode::FailedAddingPkg)
+        crash!(AppExitCode::FailedAddingPkg, "Failed adding package {} to the database: {}", pkg.name, e) 
     );
 }

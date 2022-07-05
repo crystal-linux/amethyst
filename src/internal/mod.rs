@@ -5,14 +5,15 @@ pub mod exit_code;
 mod initialise;
 pub mod rpc;
 mod sort;
-mod strings;
 pub mod structs;
+#[macro_use]
+pub(crate) mod utils;
 
 pub use clean::*;
 pub use initialise::*;
 pub use sort::*;
 use std::env;
-pub use strings::*;
+pub use utils::*;
 
 #[macro_export]
 macro_rules! uwu {
