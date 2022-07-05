@@ -65,7 +65,17 @@ Tested on latest Cargo (1.60.0-nightly)
 
 ### TODO:
 
+#### v3.3.0
+- ~~Add clean function~~
+- ~~Make flags global~~
+- ~~Add pacdiff function~~
+- Squash any remaining bugs
+
+#### v3.4.0 
 - Implement some sort of spinner for longer operations
+- Allow editing of PKGBUILDs before install
+- Allow to choose provider of package
+- Highlight optdepends at the end of an install operation
 
 <!--
 
