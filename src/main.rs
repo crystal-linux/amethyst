@@ -1,12 +1,12 @@
-use clap::Parser;
-
-use crate::args::{InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs};
 use args::Args;
+use clap::Parser;
 use internal::commands::ShellCommand;
 use internal::error::SilentUnwrap;
 
+use crate::args::{InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs};
+use crate::internal::detect;
 use crate::internal::exit_code::AppExitCode;
-use crate::internal::{crash, info, init, log, sort, structs::Options};
+use crate::internal::{crash, info, init, log, prompt, sort, structs::Options};
 
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
@@ -43,7 +43,13 @@ fn main() {
             info("Performing system upgrade".to_string());
             operations::upgrade(options);
         }
+        Operation::Clean => {
+            info("Removing orphaned packages".to_string());
+            operations::clean(options);
+        }
     }
+
+    detect();
 }
 
 fn cmd_install(args: InstallArgs, options: Options) {
@@ -69,21 +75,6 @@ fn cmd_install(args: InstallArgs, options: Options) {
             ),
             AppExitCode::PacmanError,
         );
-    }
-
-    let bash_output = ShellCommand::bash()
-        .arg("-c")
-        .arg("sudo find /etc -name *.pacnew")
-        .wait_with_output()
-        .silent_unwrap(AppExitCode::Other)
-        .stdout;
-
-    if !bash_output.is_empty() {
-        let pacnew_files = bash_output
-            .split_whitespace()
-            .collect::<Vec<&str>>()
-            .join(", ");
-        info(format!("You have .pacnew files in /etc ({pacnew_files}) that you haven't removed or acted upon, it is recommended you do that now", ));
     }
 }
 

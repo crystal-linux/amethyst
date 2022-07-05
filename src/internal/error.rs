@@ -1,8 +1,9 @@
-use crate::crash;
-use crate::internal::exit_code::AppExitCode;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 use std::io;
+
+use crate::crash;
+use crate::internal::exit_code::AppExitCode;
 
 pub type AppResult<T> = Result<T, AppError>;
 

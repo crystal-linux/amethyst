@@ -1,8 +1,8 @@
-use crate::internal::exit_code::AppExitCode;
 use std::env;
 use std::path::Path;
 use std::process::Command;
 
+use crate::internal::exit_code::AppExitCode;
 use crate::internal::strings::{crash, log};
 use crate::Options;
 
