@@ -1,16 +1,18 @@
-use crate::ShellCommand;
-use std::thread;
 use std::time::Duration;
 
+use crate::ShellCommand;
+
 /// Loop sudo so it doesn't time out
-pub fn start_sudoloop() {
-    prompt_sudo();
-    std::thread::spawn(|| loop {
-        prompt_sudo();
-        thread::sleep(Duration::from_secs(3 * 60))
+pub async fn start_sudoloop() {
+    prompt_sudo().await;
+    tokio::task::spawn(async move {
+        loop {
+            prompt_sudo().await;
+            tokio::time::sleep(Duration::from_secs(3 * 60)).await;
+        }
     });
 }
 
-fn prompt_sudo() {
-    while ShellCommand::sudo().arg("-v").wait_success().is_err() {}
+async fn prompt_sudo() {
+    while ShellCommand::sudo().arg("-v").wait_success().await.is_err() {}
 }

@@ -1,5 +1,6 @@
 use std::ffi::{OsStr, OsString};
-use std::process::{Child, Command, ExitStatus, Stdio};
+use std::process::{ExitStatus, Stdio};
+use tokio::process::{Child, Command};
 
 use crate::internal::error::{AppError, AppResult};
 use crate::internal::is_tty;
@@ -84,8 +85,8 @@ impl ShellCommand {
     }
 
     /// Waits for the child to exit but returns an error when it exists with a non-zero status code
-    pub fn wait_success(self) -> AppResult<()> {
-        let status = self.wait()?;
+    pub async fn wait_success(self) -> AppResult<()> {
+        let status = self.wait().await?;
         if status.success() {
             Ok(())
         } else {
@@ -94,17 +95,17 @@ impl ShellCommand {
     }
 
     /// Waits for the child to exit and returns the output status
-    pub fn wait(self) -> AppResult<ExitStatus> {
+    pub async fn wait(self) -> AppResult<ExitStatus> {
         let mut child = self.spawn(false)?;
 
-        child.wait().map_err(AppError::from)
+        child.wait().await.map_err(AppError::from)
     }
 
     /// Waits with output until the program completed and
     /// returns the string output object
-    pub fn wait_with_output(self) -> AppResult<StringOutput> {
+    pub async fn wait_with_output(self) -> AppResult<StringOutput> {
         let child = self.spawn(true)?;
-        let output = child.wait_with_output()?;
+        let output = child.wait_with_output().await?;
         let stdout = String::from_utf8(output.stdout).map_err(|e| AppError::from(e.to_string()))?;
         let stderr = String::from_utf8(output.stderr).map_err(|e| AppError::from(e.to_string()))?;
 

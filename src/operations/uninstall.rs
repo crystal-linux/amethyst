@@ -1,12 +1,13 @@
+use std::env;
 use std::path::Path;
-use std::{env, fs};
+use tokio::fs;
 
 use crate::internal::commands::ShellCommand;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::{log, Options};
 
-pub fn uninstall(packages: Vec<String>, options: Options) {
+pub async fn uninstall(packages: Vec<String>, options: Options) {
     let mut pacman_args = vec!["-Rs"];
     pacman_args.append(&mut packages.iter().map(|s| s.as_str()).collect());
 
@@ -22,6 +23,7 @@ pub fn uninstall(packages: Vec<String>, options: Options) {
         .elevated()
         .args(pacman_args)
         .wait_success()
+        .await
         .silent_unwrap(AppExitCode::PacmanError);
 
     if verbosity >= 1 {
@@ -45,6 +47,7 @@ pub fn uninstall(packages: Vec<String>, options: Options) {
                 env::var("HOME").unwrap(),
                 package
             )))
+            .await
             .unwrap();
         }
     }

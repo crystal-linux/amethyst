@@ -1,6 +1,6 @@
 [package]
 name = "Amethyst"
-version = "3.3.0"
+version = "4.0.0"
 authors = ["michal <michal@tar.black>", "axtlos <axtlos@tar.black>"]
 edition = "2021"
 description = "A fast and efficient AUR helper"
@@ -60,3 +60,8 @@ ureq = { version = "2.4.0", default-features = false, features = [ "native-tls",
 serde = { version = "1.0.138", default-features = false, features = [ "derive", "serde_derive" ] }
 native-tls = { version = "0.2.10", default-features = false }
 libc = { version = "0.2.126", default-features = false }
+async-recursion = "1.0.0"
+
+[dependencies.tokio]
+version = "1.19.2" 
+features = ["rt", "io-std", "io-util", "process", "time", "macros", "tracing", "fs"]

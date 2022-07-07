@@ -5,7 +5,8 @@ use crate::internal::rpc::rpcinfo;
 use crate::operations::aur_install::aur_install;
 use crate::{info, log, prompt, Options};
 
-pub fn upgrade(options: Options) {
+/// Upgrades all installed packages
+pub async fn upgrade(options: Options) {
     let verbosity = options.verbosity;
     let noconfirm = options.noconfirm;
 
@@ -22,15 +23,16 @@ pub fn upgrade(options: Options) {
         .elevated()
         .args(pacman_args)
         .wait()
+        .await
         .silent_unwrap(AppExitCode::PacmanError);
 
     if pacman_result.success() {
         info!("Successfully upgraded repo packages");
     } else {
-        let cont = prompt!(default false,
+        let continue_upgrading = prompt!(default false,
             "Failed to upgrade repo packages, continue to upgrading AUR packages?",
         );
-        if !cont {
+        if !continue_upgrading {
             info!("Exiting");
             std::process::exit(AppExitCode::PacmanError as i32);
         }
@@ -40,23 +42,23 @@ pub fn upgrade(options: Options) {
         log!("Upgrading AUR packages");
     }
 
-    let res = crate::database::query(options);
+    let packages = crate::database::query(options);
 
     if verbosity >= 1 {
-        log!("{:?}", &res);
+        log!("{:?}", &packages);
     }
-
     let mut aur_upgrades = vec![];
-    for r in res {
-        let re = r.clone();
-        let ver = rpcinfo(r.name);
-        if ver.package.unwrap().version != r.version {
-            aur_upgrades.push(re.name);
+
+    for package in packages {
+        let remote_package = rpcinfo(&package.name);
+
+        if remote_package.package.unwrap().version != package.version {
+            aur_upgrades.push(package.name);
         }
     }
 
     if !aur_upgrades.is_empty() {
-        aur_install(aur_upgrades, options);
+        aur_install(aur_upgrades, options).await;
     } else {
         info!("No upgrades available for installed AUR packages");
     }

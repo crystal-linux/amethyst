@@ -1,4 +1,4 @@
-use std::process::Command;
+use tokio::process::Command;
 
 use crate::crash;
 use crate::info;
@@ -9,13 +9,15 @@ use crate::log;
 use crate::prompt;
 use crate::Options;
 
-pub fn clean(options: Options) {
+/// Removes orphaned packages and cache
+pub async fn clean(options: Options) {
     let verbosity = options.verbosity;
     let noconfirm = options.noconfirm;
 
     let orphaned_packages = ShellCommand::pacman()
         .arg("-Qdtq")
         .wait_with_output()
+        .await
         .silent_unwrap(AppExitCode::PacmanError);
 
     if orphaned_packages.stdout.as_str() == "" {
@@ -51,6 +53,7 @@ pub fn clean(options: Options) {
             .elevated()
             .args(pacman_args)
             .wait()
+            .await
             .silent_unwrap(AppExitCode::PacmanError);
 
         if pacman_result.success() {
@@ -92,6 +95,7 @@ pub fn clean(options: Options) {
                 )
             })
             .wait()
+            .await
             .unwrap();
 
         if verbosity >= 1 {
@@ -102,6 +106,7 @@ pub fn clean(options: Options) {
             .elevated()
             .args(pacman_args)
             .wait()
+            .await
             .silent_unwrap(AppExitCode::PacmanError);
 
         if pacman_result.success() {

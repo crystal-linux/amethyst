@@ -4,42 +4,42 @@ use crate::internal::{clean, rpc, structs};
 use crate::{log, Options};
 
 pub fn sort(input: &[String], options: Options) -> structs::Sorted {
-    let mut repo: Vec<String> = vec![];
-    let mut aur: Vec<String> = vec![];
-    let mut nf: Vec<String> = vec![];
+    let mut repo_packages: Vec<String> = vec![];
+    let mut aur_packages: Vec<String> = vec![];
+    let mut missing_packages: Vec<String> = vec![];
     let verbosity = options.verbosity;
 
-    let a = clean(input, options);
+    let packages = clean(input, options);
 
     if verbosity >= 1 {
-        log!("Sorting: {:?}", a.join(" "));
+        log!("Sorting: {:?}", packages.join(" "));
     }
 
-    for b in a {
+    for package in packages {
         let rs = Command::new("pacman")
             .arg("-Ss")
-            .arg(format!("^{}$", &b))
+            .arg(format!("^{}$", &package))
             .stdout(Stdio::null())
             .status()
             .expect("Something has gone wrong");
 
         if let Some(0) = rs.code() {
             if verbosity >= 1 {
-                log!("{} found in repos", b);
+                log!("{} found in repos", package);
             }
-            repo.push(b.to_string());
-        } else if rpc::rpcinfo(b.to_string()).found {
+            repo_packages.push(package.to_string());
+        } else if rpc::rpcinfo(&package).found {
             if verbosity >= 1 {
-                log!("{} found in AUR", b);
+                log!("{} found in AUR", package);
             }
-            aur.push(b.to_string());
+            aur_packages.push(package.to_string());
         } else {
             if verbosity >= 1 {
-                log!("{} not found", b);
+                log!("{} not found", package);
             }
-            nf.push(b.to_string());
+            missing_packages.push(package.to_string());
         }
     }
 
-    structs::Sorted::new(repo, aur, nf)
+    structs::Sorted::new(repo_packages, aur_packages, missing_packages)
 }

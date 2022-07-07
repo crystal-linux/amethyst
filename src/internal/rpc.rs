@@ -30,7 +30,7 @@ pub struct InfoResults {
 
 pub const URL: &str = "https://aur.archlinux.org/";
 
-pub fn rpcinfo(pkg: String) -> InfoResults {
+pub fn rpcinfo(pkg: &String) -> InfoResults {
     let tls_connector = Arc::new(native_tls::TlsConnector::new().unwrap());
     let agent = ureq::AgentBuilder::new()
         .tls_connector(tls_connector)

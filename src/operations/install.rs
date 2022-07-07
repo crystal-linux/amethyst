@@ -3,7 +3,7 @@ use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::{crash, info, log, Options};
 
-pub fn install(packages: Vec<String>, options: Options) {
+pub async fn install(packages: Vec<String>, options: Options) {
     info!("Installing packages {} from repos", &packages.join(", "));
     let mut opers = vec!["-S", "--needed"];
     if options.noconfirm {
@@ -24,6 +24,7 @@ pub fn install(packages: Vec<String>, options: Options) {
             .args(opers)
             .args(&packages)
             .wait()
+            .await
             .silent_unwrap(AppExitCode::PacmanError);
         if !status.success() {
             crash!(

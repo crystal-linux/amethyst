@@ -4,7 +4,7 @@ use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcsearch;
 use crate::{log, Options};
 
-pub fn aur_search(query: &str, options: Options) {
+pub async fn aur_search(query: &str, options: Options) {
     let verbosity = options.verbosity;
     let res = rpcsearch(query.to_string());
 
@@ -25,12 +25,13 @@ pub fn aur_search(query: &str, options: Options) {
     }
 }
 
-pub fn repo_search(query: &str, options: Options) {
+pub async fn repo_search(query: &str, options: Options) {
     let verbosity = options.verbosity;
     let output = ShellCommand::pacman()
         .arg("-Ss")
         .arg(query)
         .wait_with_output()
+        .await
         .silent_unwrap(AppExitCode::PacmanError)
         .stdout;
 

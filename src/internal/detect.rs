@@ -3,7 +3,7 @@ use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::{prompt, warn};
 
-pub fn detect() {
+pub async fn detect() {
     let mut pacnew = vec![];
 
     for entry in std::fs::read_dir("/etc").unwrap() {
@@ -24,6 +24,7 @@ pub fn detect() {
                 ShellCommand::pacdiff()
                     .elevated()
                     .wait()
+                    .await
                     .silent_unwrap(AppExitCode::PacmanError);
             }
         }
