@@ -1,7 +1,7 @@
 use crate::internal::commands::ShellCommand;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
-use crate::internal::strings::{prompt, warn};
+use crate::{prompt, warn};
 
 pub fn detect() {
     let mut pacnew = vec![];
@@ -16,10 +16,10 @@ pub fn detect() {
     }
 
     if !pacnew.is_empty() {
-        let choice = prompt("It appears that at least one program you have installed / upgraded has installed a .pacnew/.pacsave config file. Would you like to run pacdiff to deal with this? You can always deal with this later by running `sudo pacdiff`".to_string(), false);
+        let choice = prompt!(default false, "It appears that at least one program you have installed / upgraded has installed a .pacnew/.pacsave config file. Would you like to run pacdiff to deal with this? You can always deal with this later by running `sudo pacdiff`");
         if choice {
-            warn("Unless you've set an alternative using the DIFFPROG environment variable, pacdiff uses `vimdiff` by default to edit files for merging. Make sure you know how to exit vim before proceeding".to_string());
-            let cont = prompt("Continue?".to_string(), false);
+            warn!("Unless you've set an alternative using the DIFFPROG environment variable, pacdiff uses `vimdiff` by default to edit files for merging. Make sure you know how to exit vim before proceeding");
+            let cont = prompt!(default false, "Continue?");
             if cont {
                 ShellCommand::pacdiff()
                     .elevated()

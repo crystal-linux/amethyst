@@ -1,8 +1,7 @@
 use std::process::{Command, Stdio};
 
-use crate::internal::strings::log;
 use crate::internal::{clean, rpc, structs};
-use crate::Options;
+use crate::{log, Options};
 
 pub fn sort(input: &[String], options: Options) -> structs::Sorted {
     let mut repo: Vec<String> = vec![];
@@ -13,7 +12,7 @@ pub fn sort(input: &[String], options: Options) -> structs::Sorted {
     let a = clean(input, options);
 
     if verbosity >= 1 {
-        log(format!("Sorting: {:?}", a.join(" ")));
+        log!("Sorting: {:?}", a.join(" "));
     }
 
     for b in a {
@@ -26,17 +25,17 @@ pub fn sort(input: &[String], options: Options) -> structs::Sorted {
 
         if let Some(0) = rs.code() {
             if verbosity >= 1 {
-                log(format!("{} found in repos", b));
+                log!("{} found in repos", b);
             }
             repo.push(b.to_string());
         } else if rpc::rpcinfo(b.to_string()).found {
             if verbosity >= 1 {
-                log(format!("{} found in AUR", b));
+                log!("{} found in AUR", b);
             }
             aur.push(b.to_string());
         } else {
             if verbosity >= 1 {
-                log(format!("{} not found", b));
+                log!("{} not found", b);
             }
             nf.push(b.to_string());
         }

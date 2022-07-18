@@ -15,7 +15,7 @@ pub fn uninstall(packages: Vec<String>, options: Options) {
     }
     let verbosity = options.verbosity;
     if verbosity >= 1 {
-        log(format!("Uninstalling: {:?}", &packages));
+        log!("Uninstalling: {:?}", &packages);
     }
 
     ShellCommand::pacman()
@@ -25,10 +25,7 @@ pub fn uninstall(packages: Vec<String>, options: Options) {
         .silent_unwrap(AppExitCode::PacmanError);
 
     if verbosity >= 1 {
-        log(format!(
-            "Uninstalling packages: {:?} exited with code 0",
-            &packages
-        ));
+        log!("Uninstalling packages: {:?} exited with code 0", &packages);
     }
 
     for package in packages {
@@ -41,7 +38,7 @@ pub fn uninstall(packages: Vec<String>, options: Options) {
         .exists()
         {
             if verbosity >= 1 {
-                log("Old cache directory found, deleting".to_string());
+                log!("Old cache directory found, deleting");
             }
             fs::remove_dir_all(Path::new(&format!(
                 "{}/.cache/ame/{}",

@@ -3,7 +3,6 @@ pub use detect::*;
 pub use initialise::*;
 pub use sort::*;
 use std::env;
-pub use strings::*;
 
 mod clean;
 pub mod commands;
@@ -13,8 +12,15 @@ pub mod exit_code;
 mod initialise;
 pub mod rpc;
 mod sort;
-mod strings;
 pub mod structs;
+#[macro_use]
+pub(crate) mod utils;
+mod sudoloop;
+
+pub use clean::*;
+pub use initialise::*;
+pub use sort::*;
+pub use sudoloop::*;
 
 #[macro_export]
 macro_rules! uwu {

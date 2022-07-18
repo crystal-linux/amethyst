@@ -4,10 +4,7 @@ use crate::internal::exit_code::AppExitCode;
 use crate::{crash, info, log, Options};
 
 pub fn install(packages: Vec<String>, options: Options) {
-    info(format!(
-        "Installing packages {} from repos",
-        &packages.join(", ")
-    ));
+    info!("Installing packages {} from repos", &packages.join(", "));
     let mut opers = vec!["-S", "--needed"];
     if options.noconfirm {
         opers.push("--noconfirm");
@@ -19,7 +16,7 @@ pub fn install(packages: Vec<String>, options: Options) {
 
     if !packages.is_empty() {
         if verbosity >= 1 {
-            log(format!("Installing from repos: {:?}", &packages));
+            log!("Installing from repos: {:?}", &packages);
         }
 
         let status = ShellCommand::pacman()
@@ -29,20 +26,15 @@ pub fn install(packages: Vec<String>, options: Options) {
             .wait()
             .silent_unwrap(AppExitCode::PacmanError);
         if !status.success() {
-            crash(
-                format!(
-                    "An error occured while installing packages: {}, aborting",
-                    packages.join(", ")
-                ),
+            crash!(
                 AppExitCode::PacmanError,
+                "An error occured while installing packages: {}, aborting",
+                packages.join(", "),
             );
         }
 
         if verbosity >= 1 {
-            log(format!(
-                "Installing packages: {:?} was successful",
-                &packages
-            ));
+            log!("Installing packages: {:?} was successful", &packages);
         }
     }
 }

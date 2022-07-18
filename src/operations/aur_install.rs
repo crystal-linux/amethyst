@@ -8,8 +8,7 @@ use crate::internal::commands::ShellCommand;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcinfo;
-use crate::internal::{crash, prompt};
-use crate::{info, log, Options};
+use crate::{crash, info, log, prompt, Options};
 
 pub fn aur_install(a: Vec<String>, options: Options) {
     let url = crate::internal::rpc::URL;
@@ -18,10 +17,10 @@ pub fn aur_install(a: Vec<String>, options: Options) {
     let noconfirm = options.noconfirm;
 
     if verbosity >= 1 {
-        log(format!("Installing from AUR: {:?}", &a));
+        log!("Installing from AUR: {:?}", &a);
     }
 
-    info(format!("Installing packages {} from the AUR", a.join(", ")));
+    info!("Installing packages {} from the AUR", a.join(", "));
 
     for package in a {
         let rpcres = rpcinfo(package);
@@ -33,10 +32,10 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         let pkg = &rpcres.package.as_ref().unwrap().name;
 
         if verbosity >= 1 {
-            log(format!("Cloning {} into cachedir", pkg));
+            log!("Cloning {} into cachedir", pkg);
         }
 
-        info("Cloning package source".to_string());
+        info!("Cloning package source");
 
         set_current_dir(Path::new(&cachedir)).unwrap();
         ShellCommand::git()
@@ -46,38 +45,32 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             .silent_unwrap(AppExitCode::GitError);
 
         if verbosity >= 1 {
-            log(format!(
+            log!(
                 "Cloned {} into cachedir, moving on to resolving dependencies",
                 pkg
-            ));
-            log(format!(
+            );
+            log!(
                 "Raw dependencies for package {} are:\n{:?}",
                 pkg,
                 rpcres.package.as_ref().unwrap().depends.join(", ")
-            ));
-            log(format!(
+            );
+            log!(
                 "Raw makedepends for package {} are:\n{:?}",
                 pkg,
                 rpcres.package.as_ref().unwrap().make_depends.join(", ")
-            ));
+            );
         }
 
         // dep sorting
-        info("Sorting dependencies".to_string());
+        log!("Sorting dependencies");
         let sorted = crate::internal::sort(&rpcres.package.as_ref().unwrap().depends, options);
-        info("Sorting make dependencies".to_string());
+        log!("Sorting make dependencies");
         let md_sorted =
             crate::internal::sort(&rpcres.package.as_ref().unwrap().make_depends, options);
 
         if verbosity >= 1 {
-            log(format!(
-                "Sorted dependencies for {} are:\n{:?}",
-                pkg, &sorted
-            ));
-            log(format!(
-                "Sorted makedepends for {} are:\n{:?}",
-                pkg, &md_sorted
-            ));
+            log!("Sorted dependencies for {} are:\n{:?}", pkg, &sorted);
+            log!("Sorted makedepends for {} are:\n{:?}", pkg, &md_sorted);
         }
 
         let newopts = Options {
@@ -87,23 +80,18 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         };
 
         if !sorted.nf.is_empty() || !md_sorted.nf.is_empty() {
-            crash(
-                format!(
-                    "Could not find dependencies {} for package {}, aborting",
-                    sorted.nf.join(", "),
-                    pkg
-                ),
+            crash!(
                 AppExitCode::MissingDeps,
+                "Could not find dependencies {} for package {}, aborting",
+                sorted.nf.join(", "),
+                pkg,
             );
         }
 
         if !noconfirm {
-            let p1 = prompt(
-                format!(
-                    "Would you like to review {}'s PKGBUILD (and any .install files if present)?",
-                    pkg
-                ),
-                false,
+            let p1 = prompt!(default false,
+                "Would you like to review {}'s PKGBUILD (and any .install files if present)?",
+                pkg
             );
             let editor: &str = &env::var("PAGER").unwrap_or_else(|_| "less".parse().unwrap());
 
@@ -129,16 +117,17 @@ pub fn aur_install(a: Vec<String>, options: Options) {
                         .silent_unwrap(AppExitCode::Other);
                 }
 
-                let p2 = prompt(format!("Would you still like to install {}?", pkg), true);
+                let p2 = prompt!(default true, "Would you still like to install {}?", pkg);
                 if !p2 {
                     fs::remove_dir_all(format!("{}/{}", cachedir, pkg)).unwrap();
-                    crash("Not proceeding".to_string(), AppExitCode::UserCancellation);
+                    crash!(AppExitCode::UserCancellation, "Not proceeding");
                 }
             }
         }
 
         // dep installing
-        info("Moving on to install dependencies".to_string());
+        info!("Moving on to install dependencies");
+
         if !sorted.repo.is_empty() {
             crate::operations::install(sorted.repo, newopts);
             crate::operations::install(md_sorted.repo, newopts);
@@ -148,7 +137,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             crate::operations::aur_install(md_sorted.aur, newopts);
         }
 
-        let mut makepkg_args = vec!["-rsic", "--skippgp"];
+        let mut makepkg_args = vec!["-rsci", "--skippgp"];
         if options.asdeps {
             makepkg_args.push("--asdeps")
         }
@@ -157,7 +146,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         }
 
         // package building and installing
-        info("Building time!".to_string());
+        info!("Building time!");
         set_current_dir(format!("{}/{}", cachedir, pkg)).unwrap();
         let status = ShellCommand::makepkg()
             .args(makepkg_args)
@@ -166,9 +155,10 @@ pub fn aur_install(a: Vec<String>, options: Options) {
 
         if !status.success() {
             fs::remove_dir_all(format!("{}/{}", cachedir, pkg)).unwrap();
-            crash(
-                format!("Error encountered while installing {}, aborting", pkg),
+            crash!(
                 AppExitCode::PacmanError,
+                "Error encountered while installing {}, aborting",
+                pkg,
             );
         }
 

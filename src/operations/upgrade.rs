@@ -15,7 +15,7 @@ pub fn upgrade(options: Options) {
     }
 
     if verbosity >= 1 {
-        log("Upgrading repo packages".to_string());
+        log!("Upgrading repo packages");
     }
 
     let pacman_result = ShellCommand::pacman()
@@ -25,26 +25,25 @@ pub fn upgrade(options: Options) {
         .silent_unwrap(AppExitCode::PacmanError);
 
     if pacman_result.success() {
-        info("Successfully upgraded repo packages".to_string());
+        info!("Successfully upgraded repo packages");
     } else {
-        let cont = prompt(
-            "Failed to upgrade repo packages, continue to upgrading AUR packages?".to_string(),
-            false,
+        let cont = prompt!(default false,
+            "Failed to upgrade repo packages, continue to upgrading AUR packages?",
         );
         if !cont {
-            info("Exiting".to_string());
+            info!("Exiting");
             std::process::exit(AppExitCode::PacmanError as i32);
         }
     }
 
     if verbosity >= 1 {
-        log("Upgrading AUR packages".to_string());
+        log!("Upgrading AUR packages");
     }
 
     let res = crate::database::query(options);
 
     if verbosity >= 1 {
-        log(format!("{:?}", &res));
+        log!("{:?}", &res);
     }
 
     let mut aur_upgrades = vec![];
@@ -59,6 +58,6 @@ pub fn upgrade(options: Options) {
     if !aur_upgrades.is_empty() {
         aur_install(aur_upgrades, options);
     } else {
-        info("No upgrades available for installed AUR packages".to_string());
+        info!("No upgrades available for installed AUR packages");
     }
 }
