@@ -4,7 +4,7 @@
 
 pkgname=amethyst
 pkgver=3.3.0
-pkgrel=2
+pkgrel=3
 pkgdesc="A fast and efficient AUR helper"
 arch=('x86_64')
 url="https://github.com/crystal-linux/amethyst"
@@ -24,7 +24,7 @@ build() {
     cd "$srcdir/$pkgname"
     export RUSTUP_TOOLCHAIN=stable
     export CARGO_TARGET_DIR=target
-    cargo build --frozen --release --all-features
+    cargo build --frozen --release
 }
 
 package() {
