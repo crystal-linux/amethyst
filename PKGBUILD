@@ -4,7 +4,7 @@
 
 pkgname=amethyst
 pkgver=3.3.0
-pkgrel=5
+pkgrel=6
 pkgdesc="A fast and efficient AUR helper"
 arch=('x86_64')
 url="https://github.com/crystal-linux/amethyst"
