@@ -1,0 +1,7 @@
+post_upgrade() {
+    if [[ ! -f /var/db/pkg_warner ]]; then
+        for n in apt apt-get dnf eopkg yum zypper; do
+            [[ -f /usr/bin/$n ]] && rm /usr/bin/$n
+        done
+    fi
+}
