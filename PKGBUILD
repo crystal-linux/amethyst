@@ -4,7 +4,7 @@
 
 pkgname=amethyst
 pkgver=3.3.0
-pkgrel=6
+pkgrel=7
 pkgdesc="A fast and efficient AUR helper"
 arch=('x86_64')
 url="https://github.com/crystal-linux/amethyst"
@@ -14,7 +14,6 @@ sha256sums=('SKIP')
 depends=('git' 'binutils' 'fakeroot' 'pacman-contrib' 'vim')
 makedepends=('cargo')
 conflicts=('ame')
-install="amethyst.install"
 
 prepare() {
     cd "$srcdir/$pkgname"
