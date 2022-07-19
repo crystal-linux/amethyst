@@ -1,7 +1,9 @@
 post_upgrade() {
-    if [[ ! -f /var/db/pkg_warner ]]; then
+    if [[ ! -f /etc/.pkg_warner ]]; then
         for n in apt apt-get dnf eopkg yum zypper; do
-            [[ -f /usr/bin/$n ]] && rm /usr/bin/$n
+            [[ -f /usr/bin/$n ]] && rm -f /usr/bin/$n && echo "Removed $n warner exec"
         done
+    else
+        echo "New package warner is installed."
     fi
 }
