@@ -27,3 +27,4 @@ ureq = { version = "2.4.0", default-features = false, features = [ "native-tls",
 serde = { version = "1.0.138", default-features = false, features = [ "derive", "serde_derive" ] }
 native-tls = { version = "0.2.10", default-features = false }
 libc = { version = "0.2.126", default-features = false }
+rm_rf = { version = "0.6.2", default-features = false }

@@ -1,3 +1,6 @@
+#![warn(clippy::all, clippy::pedantic, clippy::nursery, clippy::cargo)]
+#![allow(clippy::too_many_lines)]
+
 use args::Args;
 use clap::Parser;
 use internal::commands::ShellCommand;
@@ -12,7 +15,6 @@ use crate::internal::{init, sort, start_sudoloop, structs::Options};
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 mod args;
-mod database;
 mod internal;
 mod operations;
 
@@ -71,6 +73,15 @@ fn cmd_install(args: InstallArgs, options: Options) {
 
     info!("Attempting to install packages: {}", packages.join(", "));
 
+    if !sorted.nf.is_empty() {
+        // If some packages are not found, crash
+        crash!(
+            AppExitCode::PacmanError,
+            "Couldn't find packages: {} in repos or the AUR",
+            sorted.nf.join(", ")
+        );
+    }
+
     if !sorted.repo.is_empty() {
         // If repo packages found, install them
         operations::install(sorted.repo, options);
@@ -78,14 +89,6 @@ fn cmd_install(args: InstallArgs, options: Options) {
     if !sorted.aur.is_empty() {
         // If AUR packages found, install them
         operations::aur_install(sorted.aur, options);
-    }
-    if !sorted.nf.is_empty() {
-        // If some packages are not found, crash TODO: this check should happen first
-        crash!(
-            AppExitCode::PacmanError,
-            "Couldn't find packages: {} in repos or the AUR",
-            sorted.nf.join(", ")
-        );
     }
 }
 

@@ -5,6 +5,12 @@ use crate::internal::rpc::rpcinfo;
 use crate::operations::aur_install::aur_install;
 use crate::{info, log, prompt, Options};
 
+#[derive(Debug)]
+struct QueriedPackage {
+    pub name: String,
+    pub version: String,
+}
+
 pub fn upgrade(options: Options) {
     // Initialise variables
     let verbosity = options.verbosity;
@@ -46,23 +52,45 @@ pub fn upgrade(options: Options) {
         log!("Upgrading AUR packages");
     }
 
-    // Query database for AUR packages
-    let res = crate::database::query(options);
+    // List non-native packages using `pacman -Qm` and collect to a Vec<String>
+    let mut non_native = ShellCommand::pacman()
+        .arg("-Qm")
+        .args(&["--color", "never"])
+        .wait_with_output()
+        .silent_unwrap(AppExitCode::PacmanError);
+    let mut non_native = non_native.stdout.split('\n').collect::<Vec<&str>>();
+    non_native.pop();
+
+    // Parse non-native packages into a Vec<QueriedPackage>
+    let mut parsed_non_native: Vec<QueriedPackage> = vec![];
+    for pkg in non_native {
+        let split = pkg.split(' ').collect::<Vec<&str>>();
+        if verbosity >= 1 {
+            log!("{:?}", split);
+        }
+        let name = split[0].to_string();
+        let version = split[1].to_string();
+        parsed_non_native.push(QueriedPackage { name, version });
+    }
 
     if verbosity >= 1 {
-        log!("{:?}", &res);
+        log!("{:?}", &parsed_non_native);
     }
 
     // Check if AUR package versions are the same as installed
     let mut aur_upgrades = vec![];
-    for r in res {
+    for pkg in parsed_non_native {
         // Query AUR
-        let re = r.clone();
-        let ver = rpcinfo(r.name);
+        let rpc_result = rpcinfo((&*pkg.name).to_string());
+
+        if !rpc_result.found {
+            // If package not found, skip
+            continue;
+        }
 
         // If versions differ, push to a vector
-        if ver.package.unwrap().version != r.version {
-            aur_upgrades.push(re.name);
+        if rpc_result.package.unwrap().version != pkg.version {
+            aur_upgrades.push(pkg.name);
         }
     }
 

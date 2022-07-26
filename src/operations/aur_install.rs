@@ -183,8 +183,5 @@ pub fn aur_install(a: Vec<String>, options: Options) {
 
         // Remove package from cache
         remove_dir_all(format!("{}/{}", cachedir, &pkg)).unwrap();
-
-        // Pushes package to database
-        crate::database::add(rpcres.package.unwrap(), options);
     }
 }

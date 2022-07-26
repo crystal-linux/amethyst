@@ -30,9 +30,6 @@ pub fn uninstall(packages: Vec<String>, options: Options) {
     }
 
     for package in packages {
-        // Remove package from database
-        crate::database::remove(&package, options);
-
         // Remove old cache directory
         if Path::new(&format!(
             "{}/.cache/ame/{}",
