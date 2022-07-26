@@ -1,7 +1,7 @@
 use crate::internal::commands::ShellCommand;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
-use crate::{prompt, warn, info};
+use crate::{info, prompt, warn};
 
 pub fn detect() {
     info!("Scanning for pacnew files");
@@ -14,9 +14,9 @@ pub fn detect() {
         .arg("-f")
         .output()
         .unwrap();
-    let find_lines = std::str::from_utf8(&find.stdout).unwrap().split("\n");
+    let find_lines = std::str::from_utf8(&find.stdout).unwrap().split('\n');
     for line in find_lines {
-        if line.len() > 0 {
+        if !line.is_empty() {
             pacnew.push(line.to_string());
         }
     }
