@@ -6,12 +6,14 @@ use crate::internal::rpc::Package;
 use crate::{log, Options};
 
 pub fn query(options: Options) -> Vec<Package> {
+    // Initialise variables
     let verbosity = options.verbosity;
 
     if verbosity >= 1 {
         log!("Connecting to database");
     }
 
+    // Initialise database connection
     let conn = Connection::open(Path::new(&format!(
         "{}/.local/share/ame/db.sqlite",
         env::var("HOME").unwrap()
@@ -22,6 +24,7 @@ pub fn query(options: Options) -> Vec<Package> {
         log!("Querying database for input");
     }
 
+    // Get all database contents
     let mut rs = conn.prepare("SELECT * FROM packages;").unwrap();
     let packages_iter = rs
         .query_map([], |row| {
@@ -49,8 +52,8 @@ pub fn query(options: Options) -> Vec<Package> {
         log!("Retrieved results");
     }
 
+    // Convert to vector
     let mut results: Vec<Package> = vec![];
-
     for package in packages_iter {
         results.push(package.unwrap());
     }

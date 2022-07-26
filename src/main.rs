@@ -17,27 +17,34 @@ mod internal;
 mod operations;
 
 fn main() {
+    // Break if we are running as root
     if unsafe { libc::geteuid() } == 0 {
         crash!( AppExitCode::RunAsRoot, "Running amethyst as root is disallowed as it can lead to system breakage. Instead, amethyst will prompt you when it needs superuser permissions");
     }
 
+    // Parse arguments
     let args: Args = Args::parse();
 
+    // Initialize variables
     let verbosity = args.verbose as i32;
     let noconfirm = args.no_confirm;
 
+    // Get options struct
     let options = Options {
         verbosity,
         noconfirm,
         asdeps: false,
     };
 
+    // Ensure amethyst is initialized
     init(options);
 
+    // Start sudoloop if specified
     if args.sudoloop {
         start_sudoloop();
     }
 
+    // Match args
     match args.subcommand.unwrap_or_default() {
         Operation::Install(install_args) => cmd_install(install_args, options),
         Operation::Remove(remove_args) => cmd_remove(remove_args, options),
@@ -53,64 +60,65 @@ fn main() {
         }
     }
 
+    // Check for .pacnew files
     detect();
 }
 
 fn cmd_install(args: InstallArgs, options: Options) {
+    // Initialise variables
     let packages = args.packages;
     let sorted = sort(&packages, options);
 
     info!("Attempting to install packages: {}", packages.join(", "));
 
     if !sorted.repo.is_empty() {
+        // If repo packages found, install them
         operations::install(sorted.repo, options);
     }
     if !sorted.aur.is_empty() {
+        // If AUR packages found, install them
         operations::aur_install(sorted.aur, options);
     }
     if !sorted.nf.is_empty() {
+        // If some packages are not found, crash TODO: this check should happen first
         crash!(
             AppExitCode::PacmanError,
             "Couldn't find packages: {} in repos or the AUR",
             sorted.nf.join(", ")
         );
     }
-
-    let bash_output = ShellCommand::bash()
-        .arg("-c")
-        .arg("sudo find /etc -name *.pacnew")
-        .wait_with_output()
-        .silent_unwrap(AppExitCode::Other)
-        .stdout;
-
-    if !bash_output.is_empty() {
-        let pacnew_files = bash_output
-            .split_whitespace()
-            .collect::<Vec<&str>>()
-            .join(", ");
-        info!("You have .pacnew files in /etc ({pacnew_files}) that you haven't removed or acted upon, it is recommended you do that now" );
-    }
 }
 
 fn cmd_remove(args: RemoveArgs, options: Options) {
+    // Initialise variables
     let packages = args.packages;
+
     info!("Uninstalling packages: {}", &packages.join(", "));
+
+    // Remove packages
     operations::uninstall(packages, options);
 }
 
 fn cmd_search(args: SearchArgs, options: Options) {
+    // Initialise variables
     let query_string = args.search.join(" ");
     if args.aur {
         info!("Searching AUR for {}", &query_string);
+
+        // Search AUR
         operations::aur_search(&query_string, options);
     }
     if args.repo {
         info!("Searching repos for {}", &query_string);
+
+        // Search repos
         operations::search(&query_string, options);
     }
 
     if !args.aur && !args.repo {
         info!("Searching AUR and repos for {}", &query_string);
+
+        // If no search type specified, search both
         operations::search(&query_string, options);
         operations::aur_search(&query_string, options);
     }
@@ -118,18 +126,21 @@ fn cmd_search(args: SearchArgs, options: Options) {
 
 fn cmd_query(args: QueryArgs) {
     if args.aur {
+        // If AUR query, query AUR
         ShellCommand::pacman()
             .arg("-Qm")
             .wait_success()
             .silent_unwrap(AppExitCode::PacmanError);
     }
     if args.repo {
+        // If repo query, query repos
         ShellCommand::pacman()
             .arg("-Qn")
             .wait_success()
             .silent_unwrap(AppExitCode::PacmanError);
     }
     if !args.repo && !args.aur {
+        // If no query type specified, query both
         ShellCommand::pacman()
             .arg("-Qn")
             .wait_success()

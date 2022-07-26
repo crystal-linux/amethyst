@@ -5,9 +5,13 @@ use crate::internal::rpc::rpcsearch;
 use crate::{log, Options};
 
 pub fn aur_search(query: &str, options: Options) {
+    // Initialise variables
     let verbosity = options.verbosity;
+
+    // Query AUR for package info
     let res = rpcsearch(query.to_string());
 
+    // Format output
     for package in &res.results {
         println!(
             "aur/{} {}\n    {}",
@@ -26,7 +30,10 @@ pub fn aur_search(query: &str, options: Options) {
 }
 
 pub fn repo_search(query: &str, options: Options) {
+    // Initialise variables
     let verbosity = options.verbosity;
+
+    // Query pacman for package info
     let output = ShellCommand::pacman()
         .arg("-Ss")
         .arg(query)

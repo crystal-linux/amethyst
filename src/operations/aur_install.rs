@@ -11,6 +11,7 @@ use crate::internal::rpc::rpcinfo;
 use crate::{crash, info, log, prompt, Options};
 
 pub fn aur_install(a: Vec<String>, options: Options) {
+    // Initialise variables
     let url = crate::internal::rpc::URL;
     let cachedir = format!("{}/.cache/ame/", env::var("HOME").unwrap());
     let verbosity = options.verbosity;
@@ -23,12 +24,15 @@ pub fn aur_install(a: Vec<String>, options: Options) {
     info!("Installing packages {} from the AUR", a.join(", "));
 
     for package in a {
+        // Query AUR for package info
         let rpcres = rpcinfo(package);
 
         if !rpcres.found {
+            // If package isn't found, break
             break;
         }
 
+        // Get package name
         let pkg = &rpcres.package.as_ref().unwrap().name;
 
         if verbosity >= 1 {
@@ -37,6 +41,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
 
         info!("Cloning package source");
 
+        // Clone package into cachedir
         set_current_dir(Path::new(&cachedir)).unwrap();
         ShellCommand::git()
             .arg("clone")
@@ -61,7 +66,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             );
         }
 
-        // dep sorting
+        // Sort dependencies and makedepends
         log!("Sorting dependencies");
         let sorted = crate::internal::sort(&rpcres.package.as_ref().unwrap().depends, options);
         log!("Sorting make dependencies");
@@ -73,12 +78,14 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             log!("Sorted makedepends for {} are:\n{:?}", pkg, &md_sorted);
         }
 
+        // Create newopts struct for installing dependencies
         let newopts = Options {
             verbosity,
             noconfirm,
             asdeps: true,
         };
 
+        // If dependencies are not found in AUR or repos, crash
         if !sorted.nf.is_empty() || !md_sorted.nf.is_empty() {
             crash!(
                 AppExitCode::MissingDeps,
@@ -89,6 +96,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         }
 
         if !noconfirm {
+            // Prompt user to view PKGBUILD
             let p1 = prompt!(default false,
                 "Would you like to review {}'s PKGBUILD (and any .install files if present)?",
                 pkg
@@ -96,6 +104,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             let editor: &str = &env::var("PAGER").unwrap_or_else(|_| "less".parse().unwrap());
 
             if p1 {
+                // Open PKGBUILD in pager
                 Command::new(editor)
                     .arg(format!("{}/PKGBUILD", pkg))
                     .spawn()
@@ -103,6 +112,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
                     .wait()
                     .unwrap();
 
+                // Check if any .install files are present
                 let status = ShellCommand::bash()
                     .arg("-c")
                     .arg(format!("ls {}/*.install &> /dev/null", pkg))
@@ -110,6 +120,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
                     .silent_unwrap(AppExitCode::Other);
 
                 if status.success() {
+                    // If so, open them too
                     ShellCommand::bash()
                         .arg("-c")
                         .arg(format!("{} {}/*.install", editor, pkg))
@@ -117,17 +128,19 @@ pub fn aur_install(a: Vec<String>, options: Options) {
                         .silent_unwrap(AppExitCode::Other);
                 }
 
+                // Prompt user to continue
                 let p2 = prompt!(default true, "Would you still like to install {}?", pkg);
                 if !p2 {
+                    // If not, crash
                     fs::remove_dir_all(format!("{}/{}", cachedir, pkg)).unwrap();
                     crash!(AppExitCode::UserCancellation, "Not proceeding");
                 }
             }
         }
 
-        // dep installing
         info!("Moving on to install dependencies");
 
+        // Install dependencies and makedepends
         if !sorted.repo.is_empty() {
             crate::operations::install(sorted.repo, newopts);
             crate::operations::install(md_sorted.repo, newopts);
@@ -137,6 +150,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             crate::operations::aur_install(md_sorted.aur, newopts);
         }
 
+        // Build makepkg args
         let mut makepkg_args = vec!["-rsci", "--skippgp"];
         if options.asdeps {
             makepkg_args.push("--asdeps")
@@ -145,8 +159,9 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             makepkg_args.push("--noconfirm")
         }
 
-        // package building and installing
         info!("Building time!");
+
+        // Enter cachedir and build package
         set_current_dir(format!("{}/{}", cachedir, pkg)).unwrap();
         let status = ShellCommand::makepkg()
             .args(makepkg_args)
@@ -154,6 +169,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             .silent_unwrap(AppExitCode::MakePkgError);
 
         if !status.success() {
+            // If build failed, crash
             fs::remove_dir_all(format!("{}/{}", cachedir, pkg)).unwrap();
             crash!(
                 AppExitCode::PacmanError,
@@ -162,10 +178,13 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             );
         }
 
+        // Return to cachedir
         set_current_dir(&cachedir).unwrap();
+
+        // Remove package from cache
         remove_dir_all(format!("{}/{}", cachedir, &pkg)).unwrap();
 
-        // pushes package to database
+        // Pushes package to database
         crate::database::add(rpcres.package.unwrap(), options);
     }
 }

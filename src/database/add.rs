@@ -5,11 +5,15 @@ use crate::{crash, log, Options};
 use super::get_database_connection;
 
 pub fn add(pkg: Package, options: Options) {
+    // Initialise database connection
     let conn = get_database_connection();
 
+    // Log the package name
     if options.verbosity >= 1 {
         log!("Adding package {} to database", pkg.name);
     }
+
+    // Push the package to the database
     let pkg_description = pkg
         .description
         .unwrap_or_else(|| "No description found.".parse().unwrap());

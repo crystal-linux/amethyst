@@ -6,15 +6,18 @@ use crate::{prompt, warn};
 pub fn detect() {
     let mut pacnew = vec![];
 
+    // Detect pacnew files
     for entry in std::fs::read_dir("/etc").unwrap() {
         let entry = entry.unwrap();
         let path = entry.path();
         if path.to_str().unwrap().contains(".pacnew") || path.to_str().unwrap().contains(".pacsave")
         {
+            // If found, push to vector
             pacnew.push(path);
         }
     }
 
+    // If pacnew files are found, warn the user and prompt to pacdiff
     if !pacnew.is_empty() {
         let choice = prompt!(default false, "It appears that at least one program you have installed / upgraded has installed a .pacnew/.pacsave config file. Would you like to run pacdiff to deal with this? You can always deal with this later by running `sudo pacdiff`");
         if choice {
