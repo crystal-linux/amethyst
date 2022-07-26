@@ -53,7 +53,7 @@ pub fn upgrade(options: Options) {
     }
 
     // List non-native packages using `pacman -Qm` and collect to a Vec<String>
-    let mut non_native = ShellCommand::pacman()
+    let non_native = ShellCommand::pacman()
         .arg("-Qm")
         .args(&["--color", "never"])
         .wait_with_output()
