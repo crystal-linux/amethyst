@@ -58,16 +58,22 @@ pub fn upgrade(options: Options) {
         .args(&["--color", "never"])
         .wait_with_output()
         .silent_unwrap(AppExitCode::PacmanError);
+
+    // Collect by lines to a Vec<String>
     let mut non_native = non_native.stdout.split('\n').collect::<Vec<&str>>();
+
+    // Remove last element, which is an empty line
     non_native.pop();
 
     // Parse non-native packages into a Vec<QueriedPackage>
     let mut parsed_non_native: Vec<QueriedPackage> = vec![];
     for pkg in non_native {
+        // Split by space
         let split = pkg.split(' ').collect::<Vec<&str>>();
         if verbosity >= 1 {
             log!("{:?}", split);
         }
+        // Create QueriedPackage and push it to parsed_non_native
         let name = split[0].to_string();
         let version = split[1].to_string();
         parsed_non_native.push(QueriedPackage { name, version });
