@@ -2,6 +2,7 @@ use crate::internal::commands::ShellCommand;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcinfo;
+use crate::internal::detect;
 use crate::operations::aur_install::aur_install;
 use crate::{info, log, prompt, Options};
 
@@ -100,10 +101,17 @@ pub fn upgrade(options: Options) {
         }
     }
 
-    // If vector isn't empty, install AUR packages from vector, effectively upgrading
+    // If vector isn't empty, prompt to install AUR packages from vector, effectively upgrading
     if !aur_upgrades.is_empty() {
-        aur_install(aur_upgrades, options);
+        let cont = prompt!(default false,
+            "Found AUR packages {} have new versions available, upgrade?",
+            aur_upgrades.join(", "),
+        );
+        if cont { aur_install(aur_upgrades, options); };
     } else {
         info!("No upgrades available for installed AUR packages");
     }
+
+    // Check for .pacnew files
+    detect();
 }

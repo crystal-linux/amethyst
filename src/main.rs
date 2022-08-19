@@ -7,7 +7,6 @@ use internal::commands::ShellCommand;
 use internal::error::SilentUnwrap;
 
 use crate::args::{InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs};
-use crate::internal::detect;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::{init, sort, start_sudoloop, structs::Options};
 
@@ -61,9 +60,6 @@ fn main() {
             operations::clean(options);
         }
     }
-
-    // Check for .pacnew files
-    detect();
 }
 
 fn cmd_install(args: InstallArgs, options: Options) {
