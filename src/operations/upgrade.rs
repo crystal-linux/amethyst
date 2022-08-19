@@ -50,7 +50,7 @@ pub fn upgrade(options: Options) {
     }
 
     if verbosity >= 1 {
-        log!("Upgrading AUR packages");
+        log!("Checking AUR upgrades...");
     }
 
     // List non-native packages using `pacman -Qm` and collect to a Vec<String>
