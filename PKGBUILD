@@ -3,8 +3,8 @@
 # Developer:  Michal S <michal[at]tar[dot]black>
 
 pkgname=amethyst
-pkgver=3.3.0
-pkgrel=2
+pkgver=3.4.0
+pkgrel=1
 pkgdesc="A fast and efficient AUR helper"
 arch=('x86_64')
 url="https://github.com/crystal-linux/amethyst"

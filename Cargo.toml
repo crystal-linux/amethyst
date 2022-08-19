@@ -1,6 +1,6 @@
 [package]
 name = "Amethyst"
-version = "3.3.0"
+version = "3.4.0"
 authors = ["michal <michal@tar.black>", "axtlos <axtlos@tar.black>"]
 edition = "2021"
 description = "A fast and efficient AUR helper"
