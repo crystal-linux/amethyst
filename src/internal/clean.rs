@@ -4,7 +4,7 @@ use crate::{log, Options};
 
 pub fn clean(a: &[String], options: Options) -> Vec<String> {
     // Strip versioning from package names
-    let r = Regex::new(r"(\S+)((?:>=|<=|>|<)\S+$)").unwrap();
+    let r = Regex::new(r"(\S+)((?:>=|<=|>|<|=\W)\S+$)").unwrap();
     let mut cleaned: Vec<String> = vec![];
     let verbosity = options.verbosity;
 
