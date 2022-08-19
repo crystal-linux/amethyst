@@ -1,8 +1,8 @@
 use crate::internal::commands::ShellCommand;
+use crate::internal::detect;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcinfo;
-use crate::internal::detect;
 use crate::operations::aur_install::aur_install;
 use crate::{info, log, prompt, Options};
 
@@ -107,7 +107,9 @@ pub fn upgrade(options: Options) {
             "Found AUR packages {} have new versions available, upgrade?",
             aur_upgrades.join(", "),
         );
-        if cont { aur_install(aur_upgrades, options); };
+        if cont {
+            aur_install(aur_upgrades, options);
+        };
     } else {
         info!("No upgrades available for installed AUR packages");
     }
