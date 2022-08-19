@@ -1,6 +1,7 @@
-use crate::ShellCommand;
 use std::thread;
 use std::time::Duration;
+
+use crate::ShellCommand;
 
 /// Loop sudo so it doesn't time out
 pub fn start_sudoloop() {

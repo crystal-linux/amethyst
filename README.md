@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/crystal-linux/amethyst/">
-    <img src="https://getcryst.al/site/assets/other/logo.png" alt="Logo" width="150" height="150">
+    <img src="https://getcryst.al/assets/img/crystal-logo-minimal.png" alt="Logo" width="150" height="150">
   </a>
 </p>
 
@@ -70,9 +70,13 @@ Tested on latest Cargo (1.60.0-nightly)
 - ~~Add clean function~~
 - ~~Make flags global~~
 - ~~Add pacdiff function~~
-- Squash any remaining bugs
+- ~~Squash any remaining bugs~~
 
-#### v3.4.0 
+#### v3.4.0
+- ~~New AUR upgrade checker~~
+- ~~Bugfixes, bugfixes, bugfixes!~~~
+
+#### v3.5.0 
 - Implement some sort of spinner for longer operations
 - Allow editing of PKGBUILDs before install
 - Allow to choose provider of package

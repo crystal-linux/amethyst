@@ -7,9 +7,9 @@ use crate::internal::exit_code::AppExitCode;
 use crate::{log, Options};
 
 pub fn uninstall(packages: Vec<String>, options: Options) {
+    // Build pacman args
     let mut pacman_args = vec!["-Rs"];
     pacman_args.append(&mut packages.iter().map(|s| s.as_str()).collect());
-
     if options.noconfirm {
         pacman_args.push("--noconfirm");
     }
@@ -18,6 +18,7 @@ pub fn uninstall(packages: Vec<String>, options: Options) {
         log!("Uninstalling: {:?}", &packages);
     }
 
+    // Uninstall packages
     ShellCommand::pacman()
         .elevated()
         .args(pacman_args)
@@ -29,7 +30,7 @@ pub fn uninstall(packages: Vec<String>, options: Options) {
     }
 
     for package in packages {
-        crate::database::remove(&package, options);
+        // Remove old cache directory
         if Path::new(&format!(
             "{}/.cache/ame/{}",
             env::var("HOME").unwrap(),

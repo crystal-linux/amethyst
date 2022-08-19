@@ -1,3 +1,4 @@
+use colored::*;
 use std::io;
 use std::io::Write;
 use std::process::exit;
@@ -5,7 +6,6 @@ use std::time::UNIX_EPOCH;
 
 use crate::internal::exit_code::AppExitCode;
 use crate::{internal, uwu};
-use colored::*;
 
 const OK_SYMBOL: &str = "❖";
 const ERR_SYMBOL: &str = "❌";
