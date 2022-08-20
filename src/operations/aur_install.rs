@@ -8,7 +8,7 @@ use crate::internal::commands::ShellCommand;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcinfo;
-use crate::{crash, info, log, prompt, Options};
+use crate::{crash, info, log, warn, prompt, Options};
 
 pub fn aur_install(a: Vec<String>, options: Options) {
     // Initialise variables
@@ -21,8 +21,9 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         log!("Installing from AUR: {:?}", &a);
     }
 
-
     info!("Installing packages {} from the AUR", a.join(", "));
+
+    let mut failed = vec![];
 
     for package in a {
         // Query AUR for package info
@@ -197,13 +198,10 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             .silent_unwrap(AppExitCode::MakePkgError);
 
         if !status.success() {
-            // If build failed, crash
+            // If build failed, push to failed vec
             fs::remove_dir_all(format!("{}/{}", cachedir, pkg)).unwrap();
-            crash!(
-                AppExitCode::PacmanError,
-                "Error encountered while installing {}, aborting",
-                pkg,
-            );
+            failed.push(pkg.clone());
+            return;
         }
 
         // Return to cachedir
@@ -211,5 +209,13 @@ pub fn aur_install(a: Vec<String>, options: Options) {
 
         // Remove package from cache
         remove_dir_all(format!("{}/{}", cachedir, &pkg)).unwrap();
+    }
+
+    // If any packages failed to build, warn user with failed packages
+    if !failed.is_empty() {
+        warn!(
+            "Failed to build packages {}",
+            failed.join(", ")
+        );
     }
 }
