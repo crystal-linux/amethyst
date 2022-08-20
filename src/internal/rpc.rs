@@ -14,6 +14,9 @@ pub struct Package {
     #[serde(rename = "MakeDepends")]
     #[serde(default)]
     pub make_depends: Vec<String>,
+    #[serde(rename = "OptDepends")]
+    #[serde(default)]
+    pub opt_depends: Vec<String>,
 }
 
 #[derive(serde::Deserialize)]

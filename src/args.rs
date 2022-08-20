@@ -15,7 +15,7 @@ pub struct Args {
     pub no_confirm: bool,
 
     /// Loops sudo in the background to ensure it doesn't time out during long builds
-    #[clap(long = "sudoloop")]
+    #[clap(long = "sudoloop", global = true)]
     pub sudoloop: bool,
 }
 
@@ -37,18 +37,26 @@ pub enum Operation {
     #[clap(name = "query", aliases = & ["q", "qu", "l", "ls", "-Q"])]
     Query(QueryArgs),
 
+    /// Gets info about a package
+    #[clap(name = "info", aliases = & ["inf", "in", "i", "-Qi"])]
+    Info(InfoArgs),
+
     /// Upgrades locally installed packages to their latest versions
     #[clap(name = "upgrade", aliases = & ["upg", "up", "u", "-Syu"])]
-    Upgrade,
+    Upgrade(UpgradeArgs),
 
     /// Removes all orphaned packages
     #[clap(name = "clean", aliases = & ["cln", "cl", "-Sc"])]
     Clean,
+
+    /// Runs pacdiff
+    #[clap(name = "diff", aliases = & ["dif", "di", "-d"])]
+    Diff,
 }
 
 impl Default for Operation {
     fn default() -> Self {
-        Self::Upgrade
+        Self::Upgrade(UpgradeArgs::default())
     }
 }
 
@@ -59,9 +67,11 @@ pub struct InstallArgs {
     pub packages: Vec<String>,
 
     /// Installs only from the AUR
+    #[clap(long, short)]
     pub aur: bool,
 
     /// Install the packages from the pacman-defined repositories
+    #[clap(long, short)]
     pub repo: bool,
 }
 
@@ -96,4 +106,22 @@ pub struct QueryArgs {
     /// Lists repo/native packages
     #[clap(long, short, from_global)]
     pub repo: bool,
+}
+
+#[derive(Default, Debug, Clone, Parser)]
+pub struct InfoArgs {
+    /// The name of the package(s) to get info on
+    #[clap(required = true)]
+    pub package: String,
+}
+
+#[derive(Default, Debug, Clone, Parser)]
+pub struct UpgradeArgs {
+    /// Upgrades only repo/native packages
+    #[clap(long, short)]
+    pub repo: bool,
+
+    /// Upgrades only from the AUR
+    #[clap(long, short)]
+    pub aur: bool,
 }

@@ -50,6 +50,13 @@ macro_rules! prompt {
     }
 }
 
+#[macro_export]
+macro_rules! spinner {
+    ($($arg:tt)+) => {
+        $crate::internal::utils::spinner_fn(format!($($arg)+))
+    }
+}
+
 pub fn log_info<S: ToString>(msg: S) {
     let msg = msg.to_string();
     let msg = if internal::uwu_enabled() {
@@ -135,5 +142,42 @@ pub fn prompt_yn<S: ToString>(question: S, default_true: bool) -> bool {
         true
     } else {
         default_true
+    }
+}
+
+pub struct Spinner {
+    spinner: spinoff::Spinner,
+}
+
+impl Spinner {
+    pub fn stop_bold(self, text: &str) {
+        let text = if internal::uwu_enabled() {
+            uwu!(text)
+        } else {
+            text.to_string()
+        };
+
+        let symbol = Box::new(format!("{}", OK_SYMBOL.purple()));
+        let text = Box::new(format!("{}", text.bold()));
+
+        let symbol: &'static str = Box::leak(symbol);
+        let text: &'static str = Box::leak(text);
+
+        self.spinner.stop_and_persist(symbol, text);
+    }
+}
+
+pub fn spinner_fn(text: String) -> Spinner {
+    let text = if internal::uwu_enabled() {
+        uwu!(&text)
+    } else {
+        text
+    };
+    Spinner {
+        spinner: spinoff::Spinner::new(
+            spinoff::Spinners::Line,
+            format!("{}", text.bold()),
+            spinoff::Color::Magenta,
+        ),
     }
 }

@@ -6,9 +6,11 @@ use clap::Parser;
 use internal::commands::ShellCommand;
 use internal::error::SilentUnwrap;
 
-use crate::args::{InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs};
+use crate::args::{
+    InfoArgs, InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs, UpgradeArgs,
+};
 use crate::internal::exit_code::AppExitCode;
-use crate::internal::{init, sort, start_sudoloop, structs::Options};
+use crate::internal::{detect, init, sort, start_sudoloop, structs::Options};
 
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
@@ -51,13 +53,15 @@ fn main() {
         Operation::Remove(remove_args) => cmd_remove(remove_args, options),
         Operation::Search(search_args) => cmd_search(search_args, options),
         Operation::Query(query_args) => cmd_query(query_args),
-        Operation::Upgrade => {
-            info!("Performing system upgrade");
-            operations::upgrade(options);
-        }
+        Operation::Info(info_args) => cmd_info(info_args),
+        Operation::Upgrade(upgrade_args) => cmd_upgrade(upgrade_args, options),
         Operation::Clean => {
             info!("Removing orphaned packages");
             operations::clean(options);
+        }
+        Operation::Diff => {
+            info!("Running pacdiff");
+            detect();
         }
     }
 }
@@ -80,11 +84,45 @@ fn cmd_install(args: InstallArgs, options: Options) {
 
     if !sorted.repo.is_empty() {
         // If repo packages found, install them
-        operations::install(sorted.repo, options);
+        operations::install(sorted.repo.clone(), options);
     }
     if !sorted.aur.is_empty() {
         // If AUR packages found, install them
-        operations::aur_install(sorted.aur, options);
+        operations::aur_install(sorted.aur.clone(), options);
+    }
+
+    // Show optional dependencies for installed packages
+    info!("Showing optional dependencies for installed packages");
+    for r in sorted.repo {
+        info!("{}:", r);
+        std::process::Command::new("expac")
+            .args(&["-S", "-l", "\n  ", "  %O", &r])
+            .spawn()
+            .unwrap()
+            .wait()
+            .unwrap();
+    }
+    for a in sorted.aur {
+        info!("{}:", a);
+        let dir_bytes = std::process::Command::new("mktemp")
+            .arg("-d")
+            .output()
+            .unwrap()
+            .stdout;
+        let dir = String::from_utf8(dir_bytes).unwrap();
+        std::process::Command::new("bash")
+            .arg("-c")
+            .arg(format!("\
+                    cd {}
+                    curl -L https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h={} -o PKGBUILD -s
+                    source PKGBUILD
+                    printf '  %s\\n' \"${{optdepends[@]}}\"
+                ", dir, a))
+            .spawn()
+            .unwrap()
+            .wait()
+            .unwrap();
+        std::fs::remove_dir_all(&std::path::Path::new(&dir.trim())).unwrap();
     }
 }
 
@@ -149,4 +187,17 @@ fn cmd_query(args: QueryArgs) {
             .wait_success()
             .silent_unwrap(AppExitCode::PacmanError);
     }
+}
+
+fn cmd_info(args: InfoArgs) {
+    ShellCommand::pacman()
+        .arg("-Qi")
+        .arg(args.package)
+        .wait()
+        .silent_unwrap(AppExitCode::PacmanError);
+}
+
+fn cmd_upgrade(args: UpgradeArgs, options: Options) {
+    info!("Performing system upgrade");
+    operations::upgrade(options, args);
 }

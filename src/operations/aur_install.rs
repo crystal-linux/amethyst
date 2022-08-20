@@ -8,7 +8,7 @@ use crate::internal::commands::ShellCommand;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcinfo;
-use crate::{crash, info, log, prompt, Options};
+use crate::{crash, info, log, prompt, warn, Options};
 
 pub fn aur_install(a: Vec<String>, options: Options) {
     // Initialise variables
@@ -22,6 +22,8 @@ pub fn aur_install(a: Vec<String>, options: Options) {
     }
 
     info!("Installing packages {} from the AUR", a.join(", "));
+
+    let mut failed = vec![];
 
     for package in a {
         // Query AUR for package info
@@ -67,10 +69,11 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         }
 
         // Sort dependencies and makedepends
-        log!("Sorting dependencies");
-        let sorted = crate::internal::sort(&rpcres.package.as_ref().unwrap().depends, options);
-        log!("Sorting make dependencies");
-        let md_sorted =
+        if verbosity >= 1 {
+            log!("Sorting dependencies and makedepends");
+        }
+        let mut sorted = crate::internal::sort(&rpcres.package.as_ref().unwrap().depends, options);
+        let mut md_sorted =
             crate::internal::sort(&rpcres.package.as_ref().unwrap().make_depends, options);
 
         if verbosity >= 1 {
@@ -84,6 +87,29 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             noconfirm,
             asdeps: true,
         };
+
+        // Get a list of installed packages
+        let installed = ShellCommand::pacman()
+            .elevated()
+            .args(&["-Qq"])
+            .wait_with_output()
+            .silent_unwrap(AppExitCode::PacmanError)
+            .stdout
+            .split_whitespace()
+            .collect::<Vec<&str>>()
+            .iter()
+            .map(|s| s.to_string())
+            .collect::<Vec<String>>();
+
+        // Remove installed packages from sorted dependencies and makedepends
+        if verbosity >= 1 {
+            log!("Removing installed packages from sorted dependencies and makedepends");
+        }
+        sorted.aur.retain(|x| !installed.contains(x));
+        sorted.repo.retain(|x| !installed.contains(x));
+
+        md_sorted.aur.retain(|x| !installed.contains(x));
+        md_sorted.repo.retain(|x| !installed.contains(x));
 
         // If dependencies are not found in AUR or repos, crash
         if !sorted.nf.is_empty() || !md_sorted.nf.is_empty() {
@@ -143,15 +169,19 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         // Install dependencies and makedepends
         if !sorted.repo.is_empty() {
             crate::operations::install(sorted.repo, newopts);
-            crate::operations::install(md_sorted.repo, newopts);
         }
         if !sorted.aur.is_empty() {
             crate::operations::aur_install(sorted.aur, newopts);
+        }
+        if !md_sorted.repo.is_empty() {
+            crate::operations::install(md_sorted.repo, newopts);
+        }
+        if !md_sorted.aur.is_empty() {
             crate::operations::aur_install(md_sorted.aur, newopts);
         }
 
         // Build makepkg args
-        let mut makepkg_args = vec!["-rsci", "--skippgp"];
+        let mut makepkg_args = vec!["-rsci", "--skippgp", "--needed"];
         if options.asdeps {
             makepkg_args.push("--asdeps")
         }
@@ -169,13 +199,10 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             .silent_unwrap(AppExitCode::MakePkgError);
 
         if !status.success() {
-            // If build failed, crash
+            // If build failed, push to failed vec
             fs::remove_dir_all(format!("{}/{}", cachedir, pkg)).unwrap();
-            crash!(
-                AppExitCode::PacmanError,
-                "Error encountered while installing {}, aborting",
-                pkg,
-            );
+            failed.push(pkg.clone());
+            return;
         }
 
         // Return to cachedir
@@ -183,5 +210,10 @@ pub fn aur_install(a: Vec<String>, options: Options) {
 
         // Remove package from cache
         remove_dir_all(format!("{}/{}", cachedir, &pkg)).unwrap();
+    }
+
+    // If any packages failed to build, warn user with failed packages
+    if !failed.is_empty() {
+        warn!("Failed to build packages {}", failed.join(", "));
     }
 }
