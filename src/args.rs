@@ -63,9 +63,11 @@ pub struct InstallArgs {
     pub packages: Vec<String>,
 
     /// Installs only from the AUR
+    #[clap(long, short)]
     pub aur: bool,
 
     /// Install the packages from the pacman-defined repositories
+    #[clap(long, short)]
     pub repo: bool,
 }
 

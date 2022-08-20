@@ -21,6 +21,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         log!("Installing from AUR: {:?}", &a);
     }
 
+
     info!("Installing packages {} from the AUR", a.join(", "));
 
     for package in a {
@@ -70,8 +71,8 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         if verbosity >= 1 {
             log!("Sorting dependencies and makedepends");
         }
-        let sorted = crate::internal::sort(&rpcres.package.as_ref().unwrap().depends, options);
-        let md_sorted =
+        let mut sorted = crate::internal::sort(&rpcres.package.as_ref().unwrap().depends, options);
+        let mut md_sorted =
             crate::internal::sort(&rpcres.package.as_ref().unwrap().make_depends, options);
 
         if verbosity >= 1 {
@@ -85,6 +86,28 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             noconfirm,
             asdeps: true,
         };
+
+        // Get a list of installed packages
+        let installed = ShellCommand::pacman()
+            .elevated()
+            .args(&["-Qq"])
+            .wait_with_output()
+            .silent_unwrap(AppExitCode::PacmanError)
+            .stdout
+            .split_whitespace()
+            .collect::<Vec<&str>>()
+            .iter().map(|s| s.to_string())
+            .collect::<Vec<String>>();
+
+        // Remove installed packages from sorted dependencies and makedepends
+        if verbosity >= 1 {
+            log!("Removing installed packages from sorted dependencies and makedepends");
+        }
+        sorted.aur.retain(|x| !installed.contains(x));
+        sorted.repo.retain(|x| !installed.contains(x));
+
+        md_sorted.aur.retain(|x| !installed.contains(x));
+        md_sorted.repo.retain(|x| !installed.contains(x));
 
         // If dependencies are not found in AUR or repos, crash
         if !sorted.nf.is_empty() || !md_sorted.nf.is_empty() {
@@ -144,15 +167,19 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         // Install dependencies and makedepends
         if !sorted.repo.is_empty() {
             crate::operations::install(sorted.repo, newopts);
-            crate::operations::install(md_sorted.repo, newopts);
         }
         if !sorted.aur.is_empty() {
             crate::operations::aur_install(sorted.aur, newopts);
+        }
+        if !md_sorted.repo.is_empty() {
+            crate::operations::install(md_sorted.repo, newopts);
+        }
+        if !md_sorted.aur.is_empty() {
             crate::operations::aur_install(md_sorted.aur, newopts);
         }
 
         // Build makepkg args
-        let mut makepkg_args = vec!["-rsci", "--skippgp"];
+        let mut makepkg_args = vec!["-rsci", "--skippgp", "--needed"];
         if options.asdeps {
             makepkg_args.push("--asdeps")
         }
