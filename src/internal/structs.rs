@@ -20,4 +20,5 @@ pub struct Options {
     pub verbosity: i32,
     pub noconfirm: bool,
     pub asdeps: bool,
+    pub toplevel: bool,
 }

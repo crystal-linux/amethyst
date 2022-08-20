@@ -37,6 +37,7 @@ fn main() {
         verbosity,
         noconfirm,
         asdeps: false,
+        toplevel: true,
     };
 
     // Ensure amethyst is initialized
@@ -116,8 +117,9 @@ fn cmd_install(args: InstallArgs, options: Options) {
                     cd {}
                     curl -L https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h={} -o PKGBUILD -s
                     source PKGBUILD
-                    printf '  %s\\n' \"${{optdepends[@]}}\"
+                    printf '  %s\\n' \"${{optdepends[@]}}\"\
                 ", dir, a))
+            .stderr(std::process::Stdio::piped())
             .spawn()
             .unwrap()
             .wait()

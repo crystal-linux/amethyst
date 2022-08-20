@@ -1,5 +1,4 @@
 use std::env::set_current_dir;
-use std::fs::remove_dir_all;
 use std::path::Path;
 use std::process::Command;
 use std::{env, fs};
@@ -9,6 +8,25 @@ use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcinfo;
 use crate::{crash, info, log, prompt, warn, Options};
+
+fn list(dir: &str) -> Vec<String> {
+    let dirs = fs::read_dir(Path::new(&dir)).unwrap();
+    let dirs: Vec<String> = dirs
+        .map(|dir| {
+            dir.unwrap()
+                .path()
+                .to_str()
+                .unwrap()
+                .to_string()
+                .split('/')
+                .collect::<Vec<&str>>()
+                .last()
+                .unwrap()
+                .to_string()
+        })
+        .collect();
+    dirs
+}
 
 pub fn aur_install(a: Vec<String>, options: Options) {
     // Initialise variables
@@ -23,9 +41,14 @@ pub fn aur_install(a: Vec<String>, options: Options) {
 
     info!("Installing packages {} from the AUR", a.join(", "));
 
-    let mut failed = vec![];
+    let mut failed: Vec<String> = vec![];
 
     for package in a {
+        let dirs = list(&cachedir);
+        if dirs.contains(&package) {
+            continue;
+        }
+
         // Query AUR for package info
         let rpcres = rpcinfo(package);
 
@@ -72,6 +95,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         if verbosity >= 1 {
             log!("Sorting dependencies and makedepends");
         }
+
         let mut sorted = crate::internal::sort(&rpcres.package.as_ref().unwrap().depends, options);
         let mut md_sorted =
             crate::internal::sort(&rpcres.package.as_ref().unwrap().make_depends, options);
@@ -86,6 +110,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             verbosity,
             noconfirm,
             asdeps: true,
+            toplevel: false,
         };
 
         // Get a list of installed packages
@@ -110,6 +135,13 @@ pub fn aur_install(a: Vec<String>, options: Options) {
 
         md_sorted.aur.retain(|x| !installed.contains(x));
         md_sorted.repo.retain(|x| !installed.contains(x));
+
+        // Remove packages from sorted dependencies if they are already in the cachedir
+        if verbosity >= 1 {
+            log!("Removing packages from sorted dependencies if they are already in the cachedir");
+        }
+        let dirs = list(&cachedir);
+        sorted.aur.retain(|x| !dirs.contains(x));
 
         // If dependencies are not found in AUR or repos, crash
         if !sorted.nf.is_empty() || !md_sorted.nf.is_empty() {
@@ -181,7 +213,7 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         }
 
         // Build makepkg args
-        let mut makepkg_args = vec!["-rsci", "--skippgp", "--needed"];
+        let mut makepkg_args = vec!["-rcd", "--skippgp", "--needed"];
         if options.asdeps {
             makepkg_args.push("--asdeps")
         }
@@ -193,14 +225,14 @@ pub fn aur_install(a: Vec<String>, options: Options) {
 
         // Enter cachedir and build package
         set_current_dir(format!("{}/{}", cachedir, pkg)).unwrap();
+
         let status = ShellCommand::makepkg()
             .args(makepkg_args)
             .wait()
             .silent_unwrap(AppExitCode::MakePkgError);
 
-        if !status.success() {
+        if !status.success() && status.code().unwrap() != 13 {
             // If build failed, push to failed vec
-            fs::remove_dir_all(format!("{}/{}", cachedir, pkg)).unwrap();
             failed.push(pkg.clone());
             return;
         }
@@ -208,8 +240,40 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         // Return to cachedir
         set_current_dir(&cachedir).unwrap();
 
-        // Remove package from cache
-        remove_dir_all(format!("{}/{}", cachedir, &pkg)).unwrap();
+        if options.toplevel {
+            // Install all packages from cachedir except `pkg` using --asdeps
+            let dirs = list(&cachedir);
+
+            // Get a list of packages in cachedir
+            if dirs.len() > 1 {
+                info!("Installing all AUR dependencies");
+                std::process::Command::new("bash")
+                    .args(&[
+                        "-cO",
+                        "extglob",
+                        format!("sudo pacman -U --asdeps {}/!({})/*.zst", cachedir, pkg).as_str(),
+                    ])
+                    .spawn()
+                    .unwrap()
+                    .wait()
+                    .unwrap();
+            }
+
+            // Install package explicitly
+            info!("Installing {}", pkg);
+            std::process::Command::new("bash")
+                .args(&[
+                    "-c",
+                    format!("sudo pacman -U {}/{}/*.zst", cachedir, pkg).as_str(),
+                ])
+                .spawn()
+                .unwrap()
+                .wait()
+                .unwrap();
+
+            // Remove everything from cachedir
+            crate::init(options);
+        }
     }
 
     // If any packages failed to build, warn user with failed packages
