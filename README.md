@@ -77,9 +77,12 @@ Tested on latest Cargo (1.60.0-nightly)
 - ~~Bugfixes, bugfixes, bugfixes!~~~
 
 #### v3.5.0 
-- Implement some sort of spinner for longer operations
+- ~~Implement some sort of spinner for longer operations~~
+- ~~Fix circular AUR dependency bug~~
+- ~~Better wording for Pacdiff issue and option to mute~~
+
+#### v3.6.0 (I need to stop pushing these back)
 - Allow editing of PKGBUILDs before install
-- Allow to choose provider of package
 - Highlight optdepends at the end of an install operation
 
 <!--
