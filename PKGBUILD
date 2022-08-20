@@ -3,7 +3,7 @@
 # Developer:  Michal S <michal[at]tar[dot]black>
 
 pkgname=amethyst
-pkgver=3.4.0
+pkgver=3.5.0
 pkgrel=1
 pkgdesc="A fast and efficient AUR helper"
 arch=('x86_64')
