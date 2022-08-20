@@ -89,42 +89,44 @@ fn cmd_install(args: InstallArgs, options: Options) {
     }
     if !sorted.aur.is_empty() {
         // If AUR packages found, install them
-        operations::aur_install(sorted.aur.clone(), options);
+        operations::aur_install(sorted.aur.clone(), options, "".to_string());
     }
 
     // Show optional dependencies for installed packages
-    info!("Showing optional dependencies for installed packages");
-    for r in sorted.repo {
-        info!("{}:", r);
-        std::process::Command::new("expac")
-            .args(&["-S", "-l", "\n  ", "  %O", &r])
-            .spawn()
-            .unwrap()
-            .wait()
-            .unwrap();
-    }
-    for a in sorted.aur {
-        info!("{}:", a);
-        let dir_bytes = std::process::Command::new("mktemp")
-            .arg("-d")
-            .output()
-            .unwrap()
-            .stdout;
-        let dir = String::from_utf8(dir_bytes).unwrap();
-        std::process::Command::new("bash")
-            .arg("-c")
-            .arg(format!("\
+    if packages.len() > 1 {
+        info!("Showing optional dependencies for installed packages");
+        for r in sorted.repo {
+            info!("{}:", r);
+            std::process::Command::new("expac")
+                .args(&["-S", "-l", "\n  ", "  %O", &r])
+                .spawn()
+                .unwrap()
+                .wait()
+                .unwrap();
+        }
+        for a in sorted.aur {
+            info!("{}:", a);
+            let dir_bytes = std::process::Command::new("mktemp")
+                .arg("-d")
+                .output()
+                .unwrap()
+                .stdout;
+            let dir = String::from_utf8(dir_bytes).unwrap();
+            std::process::Command::new("bash")
+                .arg("-c")
+                .arg(format!("\
                     cd {}
                     curl -L https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h={} -o PKGBUILD -s
                     source PKGBUILD
                     printf '  %s\\n' \"${{optdepends[@]}}\"\
                 ", dir, a))
-            .stderr(std::process::Stdio::piped())
-            .spawn()
-            .unwrap()
-            .wait()
-            .unwrap();
-        std::fs::remove_dir_all(&std::path::Path::new(&dir.trim())).unwrap();
+                .stderr(std::process::Stdio::piped())
+                .spawn()
+                .unwrap()
+                .wait()
+                .unwrap();
+            std::fs::remove_dir_all(&std::path::Path::new(&dir.trim())).unwrap();
+        }
     }
 }
 

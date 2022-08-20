@@ -28,3 +28,4 @@ native-tls = { version = "0.2.10", default-features = false }
 libc = { version = "0.2.126", default-features = false }
 rm_rf = { version = "0.6.2", default-features = false }
 spinoff = { version = "0.5.2", default-features = false }
+chrono = "0.4.22"

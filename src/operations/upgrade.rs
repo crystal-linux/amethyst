@@ -128,7 +128,7 @@ pub fn upgrade(options: Options, args: UpgradeArgs) {
                 aur_upgrades.join(", "),
             );
             if cont {
-                aur_install(aur_upgrades, options);
+                aur_install(aur_upgrades, options, "".to_string());
             };
         } else {
             info!("No upgrades available for installed AUR packages");

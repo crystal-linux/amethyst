@@ -28,10 +28,24 @@ fn list(dir: &str) -> Vec<String> {
     dirs
 }
 
-pub fn aur_install(a: Vec<String>, options: Options) {
+fn mktemp() -> String {
+    let tempdir = Command::new("mktemp")
+        .args(&["-d", "/tmp/ame.XXXXXX.tmp"])
+        .output()
+        .unwrap()
+        .stdout;
+
+    String::from_utf8(tempdir).unwrap().trim().to_string()
+}
+
+pub fn aur_install(a: Vec<String>, options: Options, cachedir: String) {
     // Initialise variables
     let url = crate::internal::rpc::URL;
-    let cachedir = format!("{}/.cache/ame/", env::var("HOME").unwrap());
+    let cachedir = if !options.toplevel {
+        cachedir
+    } else {
+        mktemp()
+    };
     let verbosity = options.verbosity;
     let noconfirm = options.noconfirm;
 
@@ -155,43 +169,59 @@ pub fn aur_install(a: Vec<String>, options: Options) {
 
         if !noconfirm {
             // Prompt user to view PKGBUILD
-            let p1 = prompt!(default false,
-                "Would you like to review {}'s PKGBUILD (and any .install files if present)?",
-                pkg
-            );
-            let editor: &str = &env::var("PAGER").unwrap_or_else(|_| "less".parse().unwrap());
+            let p0 = prompt!(default false, "Would you like to review and/or edit {}'s PKGBUILD (and any adjacent build files if present)?", pkg);
+            if p0 {
+                info!("This will drop you into a standard `bash` shell in the package's cache directory. If any changes are made, you will be prompted whether to save them to your home directory. To stop reviewing/editing, just run `exit`");
+                let p1 = prompt!(default true,
+                    "Continue?"
+                );
 
-            if p1 {
-                // Open PKGBUILD in pager
-                Command::new(editor)
-                    .arg(format!("{}/PKGBUILD", pkg))
-                    .spawn()
-                    .unwrap()
-                    .wait()
-                    .unwrap();
+                if p1 {
+                    let cdir = env::current_dir().unwrap().to_str().unwrap().to_string();
+                    set_current_dir(Path::new(&format!("{}/{}", &cachedir, pkg))).unwrap();
 
-                // Check if any .install files are present
-                let status = ShellCommand::bash()
-                    .arg("-c")
-                    .arg(format!("ls {}/*.install &> /dev/null", pkg))
-                    .wait()
-                    .silent_unwrap(AppExitCode::Other);
+                    Command::new("bash").spawn().unwrap().wait().unwrap();
 
-                if status.success() {
-                    // If so, open them too
-                    ShellCommand::bash()
-                        .arg("-c")
-                        .arg(format!("{} {}/*.install", editor, pkg))
-                        .wait()
-                        .silent_unwrap(AppExitCode::Other);
-                }
+                    set_current_dir(Path::new(&cdir)).unwrap();
 
-                // Prompt user to continue
-                let p2 = prompt!(default true, "Would you still like to install {}?", pkg);
-                if !p2 {
-                    // If not, crash
-                    fs::remove_dir_all(format!("{}/{}", cachedir, pkg)).unwrap();
-                    crash!(AppExitCode::UserCancellation, "Not proceeding");
+                    // Prompt user to save changes
+                    let p2 = prompt!(default false,
+                        "Save changes to package {}?",
+                        pkg
+                    );
+                    if p2 {
+                        // Save changes to ~/.local/share
+                        let dest = format!(
+                            "{}-saved-{}",
+                            pkg,
+                            chrono::Local::now()
+                                .naive_local()
+                                .format("%Y-%m-%d_%H-%M-%S")
+                        );
+                        Command::new("cp")
+                            .arg("-r")
+                            .arg(format!("{}/{}", cachedir, pkg))
+                            .arg(format!(
+                                "{}/.local/share/ame/{}",
+                                env::var("HOME").unwrap(),
+                                dest
+                            ))
+                            .spawn()
+                            .unwrap()
+                            .wait()
+                            .unwrap();
+
+                        // Alert user
+                        info!("Saved changes to ~/.local/share/ame/{}", dest);
+                    };
+
+                    // Prompt user to continue
+                    let p3 = prompt!(default true, "Would you still like to install {}?", pkg);
+                    if !p3 {
+                        // If not, crash
+                        fs::remove_dir_all(format!("{}/{}", cachedir, pkg)).unwrap();
+                        crash!(AppExitCode::UserCancellation, "Not proceeding");
+                    };
                 }
             }
         }
@@ -203,13 +233,13 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             crate::operations::install(sorted.repo, newopts);
         }
         if !sorted.aur.is_empty() {
-            crate::operations::aur_install(sorted.aur, newopts);
+            crate::operations::aur_install(sorted.aur, newopts, cachedir.clone());
         }
         if !md_sorted.repo.is_empty() {
             crate::operations::install(md_sorted.repo, newopts);
         }
         if !md_sorted.aur.is_empty() {
-            crate::operations::aur_install(md_sorted.aur, newopts);
+            crate::operations::aur_install(md_sorted.aur, newopts, cachedir.clone());
         }
 
         // Build makepkg args
@@ -270,14 +300,25 @@ pub fn aur_install(a: Vec<String>, options: Options) {
                 .unwrap()
                 .wait()
                 .unwrap();
-
-            // Remove everything from cachedir
-            crate::init(options);
         }
     }
 
     // If any packages failed to build, warn user with failed packages
     if !failed.is_empty() {
-        warn!("Failed to build packages {}", failed.join(", "));
+        warn!(
+            "Failed to build packages {}, keeping cache directory at {} for manual inspection",
+            failed.join(", "),
+            cachedir
+        );
+        Command::new("mv")
+            .args(&[&cachedir, &format!("{}.failed", cachedir)])
+            .spawn()
+            .unwrap()
+            .wait()
+            .unwrap();
+    } else if options.toplevel {
+        rm_rf::remove(&cachedir).unwrap_or_else(|e|
+            crash!(AppExitCode::Other, "Could not remove cache directory at {}: {}. This could be a permissions issue with fakeroot, try running `sudo rm -rf {}`", cachedir, e, cachedir)
+        );
     }
 }
