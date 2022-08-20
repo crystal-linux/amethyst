@@ -8,7 +8,7 @@ use crate::internal::commands::ShellCommand;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcinfo;
-use crate::{crash, info, log, warn, prompt, Options};
+use crate::{crash, info, log, prompt, warn, Options};
 
 pub fn aur_install(a: Vec<String>, options: Options) {
     // Initialise variables
@@ -97,7 +97,8 @@ pub fn aur_install(a: Vec<String>, options: Options) {
             .stdout
             .split_whitespace()
             .collect::<Vec<&str>>()
-            .iter().map(|s| s.to_string())
+            .iter()
+            .map(|s| s.to_string())
             .collect::<Vec<String>>();
 
         // Remove installed packages from sorted dependencies and makedepends
@@ -213,9 +214,6 @@ pub fn aur_install(a: Vec<String>, options: Options) {
 
     // If any packages failed to build, warn user with failed packages
     if !failed.is_empty() {
-        warn!(
-            "Failed to build packages {}",
-            failed.join(", ")
-        );
+        warn!("Failed to build packages {}", failed.join(", "));
     }
 }

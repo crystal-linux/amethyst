@@ -6,9 +6,11 @@ use clap::Parser;
 use internal::commands::ShellCommand;
 use internal::error::SilentUnwrap;
 
-use crate::args::{InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs, UpgradeArgs, InfoArgs};
+use crate::args::{
+    InfoArgs, InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs, UpgradeArgs,
+};
 use crate::internal::exit_code::AppExitCode;
-use crate::internal::{init, sort, start_sudoloop, structs::Options, detect};
+use crate::internal::{detect, init, sort, start_sudoloop, structs::Options};
 
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
@@ -102,7 +104,11 @@ fn cmd_install(args: InstallArgs, options: Options) {
     }
     for a in sorted.aur {
         info!("{}:", a);
-        let dir_bytes = std::process::Command::new("mktemp").arg("-d").output().unwrap().stdout;
+        let dir_bytes = std::process::Command::new("mktemp")
+            .arg("-d")
+            .output()
+            .unwrap()
+            .stdout;
         let dir = String::from_utf8(dir_bytes).unwrap();
         std::process::Command::new("bash")
             .arg("-c")

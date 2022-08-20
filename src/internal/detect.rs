@@ -1,8 +1,9 @@
+use std::env;
+
 use crate::internal::commands::ShellCommand;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
-use crate::{prompt, warn, spinner};
-use std::env;
+use crate::{prompt, spinner, warn};
 
 pub fn detect() {
     // Start spinner

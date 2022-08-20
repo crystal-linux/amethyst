@@ -176,10 +176,8 @@ pub fn spinner_fn(text: String) -> Spinner {
     Spinner {
         spinner: spinoff::Spinner::new(
             spinoff::Spinners::Line,
-            format!("{}",
-            text.bold()),
+            format!("{}", text.bold()),
             spinoff::Color::Magenta,
-        )
+        ),
     }
 }
-

@@ -1,11 +1,11 @@
+use crate::args::UpgradeArgs;
 use crate::internal::commands::ShellCommand;
 use crate::internal::detect;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcinfo;
-use crate::args::UpgradeArgs;
 use crate::operations::aur_install::aur_install;
-use crate::{info, log, prompt, warn, Options, spinner};
+use crate::{info, log, prompt, spinner, warn, Options};
 
 #[derive(Debug)]
 struct QueriedPackage {
@@ -50,9 +50,7 @@ pub fn upgrade(options: Options, args: UpgradeArgs) {
             info!("Successfully upgraded repo packages");
         } else {
             // Otherwise warn user
-            warn!(
-                "Failed to upgrade repo packages.",
-            );
+            warn!("Failed to upgrade repo packages.",);
         }
     }
 
@@ -126,9 +124,9 @@ pub fn upgrade(options: Options, args: UpgradeArgs) {
         // If vector isn't empty, prompt to install AUR packages from vector, effectively upgrading
         if !aur_upgrades.is_empty() {
             let cont = prompt!(default true,
-            "Found AUR packages {} have new versions available, upgrade?",
-            aur_upgrades.join(", "),
-        );
+                "Found AUR packages {} have new versions available, upgrade?",
+                aur_upgrades.join(", "),
+            );
             if cont {
                 aur_install(aur_upgrades, options);
             };
