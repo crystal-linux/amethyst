@@ -66,23 +66,7 @@ Tested on latest Cargo (1.60.0-nightly)
 
 ### TODO:
 
-#### v3.3.0
-- ~~Add clean function~~
-- ~~Make flags global~~
-- ~~Add pacdiff function~~
-- ~~Squash any remaining bugs~~
-
-#### v3.4.0
-- ~~New AUR upgrade checker~~
-- ~~Bugfixes, bugfixes, bugfixes!~~~
-
-#### v3.5.0 
-- ~~Implement some sort of spinner for longer operations~~
-- ~~Fix circular AUR dependency bug~~
-- ~~Better wording for Pacdiff issue and option to mute~~
-- ~~Highlight optdepends at the end of an install operation~~
-
-#### v3.6.0 (I need to stop pushing these back)
+#### v3.6.0
 - Allow editing of PKGBUILDs before install
 
 <!--
