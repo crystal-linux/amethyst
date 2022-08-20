@@ -6,9 +6,9 @@ use clap::Parser;
 use internal::commands::ShellCommand;
 use internal::error::SilentUnwrap;
 
-use crate::args::{InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs};
+use crate::args::{InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs, UpgradeArgs};
 use crate::internal::exit_code::AppExitCode;
-use crate::internal::{init, sort, start_sudoloop, structs::Options};
+use crate::internal::{init, sort, start_sudoloop, structs::Options, detect};
 
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
@@ -51,13 +51,14 @@ fn main() {
         Operation::Remove(remove_args) => cmd_remove(remove_args, options),
         Operation::Search(search_args) => cmd_search(search_args, options),
         Operation::Query(query_args) => cmd_query(query_args),
-        Operation::Upgrade => {
-            info!("Performing system upgrade");
-            operations::upgrade(options);
-        }
+        Operation::Upgrade(upgrade_args) => cmd_upgrade(upgrade_args, options),
         Operation::Clean => {
             info!("Removing orphaned packages");
             operations::clean(options);
+        }
+        Operation::Diff => {
+            info!("Running pacdiff");
+            detect();
         }
     }
 }
@@ -149,4 +150,9 @@ fn cmd_query(args: QueryArgs) {
             .wait_success()
             .silent_unwrap(AppExitCode::PacmanError);
     }
+}
+
+fn cmd_upgrade(args: UpgradeArgs, options: Options) {
+    info!("Performing system upgrade");
+    operations::upgrade(options, args);
 }

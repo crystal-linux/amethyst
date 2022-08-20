@@ -8,20 +8,6 @@ pub fn init(options: Options) {
     let verbosity = options.verbosity;
     let homedir = env::var("HOME").unwrap();
 
-    // Initialise stateful directory
-    if !Path::new(&format!("{}/.local/share/ame", homedir)).exists() {
-        if verbosity >= 1 {
-            log!("Initialising stateful directory");
-        }
-        std::fs::create_dir_all(format!("{}/.local/share/ame", homedir)).unwrap_or_else(|e| {
-            crash!(
-                AppExitCode::FailedCreatingPaths,
-                "Failed to create stateful directory: {}",
-                e
-            );
-        });
-    }
-
     // If cache path doesn't exist, create it, if it does, delete it and recreate it
     if !Path::new(&format!("{}/.cache/ame/", homedir)).exists() {
         if verbosity >= 1 {
