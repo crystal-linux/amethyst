@@ -80,10 +80,10 @@ Tested on latest Cargo (1.60.0-nightly)
 - ~~Implement some sort of spinner for longer operations~~
 - ~~Fix circular AUR dependency bug~~
 - ~~Better wording for Pacdiff issue and option to mute~~
+- ~~Highlight optdepends at the end of an install operation~~
 
 #### v3.6.0 (I need to stop pushing these back)
 - Allow editing of PKGBUILDs before install
-- Highlight optdepends at the end of an install operation
 
 <!--
 
