@@ -1,5 +1,5 @@
-// #![warn(clippy::all, clippy::pedantic, clippy::nursery, clippy::cargo)]
-// #![allow(clippy::too_many_lines)]
+#![warn(clippy::all, clippy::pedantic, clippy::nursery, clippy::cargo)]
+#![allow(clippy::too_many_lines)]
 
 use args::Args;
 use clap::Parser;
