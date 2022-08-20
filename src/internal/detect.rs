@@ -31,7 +31,7 @@ pub fn detect() {
         let choice = prompt!(default false, "Would you like to run pacdiff to deal with this? You can always deal with this later by running `sudo pacdiff`");
         if choice {
             if env::var("PACDIFF_WARNING").unwrap_or_else(|_| "1".to_string()) != "0" {
-                warn!("Pacdiff uses `vimdiff` by default to edit files for merging. Make sure you know how to exit vim before proceeding!");
+                warn!("Pacdiff uses vimdiff by default to edit files for merging. You can focus panes by mousing over them and pressing left click, and scroll up and down using your mouse's scroll wheel (or the arrow keys). To exit vimdiff, press the following key combination: ESC, :qa!, ENTER");
                 warn!("You can surpress this warning in the future by setting the `PACDIFF_WARNING` environment variable to `0`");
                 let cont = prompt!(default false, "Continue?");
                 if cont {
