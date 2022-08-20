@@ -180,7 +180,7 @@ pub fn aur_install(a: Vec<String>, options: Options, cachedir: String) {
                     let cdir = env::current_dir().unwrap().to_str().unwrap().to_string();
                     set_current_dir(Path::new(&format!("{}/{}", &cachedir, pkg))).unwrap();
 
-                    Command::new("bash").spawn().unwrap().wait().unwrap();
+                    ShellCommand::bash().wait().unwrap();
 
                     set_current_dir(Path::new(&cdir)).unwrap();
 

@@ -8,41 +8,18 @@ pub fn init(options: Options) {
     let verbosity = options.verbosity;
     let homedir = env::var("HOME").unwrap();
 
-    // If cache path doesn't exist, create it, if it does, delete it and recreate it
-    if !Path::new(&format!("{}/.cache/ame/", homedir)).exists() {
+    // If stateful dir doesn't exist, create it
+    if !Path::new(&format!("{}/.local/share/ame/", homedir)).exists() {
         if verbosity >= 1 {
-            log!("Initialising cache directory");
+            log!("Initialising stateful directory");
         }
-        std::fs::create_dir_all(format!("{}/.cache/ame", homedir)).unwrap_or_else(|e| {
+        std::fs::create_dir_all(format!("{}/.local/share/ame", homedir)).unwrap_or_else(|e| {
             crash!(
                 AppExitCode::FailedCreatingPaths,
-                "Couldn't create path: {}/.cache/ame: {}",
+                "Couldn't create path: {}/.local/share/ame: {}",
                 homedir,
                 e,
             );
-        });
-    } else {
-        if verbosity >= 1 {
-            log!("Deleting cache directory");
-        }
-        rm_rf::remove(format!("{}/.cache/ame", homedir)).unwrap_or_else(|e| {
-            crash!(
-                AppExitCode::FailedCreatingPaths,
-                "Couldn't remove path: {}/.cache/ame: {}",
-                homedir,
-                e
-            )
-        });
-        if verbosity >= 1 {
-            log!("Creating cache directory");
-        }
-        std::fs::create_dir_all(format!("{}/.cache/ame", homedir)).unwrap_or_else(|e| {
-            crash!(
-                AppExitCode::FailedCreatingPaths,
-                "Couldn't create path: {}/.cache/ame: {}",
-                homedir,
-                e
-            )
         });
     }
 }
