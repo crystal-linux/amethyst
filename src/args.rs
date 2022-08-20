@@ -37,6 +37,10 @@ pub enum Operation {
     #[clap(name = "query", aliases = & ["q", "qu", "l", "ls", "-Q"])]
     Query(QueryArgs),
 
+    /// Gets info about a package
+    #[clap(name = "info", aliases = & ["inf", "in", "i", "-Qi"])]
+    Info(InfoArgs),
+
     /// Upgrades locally installed packages to their latest versions
     #[clap(name = "upgrade", aliases = & ["upg", "up", "u", "-Syu"])]
     Upgrade(UpgradeArgs),
@@ -102,6 +106,13 @@ pub struct QueryArgs {
     /// Lists repo/native packages
     #[clap(long, short, from_global)]
     pub repo: bool,
+}
+
+#[derive(Default, Debug, Clone, Parser)]
+pub struct InfoArgs {
+    /// The name of the package(s) to get info on
+    #[clap(required = true)]
+    pub package: String,
 }
 
 #[derive(Default, Debug, Clone, Parser)]

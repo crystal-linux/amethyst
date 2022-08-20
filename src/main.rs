@@ -6,7 +6,7 @@ use clap::Parser;
 use internal::commands::ShellCommand;
 use internal::error::SilentUnwrap;
 
-use crate::args::{InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs, UpgradeArgs};
+use crate::args::{InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs, UpgradeArgs, InfoArgs};
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::{init, sort, start_sudoloop, structs::Options, detect};
 
@@ -51,6 +51,7 @@ fn main() {
         Operation::Remove(remove_args) => cmd_remove(remove_args, options),
         Operation::Search(search_args) => cmd_search(search_args, options),
         Operation::Query(query_args) => cmd_query(query_args),
+        Operation::Info(info_args) => cmd_info(info_args),
         Operation::Upgrade(upgrade_args) => cmd_upgrade(upgrade_args, options),
         Operation::Clean => {
             info!("Removing orphaned packages");
@@ -150,6 +151,14 @@ fn cmd_query(args: QueryArgs) {
             .wait_success()
             .silent_unwrap(AppExitCode::PacmanError);
     }
+}
+
+fn cmd_info(args: InfoArgs) {
+    ShellCommand::pacman()
+        .arg("-Qi")
+        .arg(args.package)
+        .wait()
+        .silent_unwrap(AppExitCode::PacmanError);
 }
 
 fn cmd_upgrade(args: UpgradeArgs, options: Options) {
