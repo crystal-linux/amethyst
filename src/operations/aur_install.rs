@@ -67,9 +67,10 @@ pub fn aur_install(a: Vec<String>, options: Options) {
         }
 
         // Sort dependencies and makedepends
-        log!("Sorting dependencies");
+        if verbosity >= 1 {
+            log!("Sorting dependencies and makedepends");
+        }
         let sorted = crate::internal::sort(&rpcres.package.as_ref().unwrap().depends, options);
-        log!("Sorting make dependencies");
         let md_sorted =
             crate::internal::sort(&rpcres.package.as_ref().unwrap().make_depends, options);
 

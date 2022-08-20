@@ -4,7 +4,7 @@ use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcinfo;
 use crate::operations::aur_install::aur_install;
-use crate::{info, log, prompt, Options};
+use crate::{info, log, prompt, Options, spinner};
 
 #[derive(Debug)]
 struct QueriedPackage {
@@ -53,6 +53,9 @@ pub fn upgrade(options: Options) {
         log!("Checking AUR upgrades...");
     }
 
+    // Start spinner
+    let sp = spinner!("Checking AUR upgrades...");
+
     // List non-native packages using `pacman -Qm` and collect to a Vec<String>
     let non_native = ShellCommand::pacman()
         .arg("-Qm")
@@ -100,6 +103,8 @@ pub fn upgrade(options: Options) {
             aur_upgrades.push(pkg.name);
         }
     }
+
+    sp.stop_bold("Finished!");
 
     // If vector isn't empty, prompt to install AUR packages from vector, effectively upgrading
     if !aur_upgrades.is_empty() {
