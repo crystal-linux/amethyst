@@ -5,7 +5,7 @@ use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcinfo;
 use crate::args::UpgradeArgs;
 use crate::operations::aur_install::aur_install;
-use crate::{info, log, prompt, Options, spinner};
+use crate::{info, log, prompt, warn, Options, spinner};
 
 #[derive(Debug)]
 struct QueriedPackage {
@@ -49,15 +49,19 @@ pub fn upgrade(options: Options, args: UpgradeArgs) {
             // If pacman was successful, notify user
             info!("Successfully upgraded repo packages");
         } else {
-            // Otherwise, prompt user whether to continue
-            let cont = prompt!(default false,
-            "Failed to upgrade repo packages, continue to upgrading AUR packages?",
-        );
-            if !cont {
-                // If user doesn't want to continue, break
-                info!("Exiting");
-                std::process::exit(AppExitCode::PacmanError as i32);
-            }
+            // Otherwise warn user
+            warn!(
+                "Failed to upgrade repo packages.",
+            );
+        }
+    }
+
+    if args.repo && args.aur {
+        let cont = prompt!(default false, "Continue to upgrade AUR packages?");
+        if !cont {
+            // If user doesn't want to continue, break
+            info!("Exiting");
+            std::process::exit(AppExitCode::PacmanError as i32);
         }
     }
 
@@ -121,7 +125,7 @@ pub fn upgrade(options: Options, args: UpgradeArgs) {
 
         // If vector isn't empty, prompt to install AUR packages from vector, effectively upgrading
         if !aur_upgrades.is_empty() {
-            let cont = prompt!(default false,
+            let cont = prompt!(default true,
             "Found AUR packages {} have new versions available, upgrade?",
             aur_upgrades.join(", "),
         );
