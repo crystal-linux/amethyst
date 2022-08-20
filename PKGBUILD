@@ -22,7 +22,7 @@ prepare() {
 
 build() {
     cd "$srcdir/$pkgname"
-    export RUSTUP_TOOLCHAIN=stable
+    export RUSTUP_TOOLCHAIN=nightly
     export CARGO_TARGET_DIR=target
     cargo build --frozen --release
 }
