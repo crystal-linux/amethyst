@@ -111,7 +111,7 @@ fn cmd_install(args: InstallArgs, options: Options, cachedir: &str) {
     }
     if !sorted.aur.is_empty() {
         // If AUR packages found, install them
-        operations::aur_install(sorted.aur.clone(), options, cachedir);
+        operations::aur_install(sorted.aur, options, cachedir);
     }
 
     // Show optional dependencies for installed packages
