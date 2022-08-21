@@ -7,5 +7,6 @@ pub enum AppExitCode {
     PacmanError = 5,
     GitError = 6,
     MakePkgError = 7,
+    ConfigParseError = 8,
     Other = 63,
 }

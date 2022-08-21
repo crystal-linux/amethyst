@@ -4,6 +4,7 @@ use std::process::Command;
 use std::{env, fs};
 
 use crate::internal::commands::ShellCommand;
+use crate::internal::config;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcinfo;
@@ -48,10 +49,19 @@ fn review(cachedir: &str, pkg: &str, orig_cachedir: &str) {
         );
 
         if p1 {
+            let config = config::read();
             let cdir = env::current_dir().unwrap().to_str().unwrap().to_string();
             set_current_dir(Path::new(&format!("{}/{}", &cachedir, pkg))).unwrap();
 
-            ShellCommand::bash().wait().unwrap();
+            if config.extra.review_user_shell {
+                Command::new(&env::var("SHELL").unwrap())
+                    .spawn()
+                    .unwrap()
+                    .wait()
+                    .unwrap();
+            } else {
+                ShellCommand::bash().wait().unwrap();
+            }
 
             set_current_dir(Path::new(&cdir)).unwrap();
 

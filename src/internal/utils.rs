@@ -3,11 +3,10 @@ use std::io;
 use std::io::Write;
 use std::process::exit;
 use std::time::UNIX_EPOCH;
+use textwrap::{termwidth, wrap};
 
 use crate::internal::exit_code::AppExitCode;
 use crate::{internal, uwu};
-
-use textwrap::{termwidth, wrap};
 
 const OK_SYMBOL: &str = "❖";
 const ERR_SYMBOL: &str = "❌";

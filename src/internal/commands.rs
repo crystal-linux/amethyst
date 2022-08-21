@@ -1,6 +1,8 @@
 use std::ffi::{OsStr, OsString};
+use std::fs;
 use std::process::{Child, Command, ExitStatus, Stdio};
 
+use crate::internal::config;
 use crate::internal::error::{AppError, AppResult};
 use crate::internal::is_tty;
 
@@ -20,7 +22,12 @@ pub struct ShellCommand {
 
 impl ShellCommand {
     pub fn pacman() -> Self {
-        let pacman_cmd = Self::new("pacman");
+        let config = config::read();
+        let pacman_cmd = if config.base.powerpill && fs::metadata("/usr/bin/powerpill").is_ok() {
+            Self::new("powerpill")
+        } else {
+            Self::new("pacman")
+        };
 
         if is_tty() {
             pacman_cmd.arg("--color=always")
