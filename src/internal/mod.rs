@@ -18,7 +18,7 @@ pub mod rpc;
 mod sort;
 pub mod structs;
 #[macro_use]
-pub(crate) mod utils;
+pub mod utils;
 mod sudoloop;
 
 #[macro_export]

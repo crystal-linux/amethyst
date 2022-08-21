@@ -4,7 +4,10 @@ version = "3.6.0"
 authors = ["michal <michal@tar.black>", "axtlos <axtlos@tar.black>"]
 edition = "2021"
 description = "A fast and efficient AUR helper"
+repository = "https://github.com/crystal-linux/amethyst"
 license-file = "LICENSE.md"
+keywords = ["aur", "crystal-linux", "pacman", "aur-helper"]
+categories = ["command-line-utilities"]
 default-run = "ame"
 
 [[bin]]

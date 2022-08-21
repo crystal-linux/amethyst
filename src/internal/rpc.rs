@@ -33,7 +33,7 @@ pub struct InfoResults {
 
 pub const URL: &str = "https://aur.archlinux.org/";
 
-pub fn rpcinfo(pkg: String) -> InfoResults {
+pub fn rpcinfo(pkg: &str) -> InfoResults {
     // Initialise TLS connector
     let tls_connector = Arc::new(native_tls::TlsConnector::new().unwrap());
 
@@ -67,7 +67,7 @@ pub fn rpcinfo(pkg: String) -> InfoResults {
     }
 }
 
-pub fn rpcsearch(pkg: String) -> SearchResults {
+pub fn rpcsearch(pkg: &str) -> SearchResults {
     // Initialise TLS connector
     let tls_connector = Arc::new(native_tls::TlsConnector::new().unwrap());
 

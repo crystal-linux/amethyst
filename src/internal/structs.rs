@@ -10,14 +10,13 @@ pub struct Sorted {
 
 impl Sorted {
     pub fn new(repo: Vec<String>, aur: Vec<String>, nf: Vec<String>) -> Self {
-        let a: Sorted = Sorted { repo, aur, nf };
-        a
+        Self { repo, aur, nf }
     }
 }
 
 #[derive(Clone, Copy)]
 pub struct Options {
-    pub verbosity: i32,
+    pub verbosity: usize,
     pub noconfirm: bool,
     pub asdeps: bool,
     pub toplevel: bool,

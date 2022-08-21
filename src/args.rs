@@ -1,3 +1,5 @@
+#![allow(clippy::module_name_repetitions)]
+
 use clap::{Parser, Subcommand};
 
 #[derive(Debug, Clone, Parser)]

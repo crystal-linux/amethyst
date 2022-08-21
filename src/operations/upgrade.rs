@@ -106,7 +106,7 @@ pub fn upgrade(options: Options, args: UpgradeArgs, cachedir: &str) {
         let mut aur_upgrades = vec![];
         for pkg in parsed_non_native {
             // Query AUR
-            let rpc_result = rpcinfo((&*pkg.name).to_string());
+            let rpc_result = rpcinfo(&pkg.name);
 
             if !rpc_result.found {
                 // If package not found, skip
@@ -122,16 +122,16 @@ pub fn upgrade(options: Options, args: UpgradeArgs, cachedir: &str) {
         sp.stop_bold("Finished!");
 
         // If vector isn't empty, prompt to install AUR packages from vector, effectively upgrading
-        if !aur_upgrades.is_empty() {
+        if aur_upgrades.is_empty() {
+            info!("No upgrades available for installed AUR packages");
+        } else {
             let cont = prompt!(default true,
                 "Found AUR packages {} have new versions available, upgrade?",
                 aur_upgrades.join(", "),
             );
             if cont {
-                aur_install(aur_upgrades, options, cachedir.to_string());
+                aur_install(aur_upgrades, options, cachedir);
             };
-        } else {
-            info!("No upgrades available for installed AUR packages");
         }
     }
 

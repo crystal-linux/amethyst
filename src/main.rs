@@ -1,5 +1,7 @@
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, clippy::cargo)]
 #![allow(clippy::too_many_lines)]
+// This is only temporary until I properly split aur_install up
+#![allow(clippy::cognitive_complexity)]
 
 use std::fs;
 use std::path::Path;
@@ -32,7 +34,7 @@ fn main() {
     let args: Args = Args::parse();
 
     // Initialize variables
-    let verbosity = args.verbose as i32;
+    let verbosity = args.verbose;
     let noconfirm = args.no_confirm;
 
     // Get options struct
@@ -70,8 +72,8 @@ fn main() {
     match args.subcommand.unwrap_or_default() {
         Operation::Install(install_args) => cmd_install(install_args, options, &cachedir),
         Operation::Remove(remove_args) => cmd_remove(remove_args, options),
-        Operation::Search(search_args) => cmd_search(search_args, options),
-        Operation::Query(query_args) => cmd_query(query_args),
+        Operation::Search(search_args) => cmd_search(&search_args, options),
+        Operation::Query(query_args) => cmd_query(&query_args),
         Operation::Info(info_args) => cmd_info(info_args),
         Operation::Upgrade(upgrade_args) => cmd_upgrade(upgrade_args, options, &cachedir),
         Operation::Clean => {
@@ -103,11 +105,11 @@ fn cmd_install(args: InstallArgs, options: Options, cachedir: &str) {
 
     if !sorted.repo.is_empty() {
         // If repo packages found, install them
-        operations::install(sorted.repo.clone(), options);
+        operations::install(&sorted.repo, options);
     }
     if !sorted.aur.is_empty() {
         // If AUR packages found, install them
-        operations::aur_install(sorted.aur.clone(), options, cachedir.to_string());
+        operations::aur_install(sorted.aur.clone(), options, cachedir);
     }
 
     // Show optional dependencies for installed packages
@@ -158,7 +160,7 @@ fn cmd_remove(args: RemoveArgs, options: Options) {
     operations::uninstall(packages, options);
 }
 
-fn cmd_search(args: SearchArgs, options: Options) {
+fn cmd_search(args: &SearchArgs, options: Options) {
     // Initialise variables
     let query_string = args.search.join(" ");
     if args.aur {
@@ -183,7 +185,7 @@ fn cmd_search(args: SearchArgs, options: Options) {
     }
 }
 
-fn cmd_query(args: QueryArgs) {
+fn cmd_query(args: &QueryArgs) {
     if args.aur {
         // If AUR query, query AUR
         ShellCommand::pacman()

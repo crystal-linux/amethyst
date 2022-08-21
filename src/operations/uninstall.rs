@@ -9,7 +9,7 @@ use crate::{log, Options};
 pub fn uninstall(packages: Vec<String>, options: Options) {
     // Build pacman args
     let mut pacman_args = vec!["-Rs"];
-    pacman_args.append(&mut packages.iter().map(|s| s.as_str()).collect());
+    pacman_args.append(&mut packages.iter().map(String::as_str).collect());
     if options.noconfirm {
         pacman_args.push("--noconfirm");
     }

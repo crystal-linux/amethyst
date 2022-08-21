@@ -70,10 +70,10 @@ pub fn clean(options: Options) {
     }
 
     // Prompt the user whether to clear cache or not
-    let clear_cache = if !noconfirm {
-        prompt!(default false, "Also clear pacman's package cache?")
-    } else {
+    let clear_cache = if noconfirm {
         true
+    } else {
+        prompt!(default false, "Also clear pacman's package cache?")
     };
 
     if clear_cache {

@@ -4,12 +4,13 @@ use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcsearch;
 use crate::{log, Options};
 
+#[allow(clippy::module_name_repetitions)]
 pub fn aur_search(query: &str, options: Options) {
     // Initialise variables
     let verbosity = options.verbosity;
 
     // Query AUR for package info
-    let res = rpcsearch(query.to_string());
+    let res = rpcsearch(query);
 
     // Format output
     for package in &res.results {
@@ -21,7 +22,7 @@ pub fn aur_search(query: &str, options: Options) {
                 .description
                 .as_ref()
                 .unwrap_or(&"No description".to_string())
-        )
+        );
     }
 
     if verbosity >= 1 {
@@ -29,6 +30,7 @@ pub fn aur_search(query: &str, options: Options) {
     }
 }
 
+#[allow(clippy::module_name_repetitions)]
 pub fn repo_search(query: &str, options: Options) {
     // Initialise variables
     let verbosity = options.verbosity;
@@ -49,5 +51,5 @@ pub fn repo_search(query: &str, options: Options) {
         );
     }
 
-    println!("{}", output)
+    println!("{}", output);
 }

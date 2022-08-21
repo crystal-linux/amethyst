@@ -10,7 +10,7 @@ pub struct StringOutput {
     pub status: ExitStatus,
 }
 
-/// A wrapper around [std::process::Command] with predefined
+/// A wrapper around [`std::process::Command`] with predefined
 /// commands used in this project as well as elevated access.
 pub struct ShellCommand {
     command: String,
@@ -49,7 +49,7 @@ impl ShellCommand {
         Self::new("sudo")
     }
 
-    fn new<S: ToString>(command: S) -> Self {
+    fn new(command: &str) -> Self {
         Self {
             command: command.to_string(),
             args: Vec::new(),
@@ -77,7 +77,7 @@ impl ShellCommand {
     }
 
     /// Runs the command with sudo
-    pub fn elevated(mut self) -> Self {
+    pub const fn elevated(mut self) -> Self {
         self.elevated = true;
 
         self

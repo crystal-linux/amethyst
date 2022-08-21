@@ -1,4 +1,4 @@
-use colored::*;
+use colored::Colorize;
 use std::io;
 use std::io::Write;
 use std::process::exit;
@@ -59,8 +59,7 @@ macro_rules! spinner {
     }
 }
 
-pub fn log_info<S: ToString>(msg: S) {
-    let msg = msg.to_string();
+pub fn log_info(msg: String) {
     let msg = if internal::uwu_enabled() {
         uwu!(&msg)
     } else {
@@ -72,11 +71,10 @@ pub fn log_info<S: ToString>(msg: S) {
         "{} {}",
         OK_SYMBOL.purple(),
         wrap(&msg, opts).join("\n").bold()
-    )
+    );
 }
 
-pub fn log_warn<S: ToString>(msg: S) {
-    let msg = msg.to_string();
+pub fn log_warn(msg: String) {
     let msg = if internal::uwu_enabled() {
         uwu!(&msg)
     } else {
@@ -88,11 +86,10 @@ pub fn log_warn<S: ToString>(msg: S) {
         "{} {}",
         WARN_SYMBOL.yellow(),
         wrap(&msg, opts).join("\n").yellow().bold()
-    )
+    );
 }
 
-pub fn log_and_crash<S: ToString>(msg: S, exit_code: AppExitCode) -> ! {
-    let msg = msg.to_string();
+pub fn log_and_crash(msg: String, exit_code: AppExitCode) -> ! {
     let msg = if internal::uwu_enabled() {
         uwu!(&msg)
     } else {
@@ -108,8 +105,7 @@ pub fn log_and_crash<S: ToString>(msg: S, exit_code: AppExitCode) -> ! {
     exit(exit_code as i32);
 }
 
-pub fn log_debug<S: ToString>(msg: S) {
-    let msg = msg.to_string();
+pub fn log_debug(msg: String) {
     let msg = if internal::uwu_enabled() && internal::uwu_debug_enabled() {
         uwu!(&msg)
     } else {
@@ -126,9 +122,7 @@ pub fn log_debug<S: ToString>(msg: S) {
     );
 }
 
-pub fn prompt_yn<S: ToString>(question: S, default_true: bool) -> bool {
-    let question = question.to_string();
-
+pub fn prompt_yn(question: String, default_true: bool) -> bool {
     let yn_prompt = if default_true {
         PROMPT_YN_DEFAULT_TRUE
     } else {
@@ -153,7 +147,7 @@ pub fn prompt_yn<S: ToString>(question: S, default_true: bool) -> bool {
     let mut yn: String = String::new();
 
     io::stdout().flush().ok();
-    let _ = std::io::stdin().read_line(&mut yn);
+    std::io::stdin().read_line(&mut yn).unwrap();
 
     if yn.trim().to_lowercase() == "n" || yn.trim().to_lowercase() == "no" {
         false

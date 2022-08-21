@@ -14,15 +14,15 @@ fn list(dir: &str) -> Vec<String> {
     let dirs = fs::read_dir(Path::new(&dir)).unwrap();
     let dirs: Vec<String> = dirs
         .map(|dir| {
-            dir.unwrap()
+            (*dir
+                .unwrap()
                 .path()
                 .to_str()
                 .unwrap()
-                .to_string()
                 .split('/')
                 .collect::<Vec<&str>>()
                 .last()
-                .unwrap()
+                .unwrap())
                 .to_string()
         })
         .collect();
@@ -39,11 +39,11 @@ fn mktemp() -> String {
     String::from_utf8(tempdir).unwrap().trim().to_string()
 }
 
-pub fn aur_install(a: Vec<String>, options: Options, orig_cachedir: String) {
+pub fn aur_install(a: Vec<String>, options: Options, orig_cachedir: &str) {
     // Initialise variables
     let url = crate::internal::rpc::URL;
     let cachedir = if !options.toplevel || !orig_cachedir.is_empty() {
-        orig_cachedir.clone()
+        orig_cachedir.to_string()
     } else {
         mktemp()
     };
@@ -65,7 +65,7 @@ pub fn aur_install(a: Vec<String>, options: Options, orig_cachedir: String) {
         }
 
         // Query AUR for package info
-        let rpcres = rpcinfo(package);
+        let rpcres = rpcinfo(&package);
 
         if !rpcres.found {
             // If package isn't found, break
@@ -138,7 +138,7 @@ pub fn aur_install(a: Vec<String>, options: Options, orig_cachedir: String) {
             .split_whitespace()
             .collect::<Vec<&str>>()
             .iter()
-            .map(|s| s.to_string())
+            .map(|s| (*s).to_string())
             .collect::<Vec<String>>();
 
         // Remove installed packages from sorted dependencies and makedepends
@@ -233,25 +233,25 @@ pub fn aur_install(a: Vec<String>, options: Options, orig_cachedir: String) {
 
         // Install dependencies and makedepends
         if !sorted.repo.is_empty() {
-            crate::operations::install(sorted.repo, newopts);
+            crate::operations::install(&sorted.repo, newopts);
         }
         if !sorted.aur.is_empty() {
-            crate::operations::aur_install(sorted.aur, newopts, cachedir.clone());
+            crate::operations::aur_install(sorted.aur, newopts, &cachedir.clone());
         }
         if !md_sorted.repo.is_empty() {
-            crate::operations::install(md_sorted.repo, newopts);
+            crate::operations::install(&md_sorted.repo, newopts);
         }
         if !md_sorted.aur.is_empty() {
-            crate::operations::aur_install(md_sorted.aur, newopts, cachedir.clone());
+            crate::operations::aur_install(md_sorted.aur, newopts, &cachedir.clone());
         }
 
         // Build makepkg args
         let mut makepkg_args = vec!["-rcd", "--skippgp", "--needed"];
         if options.asdeps {
-            makepkg_args.push("--asdeps")
+            makepkg_args.push("--asdeps");
         }
         if options.noconfirm {
-            makepkg_args.push("--noconfirm")
+            makepkg_args.push("--noconfirm");
         }
 
         info!("Building time!");
