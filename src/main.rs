@@ -55,7 +55,14 @@ fn main() {
     } else {
         // Create cache directory if it doesn't exist
         if fs::metadata(&args.cachedir.as_ref().unwrap()).is_err() {
-            fs::create_dir(&args.cachedir.as_ref().unwrap()).unwrap();
+            fs::create_dir(&args.cachedir.as_ref().unwrap()).unwrap_or_else(
+                |err| {
+                    crash!(
+                        AppExitCode::FailedCreatingPaths,
+                        "Could not create cache directory: {}", err
+                    );
+                },
+            );
         }
         Path::new(&args.cachedir.unwrap())
             .canonicalize()
