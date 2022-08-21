@@ -93,6 +93,7 @@ fn cmd_install(args: InstallArgs, options: Options, cachedir: &str) {
     // Initialise variables
     let packages = args.packages;
     let sorted = sort(&packages, options);
+    let config = internal::config::read();
 
     info!("Attempting to install packages: {}", packages.join(", "));
 
@@ -115,7 +116,7 @@ fn cmd_install(args: InstallArgs, options: Options, cachedir: &str) {
     }
 
     // Show optional dependencies for installed packages
-    if packages.len() > 1 {
+    if packages.len() > 1 && config.base.highlight_optdepends {
         info!("Showing optional dependencies for installed packages");
         for p in packages {
             info!("{}:", p);

@@ -14,6 +14,7 @@ pub struct Config {
 #[derive(Debug, Deserialize)]
 pub struct ConfigBase {
     pub pacdiff_warn: bool,
+    pub highlight_optdepends: bool,
     pub powerpill: bool,
 }
 
@@ -29,6 +30,7 @@ impl Default for Config {
         Self {
             base: ConfigBase {
                 pacdiff_warn: true,
+                highlight_optdepends: true,
                 powerpill: false,
             },
             extra: ConfigExtra {

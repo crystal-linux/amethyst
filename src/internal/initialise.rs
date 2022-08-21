@@ -42,6 +42,7 @@ pub fn init(options: Options) {
     let config = "\
 [base]
 pacdiff_warn = true
+highlight_optdepends = true
 powerpill = false
 
 [extra]
