@@ -10,7 +10,6 @@ use crate::internal::rpc::rpcinfo;
 use crate::{crash, info, log, prompt, warn, Options};
 
 fn list(dir: &str) -> Vec<String> {
-    println!("{}", dir);
     let dirs = fs::read_dir(Path::new(&dir)).unwrap();
     let dirs: Vec<String> = dirs
         .map(|dir| {
@@ -39,10 +38,103 @@ fn mktemp() -> String {
     String::from_utf8(tempdir).unwrap().trim().to_string()
 }
 
+fn review(cachedir: &str, pkg: &str, orig_cachedir: &str) {
+    // Prompt user to view PKGBUILD
+    let p0 = prompt!(default false, "Would you like to review and/or edit {}'s PKGBUILD (and any adjacent build files if present)?", pkg);
+    if p0 {
+        info!("This will drop you into a standard `bash` shell in the package's cache directory. If any changes are made, you will be prompted whether to save them to your home directory. To stop reviewing/editing, just run `exit`");
+        let p1 = prompt!(default true,
+            "Continue?"
+        );
+
+        if p1 {
+            let cdir = env::current_dir().unwrap().to_str().unwrap().to_string();
+            set_current_dir(Path::new(&format!("{}/{}", &cachedir, pkg))).unwrap();
+
+            ShellCommand::bash().wait().unwrap();
+
+            set_current_dir(Path::new(&cdir)).unwrap();
+
+            // Prompt user to save changes
+            let p2 = prompt!(default false,
+                "Save changes to package {}?",
+                pkg
+            );
+            if p2 {
+                // Save changes to ~/.local/share
+                let dest = format!(
+                    "{}-saved-{}",
+                    pkg,
+                    chrono::Local::now()
+                        .naive_local()
+                        .format("%Y-%m-%d_%H-%M-%S")
+                );
+                Command::new("cp")
+                    .arg("-r")
+                    .arg(format!("{}/{}", cachedir, pkg))
+                    .arg(format!(
+                        "{}/.local/share/ame/{}",
+                        env::var("HOME").unwrap(),
+                        dest
+                    ))
+                    .spawn()
+                    .unwrap()
+                    .wait()
+                    .unwrap();
+
+                // Alert user
+                info!("Saved changes to ~/.local/share/ame/{}", dest);
+            };
+        }
+    }
+
+    // Prompt user to continue
+    let p = prompt!(default true, "Would you still like to install {}?", pkg);
+    if !p {
+        // If not, crash
+        if orig_cachedir.is_empty() {
+            fs::remove_dir_all(format!("{}/{}", cachedir, pkg)).unwrap();
+        }
+        crash!(AppExitCode::UserCancellation, "Not proceeding");
+    };
+}
+
+fn finish(cachedir: &str, pkg: &str) {
+    // Install all packages from cachedir except `pkg` using --asdeps
+    let dirs = list(cachedir);
+
+    // Get a list of packages in cachedir
+    if dirs.len() > 1 {
+        info!("Installing all AUR dependencies");
+        std::process::Command::new("bash")
+            .args(&[
+                "-cO",
+                "extglob",
+                format!("sudo pacman -U --asdeps {}/!({})/*.zst", cachedir, pkg).as_str(),
+            ])
+            .spawn()
+            .unwrap()
+            .wait()
+            .unwrap();
+    }
+
+    // Install package explicitly
+    info!("Installing {}", pkg);
+    std::process::Command::new("bash")
+        .args(&[
+            "-c",
+            format!("sudo pacman -U {}/{}/*.zst", cachedir, pkg).as_str(),
+        ])
+        .spawn()
+        .unwrap()
+        .wait()
+        .unwrap();
+}
+
 pub fn aur_install(a: Vec<String>, options: Options, orig_cachedir: &str) {
     // Initialise variables
     let url = crate::internal::rpc::URL;
-    let cachedir = if !options.toplevel || !orig_cachedir.is_empty() {
+    let cachedir = if options.asdeps || !orig_cachedir.is_empty() {
         orig_cachedir.to_string()
     } else {
         mktemp()
@@ -60,6 +152,7 @@ pub fn aur_install(a: Vec<String>, options: Options, orig_cachedir: &str) {
 
     for package in a {
         let dirs = list(&cachedir);
+        // Don't process packages if they are already in the cachedir
         if dirs.contains(&package) {
             continue;
         }
@@ -78,7 +171,6 @@ pub fn aur_install(a: Vec<String>, options: Options, orig_cachedir: &str) {
         if verbosity >= 1 {
             log!("Cloning {} into cachedir", pkg);
         }
-
         info!("Cloning package source");
 
         // Clone package into cachedir
@@ -88,21 +180,11 @@ pub fn aur_install(a: Vec<String>, options: Options, orig_cachedir: &str) {
             .arg(format!("{}/{}", url, pkg))
             .wait()
             .silent_unwrap(AppExitCode::GitError);
-
         if verbosity >= 1 {
             log!(
-                "Cloned {} into cachedir, moving on to resolving dependencies",
-                pkg
-            );
-            log!(
-                "Raw dependencies for package {} are:\n{:?}",
+                "Cloned {} into cachedir, moving on to resolving dependencies: {:?}",
                 pkg,
-                rpcres.package.as_ref().unwrap().depends.join(", ")
-            );
-            log!(
-                "Raw makedepends for package {} are:\n{:?}",
-                pkg,
-                rpcres.package.as_ref().unwrap().make_depends.join(", ")
+                rpcres.package
             );
         }
 
@@ -110,7 +192,6 @@ pub fn aur_install(a: Vec<String>, options: Options, orig_cachedir: &str) {
         if verbosity >= 1 {
             log!("Sorting dependencies and makedepends");
         }
-
         let mut sorted = crate::internal::sort(&rpcres.package.as_ref().unwrap().depends, options);
         let mut md_sorted =
             crate::internal::sort(&rpcres.package.as_ref().unwrap().make_depends, options);
@@ -125,7 +206,6 @@ pub fn aur_install(a: Vec<String>, options: Options, orig_cachedir: &str) {
             verbosity,
             noconfirm,
             asdeps: true,
-            toplevel: false,
         };
 
         // Get a list of installed packages
@@ -151,13 +231,6 @@ pub fn aur_install(a: Vec<String>, options: Options, orig_cachedir: &str) {
         md_sorted.aur.retain(|x| !installed.contains(x));
         md_sorted.repo.retain(|x| !installed.contains(x));
 
-        // Remove packages from sorted dependencies if they are already in the cachedir
-        if verbosity >= 1 {
-            log!("Removing packages from sorted dependencies if they are already in the cachedir");
-        }
-        let dirs = list(&cachedir);
-        sorted.aur.retain(|x| !dirs.contains(x));
-
         // If dependencies are not found in AUR or repos, crash
         if !sorted.nf.is_empty() || !md_sorted.nf.is_empty() {
             crash!(
@@ -169,65 +242,8 @@ pub fn aur_install(a: Vec<String>, options: Options, orig_cachedir: &str) {
         }
 
         if !noconfirm {
-            // Prompt user to view PKGBUILD
-            let p0 = prompt!(default false, "Would you like to review and/or edit {}'s PKGBUILD (and any adjacent build files if present)?", pkg);
-            if p0 {
-                info!("This will drop you into a standard `bash` shell in the package's cache directory. If any changes are made, you will be prompted whether to save them to your home directory. To stop reviewing/editing, just run `exit`");
-                let p1 = prompt!(default true,
-                    "Continue?"
-                );
-
-                if p1 {
-                    let cdir = env::current_dir().unwrap().to_str().unwrap().to_string();
-                    set_current_dir(Path::new(&format!("{}/{}", &cachedir, pkg))).unwrap();
-
-                    ShellCommand::bash().wait().unwrap();
-
-                    set_current_dir(Path::new(&cdir)).unwrap();
-
-                    // Prompt user to save changes
-                    let p2 = prompt!(default false,
-                        "Save changes to package {}?",
-                        pkg
-                    );
-                    if p2 {
-                        // Save changes to ~/.local/share
-                        let dest = format!(
-                            "{}-saved-{}",
-                            pkg,
-                            chrono::Local::now()
-                                .naive_local()
-                                .format("%Y-%m-%d_%H-%M-%S")
-                        );
-                        Command::new("cp")
-                            .arg("-r")
-                            .arg(format!("{}/{}", cachedir, pkg))
-                            .arg(format!(
-                                "{}/.local/share/ame/{}",
-                                env::var("HOME").unwrap(),
-                                dest
-                            ))
-                            .spawn()
-                            .unwrap()
-                            .wait()
-                            .unwrap();
-
-                        // Alert user
-                        info!("Saved changes to ~/.local/share/ame/{}", dest);
-                    };
-                }
-            }
+            review(&cachedir, pkg, orig_cachedir);
         }
-
-        // Prompt user to continue
-        let p = prompt!(default true, "Would you still like to install {}?", pkg);
-        if !p {
-            // If not, crash
-            if orig_cachedir.is_empty() {
-                fs::remove_dir_all(format!("{}/{}", cachedir, pkg)).unwrap();
-            }
-            crash!(AppExitCode::UserCancellation, "Not proceeding");
-        };
 
         info!("Moving on to install dependencies");
 
@@ -273,36 +289,8 @@ pub fn aur_install(a: Vec<String>, options: Options, orig_cachedir: &str) {
         // Return to cachedir
         set_current_dir(&cachedir).unwrap();
 
-        if options.toplevel {
-            // Install all packages from cachedir except `pkg` using --asdeps
-            let dirs = list(&cachedir);
-
-            // Get a list of packages in cachedir
-            if dirs.len() > 1 {
-                info!("Installing all AUR dependencies");
-                std::process::Command::new("bash")
-                    .args(&[
-                        "-cO",
-                        "extglob",
-                        format!("sudo pacman -U --asdeps {}/!({})/*.zst", cachedir, pkg).as_str(),
-                    ])
-                    .spawn()
-                    .unwrap()
-                    .wait()
-                    .unwrap();
-            }
-
-            // Install package explicitly
-            info!("Installing {}", pkg);
-            std::process::Command::new("bash")
-                .args(&[
-                    "-c",
-                    format!("sudo pacman -U {}/{}/*.zst", cachedir, pkg).as_str(),
-                ])
-                .spawn()
-                .unwrap()
-                .wait()
-                .unwrap();
+        if !options.asdeps {
+            finish(&cachedir, pkg);
         }
     }
 
@@ -326,7 +314,7 @@ pub fn aur_install(a: Vec<String>, options: Options, orig_cachedir: &str) {
                 .wait()
                 .unwrap();
         }
-    } else if options.toplevel && orig_cachedir.is_empty() {
+    } else if !options.asdeps && orig_cachedir.is_empty() {
         rm_rf::remove(&cachedir).unwrap_or_else(|e|
             crash!(AppExitCode::Other, "Could not remove cache directory at {}: {}. This could be a permissions issue with fakeroot, try running `sudo rm -rf {}`", cachedir, e, cachedir)
         );

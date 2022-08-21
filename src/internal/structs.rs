@@ -19,5 +19,4 @@ pub struct Options {
     pub verbosity: usize,
     pub noconfirm: bool,
     pub asdeps: bool,
-    pub toplevel: bool,
 }

@@ -1,7 +1,5 @@
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, clippy::cargo)]
 #![allow(clippy::too_many_lines)]
-// This is only temporary until I properly split aur_install up
-#![allow(clippy::cognitive_complexity)]
 
 use std::fs;
 use std::path::Path;
@@ -42,7 +40,6 @@ fn main() {
         verbosity,
         noconfirm,
         asdeps: false,
-        toplevel: true,
     };
 
     // Ensure amethyst is initialized
