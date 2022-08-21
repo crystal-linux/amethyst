@@ -280,7 +280,7 @@ pub fn aur_install(a: Vec<String>, options: Options, orig_cachedir: &str) {
             .wait()
             .silent_unwrap(AppExitCode::MakePkgError);
 
-        if !status.success() && status.code().unwrap() != 13 {
+        if !status.success() {
             // If build failed, push to failed vec
             failed.push(pkg.clone());
             return;
