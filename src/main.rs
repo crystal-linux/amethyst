@@ -1,5 +1,8 @@
-// #![warn(clippy::all, clippy::pedantic, clippy::nursery, clippy::cargo)]
-// #![allow(clippy::too_many_lines)]
+#![warn(clippy::all, clippy::pedantic, clippy::nursery, clippy::cargo)]
+#![allow(clippy::too_many_lines)]
+
+use std::fs;
+use std::path::Path;
 
 use args::Args;
 use clap::Parser;
@@ -48,14 +51,29 @@ fn main() {
         start_sudoloop();
     }
 
+    let cachedir = if args.cachedir.is_none() {
+        "".to_string()
+    } else {
+        // Create cache directory if it doesn't exist
+        if fs::metadata(&args.cachedir.as_ref().unwrap()).is_err() {
+            fs::create_dir(&args.cachedir.as_ref().unwrap()).unwrap();
+        }
+        Path::new(&args.cachedir.unwrap())
+            .canonicalize()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_string()
+    };
+
     // Match args
     match args.subcommand.unwrap_or_default() {
-        Operation::Install(install_args) => cmd_install(install_args, options),
+        Operation::Install(install_args) => cmd_install(install_args, options, &cachedir),
         Operation::Remove(remove_args) => cmd_remove(remove_args, options),
         Operation::Search(search_args) => cmd_search(search_args, options),
         Operation::Query(query_args) => cmd_query(query_args),
         Operation::Info(info_args) => cmd_info(info_args),
-        Operation::Upgrade(upgrade_args) => cmd_upgrade(upgrade_args, options),
+        Operation::Upgrade(upgrade_args) => cmd_upgrade(upgrade_args, options, &cachedir),
         Operation::Clean => {
             info!("Removing orphaned packages");
             operations::clean(options);
@@ -67,7 +85,7 @@ fn main() {
     }
 }
 
-fn cmd_install(args: InstallArgs, options: Options) {
+fn cmd_install(args: InstallArgs, options: Options, cachedir: &str) {
     // Initialise variables
     let packages = args.packages;
     let sorted = sort(&packages, options);
@@ -89,7 +107,7 @@ fn cmd_install(args: InstallArgs, options: Options) {
     }
     if !sorted.aur.is_empty() {
         // If AUR packages found, install them
-        operations::aur_install(sorted.aur.clone(), options, "".to_string());
+        operations::aur_install(sorted.aur.clone(), options, cachedir.to_string());
     }
 
     // Show optional dependencies for installed packages
@@ -201,7 +219,7 @@ fn cmd_info(args: InfoArgs) {
         .silent_unwrap(AppExitCode::PacmanError);
 }
 
-fn cmd_upgrade(args: UpgradeArgs, options: Options) {
+fn cmd_upgrade(args: UpgradeArgs, options: Options, cachedir: &str) {
     info!("Performing system upgrade");
-    operations::upgrade(options, args);
+    operations::upgrade(options, args, cachedir);
 }

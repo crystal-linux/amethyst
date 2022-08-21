@@ -7,6 +7,8 @@ use std::time::UNIX_EPOCH;
 use crate::internal::exit_code::AppExitCode;
 use crate::{internal, uwu};
 
+use textwrap::{termwidth, wrap};
+
 const OK_SYMBOL: &str = "❖";
 const ERR_SYMBOL: &str = "❌";
 const WARN_SYMBOL: &str = "!";
@@ -64,8 +66,13 @@ pub fn log_info<S: ToString>(msg: S) {
     } else {
         msg
     };
+    let opts = textwrap::Options::new(termwidth()).subsequent_indent("  ");
 
-    println!("{} {}", OK_SYMBOL.purple(), msg.bold())
+    println!(
+        "{} {}",
+        OK_SYMBOL.purple(),
+        wrap(&msg, opts).join("\n").bold()
+    )
 }
 
 pub fn log_warn<S: ToString>(msg: S) {
@@ -75,8 +82,13 @@ pub fn log_warn<S: ToString>(msg: S) {
     } else {
         msg
     };
+    let opts = textwrap::Options::new(termwidth()).subsequent_indent("  ");
 
-    println!("{} {}", WARN_SYMBOL.yellow(), msg.bold())
+    println!(
+        "{} {}",
+        WARN_SYMBOL.yellow(),
+        wrap(&msg, opts).join("\n").yellow().bold()
+    )
 }
 
 pub fn log_and_crash<S: ToString>(msg: S, exit_code: AppExitCode) -> ! {
@@ -86,8 +98,13 @@ pub fn log_and_crash<S: ToString>(msg: S, exit_code: AppExitCode) -> ! {
     } else {
         msg
     };
+    let opts = textwrap::Options::new(termwidth()).subsequent_indent("  ");
 
-    println!("{}: {}", ERR_SYMBOL.red().bold(), msg.red().bold());
+    println!(
+        "{}: {}",
+        ERR_SYMBOL.red().bold(),
+        wrap(&msg, opts).join("\n").red().bold()
+    );
     exit(exit_code as i32);
 }
 
@@ -124,10 +141,12 @@ pub fn prompt_yn<S: ToString>(question: S, default_true: bool) -> bool {
         question
     };
 
+    let opts = textwrap::Options::new(termwidth()).subsequent_indent("  ");
+
     print!(
         "{} {} {}: ",
         PROMPT_SYMBOL.purple(),
-        question.bold(),
+        wrap(&question, opts).join("\n").bold(),
         yn_prompt
     );
 
@@ -156,9 +175,10 @@ impl Spinner {
         } else {
             text.to_string()
         };
+        let opts = textwrap::Options::new(termwidth()).subsequent_indent("  ");
 
         let symbol = Box::new(format!("{}", OK_SYMBOL.purple()));
-        let text = Box::new(format!("{}", text.bold()));
+        let text = Box::new(format!("{}", wrap(&text, opts).join("\n").bold()));
 
         let symbol: &'static str = Box::leak(symbol);
         let text: &'static str = Box::leak(text);
@@ -173,10 +193,12 @@ pub fn spinner_fn(text: String) -> Spinner {
     } else {
         text
     };
+    let opts = textwrap::Options::new(termwidth()).subsequent_indent("  ");
+
     Spinner {
         spinner: spinoff::Spinner::new(
             spinoff::Spinners::Line,
-            format!("{}", text.bold()),
+            format!("{}", wrap(&text, opts).join("\n").bold()),
             spinoff::Color::Magenta,
         ),
     }

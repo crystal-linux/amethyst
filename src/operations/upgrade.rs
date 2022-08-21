@@ -13,7 +13,7 @@ struct QueriedPackage {
     pub version: String,
 }
 
-pub fn upgrade(options: Options, args: UpgradeArgs) {
+pub fn upgrade(options: Options, args: UpgradeArgs, cachedir: &str) {
     // Initialise variables
     let verbosity = options.verbosity;
     let noconfirm = options.noconfirm;
@@ -128,7 +128,7 @@ pub fn upgrade(options: Options, args: UpgradeArgs) {
                 aur_upgrades.join(", "),
             );
             if cont {
-                aur_install(aur_upgrades, options, "".to_string());
+                aur_install(aur_upgrades, options, cachedir.to_string());
             };
         } else {
             info!("No upgrades available for installed AUR packages");

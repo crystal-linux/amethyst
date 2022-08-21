@@ -10,6 +10,7 @@ use crate::internal::rpc::rpcinfo;
 use crate::{crash, info, log, prompt, warn, Options};
 
 fn list(dir: &str) -> Vec<String> {
+    println!("{}", dir);
     let dirs = fs::read_dir(Path::new(&dir)).unwrap();
     let dirs: Vec<String> = dirs
         .map(|dir| {
@@ -38,11 +39,11 @@ fn mktemp() -> String {
     String::from_utf8(tempdir).unwrap().trim().to_string()
 }
 
-pub fn aur_install(a: Vec<String>, options: Options, cachedir: String) {
+pub fn aur_install(a: Vec<String>, options: Options, orig_cachedir: String) {
     // Initialise variables
     let url = crate::internal::rpc::URL;
-    let cachedir = if !options.toplevel {
-        cachedir
+    let cachedir = if !options.toplevel || !orig_cachedir.is_empty() {
+        orig_cachedir.clone()
     } else {
         mktemp()
     };
@@ -214,17 +215,19 @@ pub fn aur_install(a: Vec<String>, options: Options, cachedir: String) {
                         // Alert user
                         info!("Saved changes to ~/.local/share/ame/{}", dest);
                     };
-
-                    // Prompt user to continue
-                    let p3 = prompt!(default true, "Would you still like to install {}?", pkg);
-                    if !p3 {
-                        // If not, crash
-                        fs::remove_dir_all(format!("{}/{}", cachedir, pkg)).unwrap();
-                        crash!(AppExitCode::UserCancellation, "Not proceeding");
-                    };
                 }
             }
         }
+
+        // Prompt user to continue
+        let p = prompt!(default true, "Would you still like to install {}?", pkg);
+        if !p {
+            // If not, crash
+            if orig_cachedir.is_empty() {
+                fs::remove_dir_all(format!("{}/{}", cachedir, pkg)).unwrap();
+            }
+            crash!(AppExitCode::UserCancellation, "Not proceeding");
+        };
 
         info!("Moving on to install dependencies");
 
@@ -305,18 +308,25 @@ pub fn aur_install(a: Vec<String>, options: Options, cachedir: String) {
 
     // If any packages failed to build, warn user with failed packages
     if !failed.is_empty() {
+        let failed_str = format!("{}.failed", cachedir);
         warn!(
             "Failed to build packages {}, keeping cache directory at {} for manual inspection",
             failed.join(", "),
-            cachedir
+            if orig_cachedir.is_empty() {
+                &cachedir
+            } else {
+                &failed_str
+            }
         );
-        Command::new("mv")
-            .args(&[&cachedir, &format!("{}.failed", cachedir)])
-            .spawn()
-            .unwrap()
-            .wait()
-            .unwrap();
-    } else if options.toplevel {
+        if orig_cachedir.is_empty() {
+            Command::new("mv")
+                .args(&[&cachedir, &format!("{}.failed", cachedir)])
+                .spawn()
+                .unwrap()
+                .wait()
+                .unwrap();
+        }
+    } else if options.toplevel && orig_cachedir.is_empty() {
         rm_rf::remove(&cachedir).unwrap_or_else(|e|
             crash!(AppExitCode::Other, "Could not remove cache directory at {}: {}. This could be a permissions issue with fakeroot, try running `sudo rm -rf {}`", cachedir, e, cachedir)
         );

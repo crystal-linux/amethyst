@@ -17,6 +17,10 @@ pub struct Args {
     /// Loops sudo in the background to ensure it doesn't time out during long builds
     #[clap(long = "sudoloop", global = true)]
     pub sudoloop: bool,
+
+    /// Sets a custom AUR clone and build directory for the specified operation
+    #[clap(long, short, global = true)]
+    pub cachedir: Option<String>,
 }
 
 #[derive(Debug, Clone, Subcommand)]
