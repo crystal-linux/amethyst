@@ -23,7 +23,7 @@ fn list(dir: &str) -> Vec<String> {
                 .collect::<Vec<&str>>()
                 .last()
                 .unwrap())
-                .to_string()
+            .to_string()
         })
         .collect();
     dirs
