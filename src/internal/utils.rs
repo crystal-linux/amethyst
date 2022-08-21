@@ -171,13 +171,10 @@ impl Spinner {
         };
         let opts = textwrap::Options::new(termwidth()).subsequent_indent("  ");
 
-        let symbol = Box::new(format!("{}", OK_SYMBOL.purple()));
-        let text = Box::new(format!("{}", wrap(&text, opts).join("\n").bold()));
+        let symbol = format!("{}", OK_SYMBOL.purple());
+        let text = format!("{}", wrap(&text, opts).join("\n").bold());
 
-        let symbol: &'static str = Box::leak(symbol);
-        let text: &'static str = Box::leak(text);
-
-        self.spinner.stop_and_persist(symbol, text);
+        self.spinner.stop_and_persist(&symbol, &text);
     }
 }
 
