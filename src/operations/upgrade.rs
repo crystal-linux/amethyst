@@ -55,7 +55,7 @@ pub fn upgrade(options: Options, args: UpgradeArgs, cachedir: &str) {
     }
 
     if args.repo && args.aur {
-        let cont = prompt!(default false, "Continue to upgrade AUR packages?");
+        let cont = prompt!(default true, "Continue to upgrade AUR packages?");
         if !cont {
             // If user doesn't want to continue, break
             info!("Exiting");
