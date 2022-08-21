@@ -43,7 +43,7 @@ fn review(cachedir: &str, pkg: &str, orig_cachedir: &str) {
     // Prompt user to view PKGBUILD
     let p0 = prompt!(default false, "Would you like to review and/or edit {}'s PKGBUILD (and any adjacent build files if present)?", pkg);
     if p0 {
-        info!("This will drop you into a standard `bash` shell in the package's cache directory. If any changes are made, you will be prompted whether to save them to your home directory. To stop reviewing/editing, just run `exit`");
+        info!("This will drop you into a standard `bash` shell (unless set otherwise in the config) in the package's cache directory. If any changes are made, you will be prompted whether to save them to your home directory. To stop reviewing/editing, just run `exit`");
         let p1 = prompt!(default true,
             "Continue?"
         );
