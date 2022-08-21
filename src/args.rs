@@ -3,7 +3,7 @@
 use clap::{Parser, Subcommand};
 
 #[derive(Debug, Clone, Parser)]
-#[clap(name = "Amethyst", version = env ! ("CARGO_PKG_VERSION"), about = env ! ("CARGO_PKG_DESCRIPTION"))]
+#[clap(name = "Amethyst", version = env ! ("CARGO_PKG_VERSION"), about = env ! ("CARGO_PKG_DESCRIPTION"), infer_subcommands = true)]
 pub struct Args {
     #[clap(subcommand)]
     pub subcommand: Option<Operation>,
@@ -28,35 +28,35 @@ pub struct Args {
 #[derive(Debug, Clone, Subcommand)]
 pub enum Operation {
     /// Installs a package from either the AUR or the Pacman-defined repositories
-    #[clap(name = "install", aliases = & ["ins", "in", "i", "-S"])]
+    #[clap(name = "install", visible_aliases = & ["-S"])]
     Install(InstallArgs),
 
     /// Removes a previously installed package
-    #[clap(name = "remove", aliases = & ["rm", "rem", "r", "-R", "-Rs"])]
+    #[clap(name = "remove", visible_aliases = & ["rm", "-Rs"])]
     Remove(RemoveArgs),
 
     /// Searches for the relevant packages in both the AUR and repos
-    #[clap(name = "search", aliases = & ["sea", "sear", "se", "s", "-Ss"])]
+    #[clap(name = "search", visible_aliases = & ["-Ss"])]
     Search(SearchArgs),
 
     /// Queries installed packages
-    #[clap(name = "query", aliases = & ["q", "qu", "l", "ls", "-Q"])]
+    #[clap(name = "query", visible_aliases = & ["-Q"])]
     Query(QueryArgs),
 
     /// Gets info about a package
-    #[clap(name = "info", aliases = & ["inf", "in", "i", "-Qi"])]
+    #[clap(name = "info", visible_aliases = & ["-Qi"])]
     Info(InfoArgs),
 
     /// Upgrades locally installed packages to their latest versions
-    #[clap(name = "upgrade", aliases = & ["upg", "up", "u", "-Syu"])]
+    #[clap(name = "upgrade", visible_aliases = & ["-Syu"])]
     Upgrade(UpgradeArgs),
 
     /// Removes all orphaned packages
-    #[clap(name = "clean", aliases = & ["cln", "cl", "-Sc"])]
+    #[clap(name = "clean", visible_aliases = & ["-Sc"])]
     Clean,
 
     /// Runs pacdiff
-    #[clap(name = "diff", aliases = & ["dif", "di", "-d"])]
+    #[clap(name = "diff", visible_aliases = & ["-d"])]
     Diff,
 }
 

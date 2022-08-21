@@ -113,8 +113,19 @@ pub fn upgrade(options: Options, args: UpgradeArgs, cachedir: &str) {
                 continue;
             }
 
+            // Run `vercmp` to compare versions
+            let vercmp_result = std::process::Command::new("vercmp")
+                .arg(&pkg.version)
+                .arg(&rpc_result.package.unwrap().version)
+                .output()
+                .unwrap();
+            let vercmp_result = String::from_utf8(vercmp_result.stdout).unwrap();
+            if verbosity >= 1 {
+                log!("Vercmp returned {:?}", vercmp_result);
+            }
+
             // If versions differ, push to a vector
-            if rpc_result.package.unwrap().version != pkg.version {
+            if vercmp_result.trim() == "-1" {
                 aur_upgrades.push(pkg.name);
             }
         }
@@ -126,7 +137,7 @@ pub fn upgrade(options: Options, args: UpgradeArgs, cachedir: &str) {
             info!("No upgrades available for installed AUR packages");
         } else {
             let cont = prompt!(default true,
-                "Found AUR packages {} have new versions available, upgrade?",
+                "AUR packages {} have new versions available, upgrade?",
                 aur_upgrades.join(", "),
             );
             if cont {
