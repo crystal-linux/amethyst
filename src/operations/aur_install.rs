@@ -3,6 +3,8 @@ use std::path::Path;
 use std::process::Command;
 use std::{env, fs};
 
+use chrono::{Local, TimeZone};
+
 use crate::internal::commands::ShellCommand;
 use crate::internal::config;
 use crate::internal::error::SilentUnwrap;
@@ -264,8 +266,9 @@ pub fn aur_install(a: Vec<String>, options: Options, orig_cachedir: &str) {
         // If package is out of date, warn user
         if ood.is_some() {
             warn!(
-                "Package {} is out of date, it might be broken, not install or not build properly",
-                pkg
+                "Package {} is marked as out of date since [{}], it might be broken, not install or not build properly",
+                pkg,
+                Local.timestamp(ood.unwrap().try_into().unwrap(), 0).date_naive()
             );
             let p = prompt!(default false, "Would you like to continue?");
             if !p {
