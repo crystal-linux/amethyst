@@ -17,6 +17,9 @@ pub struct Package {
     #[serde(rename = "OptDepends")]
     #[serde(default)]
     pub opt_depends: Vec<String>,
+    #[serde(rename = "OutOfDate")]
+    #[serde(default)]
+    pub out_of_date: Option<usize>,
 }
 
 #[derive(serde::Deserialize)]

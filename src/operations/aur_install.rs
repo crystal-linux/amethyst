@@ -259,6 +259,19 @@ pub fn aur_install(a: Vec<String>, options: Options, orig_cachedir: &str) {
 
         // Get package name
         let pkg = &rpcres.package.as_ref().unwrap().name;
+        let ood = rpcres.package.as_ref().unwrap().out_of_date;
+
+        // If package is out of date, warn user
+        if ood.is_some() {
+            warn!(
+                "Package {} is out of date, it might be broken, not install or not build properly",
+                pkg
+            );
+            let p = prompt!(default false, "Would you like to continue?");
+            if !p {
+                break;
+            }
+        }
 
         // Clone package into cachedir
         clone(pkg, &pkgcache, &options);

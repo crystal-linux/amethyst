@@ -2,7 +2,9 @@ use crate::internal::commands::ShellCommand;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcsearch;
-use crate::{log, Options};
+use crate::{info, log, Options};
+
+use colored::Colorize;
 
 #[allow(clippy::module_name_repetitions)]
 pub fn aur_search(query: &str, options: Options) {
@@ -15,14 +17,24 @@ pub fn aur_search(query: &str, options: Options) {
     // Format output
     for package in &res.results {
         println!(
-            "aur/{} {}\n    {}",
-            package.name,
-            package.version,
+            "{}{} {} {}\n    {}",
+            "aur/".cyan().bold(),
+            package.name.bold(),
+            package.version.green().bold(),
+            if package.out_of_date.is_some() {
+                "[out of date]".red().bold()
+            } else {
+                "".bold()
+            },
             package
                 .description
                 .as_ref()
                 .unwrap_or(&"No description".to_string())
         );
+    }
+
+    if res.results.is_empty() {
+        info!("No results found for \"{}\" in the AUR", query);
     }
 
     if verbosity >= 1 {
@@ -51,5 +63,9 @@ pub fn repo_search(query: &str, options: Options) {
         );
     }
 
-    println!("{}", output);
+    if output.trim().is_empty() {
+        info!("No results found for \"{}\" in the repos", query);
+    } else {
+        println!("{}", output.trim());
+    }
 }
