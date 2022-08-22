@@ -126,13 +126,15 @@ fn cmd_install(args: InstallArgs, options: Options, cachedir: &str) {
     if packages.len() > 1 && config.base.highlight_optdepends {
         info!("Showing optional dependencies for installed packages");
         for p in packages {
-            info!("{}:", p);
-            std::process::Command::new("expac")
+            let out = std::process::Command::new("expac")
                 .args(&["-Q", "-l", "\n  ", "  %O", &p])
-                .spawn()
-                .unwrap()
-                .wait()
-                .unwrap();
+                .output()
+                .unwrap().stdout;
+            let out = String::from_utf8(out).unwrap().trim().to_string();
+            if !out.is_empty() {
+                info!("{}:", p);
+                println!("  {}", out);
+            }
         }
     }
 }
