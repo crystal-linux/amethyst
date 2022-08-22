@@ -1,9 +1,9 @@
 #![allow(clippy::module_name_repetitions)]
 
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueHint};
 
 #[derive(Debug, Clone, Parser)]
-#[clap(name = "Amethyst", version = env ! ("CARGO_PKG_VERSION"), about = env ! ("CARGO_PKG_DESCRIPTION"), infer_subcommands = true)]
+#[clap(bin_name = "ame", name = "Amethyst", version = env ! ("CARGO_PKG_VERSION"), about = env ! ("CARGO_PKG_DESCRIPTION"), infer_subcommands = true)]
 pub struct Args {
     #[clap(subcommand)]
     pub subcommand: Option<Operation>,
@@ -21,7 +21,7 @@ pub struct Args {
     pub sudoloop: bool,
 
     /// Sets a custom AUR clone and build directory for the specified operation
-    #[clap(long, short, global = true)]
+    #[clap(long, short, global = true, value_hint = ValueHint::DirPath)]
     pub cachedir: Option<String>,
 }
 
@@ -50,6 +50,10 @@ pub enum Operation {
     /// Upgrades locally installed packages to their latest versions
     #[clap(name = "upgrade", visible_aliases = & ["-Syu"])]
     Upgrade(UpgradeArgs),
+
+    /// Generates shell completions for supported shells (bash, zsh, fish, elvish, pwsh)
+    #[clap(name = "gencomp", visible_aliases = & ["-g"])]
+    GenComp(GenCompArgs),
 
     /// Removes all orphaned packages
     #[clap(name = "clean", visible_aliases = & ["-Sc"])]
@@ -130,4 +134,11 @@ pub struct UpgradeArgs {
     /// Upgrades only from the AUR
     #[clap(long, short)]
     pub aur: bool,
+}
+
+#[derive(Default, Debug, Clone, Parser)]
+pub struct GenCompArgs {
+    /// The shell to generate completions for
+    #[clap(required = true)]
+    pub shell: String,
 }

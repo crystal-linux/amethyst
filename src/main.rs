@@ -7,12 +7,15 @@ use internal::commands::ShellCommand;
 use internal::error::SilentUnwrap;
 use std::fs;
 use std::path::Path;
+use std::str::FromStr;
 
 use crate::args::{
-    InfoArgs, InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs, UpgradeArgs,
+    GenCompArgs, InfoArgs, InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs, UpgradeArgs,
 };
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::{detect, init, sort, start_sudoloop, structs::Options};
+
+use clap_complete::{Generator, Shell};
 
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
@@ -85,6 +88,10 @@ fn main() {
         Operation::Diff => {
             info!("Running pacdiff");
             detect();
+        }
+        Operation::GenComp(gencomp_args) => {
+            info!("Generating shell completions for {}. Please pipe `stderr` to a file to get completions as a file, e.g. `ame gencomp fish 2> file.fish`", gencomp_args.shell);
+            cmd_gencomp(&gencomp_args);
         }
     }
 }
@@ -204,4 +211,15 @@ fn cmd_info(args: InfoArgs) {
 fn cmd_upgrade(args: UpgradeArgs, options: Options, cachedir: &str) {
     info!("Performing system upgrade");
     operations::upgrade(options, args, cachedir);
+}
+
+fn cmd_gencomp(args: &GenCompArgs) {
+    let shell: Shell = Shell::from_str(&args.shell).unwrap_or_else(|e| {
+        crash!(AppExitCode::Other, "Invalid shell: {}", e);
+    });
+
+    shell.generate(
+        &<args::Args as clap::CommandFactory>::command(),
+        &mut std::io::stderr(),
+    );
 }
