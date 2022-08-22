@@ -9,7 +9,7 @@ use crate::internal::exit_code::AppExitCode;
 use crate::{internal, uwu};
 
 const OK_SYMBOL: &str = "❖";
-const ERR_SYMBOL: &str = "❌";
+const ERR_SYMBOL: &str = "X";
 const WARN_SYMBOL: &str = "!";
 const PROMPT_SYMBOL: &str = "?";
 
@@ -97,7 +97,7 @@ pub fn log_and_crash(msg: String, exit_code: AppExitCode) -> ! {
     let opts = textwrap::Options::new(termwidth()).subsequent_indent("  ");
 
     println!(
-        "{}: {}",
+        "{} {}",
         ERR_SYMBOL.red().bold(),
         wrap(&msg, opts).join("\n").red().bold()
     );

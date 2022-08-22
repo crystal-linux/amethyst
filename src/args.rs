@@ -28,39 +28,39 @@ pub struct Args {
 #[derive(Debug, Clone, Subcommand)]
 pub enum Operation {
     /// Installs a package from either the AUR or the Pacman-defined repositories
-    #[clap(name = "install", visible_aliases = & ["-S"])]
+    #[clap(bin_name = "ame", name = "install", visible_aliases = & ["-S"])]
     Install(InstallArgs),
 
     /// Removes a previously installed package
-    #[clap(name = "remove", visible_aliases = & ["rm", "-Rs"])]
+    #[clap(bin_name = "ame", name = "remove", visible_aliases = & ["rm", "-Rs"])]
     Remove(RemoveArgs),
 
     /// Searches for the relevant packages in both the AUR and repos
-    #[clap(name = "search", visible_aliases = & ["-Ss"])]
+    #[clap(bin_name = "ame", name = "search", visible_aliases = & ["-Ss"])]
     Search(SearchArgs),
 
     /// Queries installed packages
-    #[clap(name = "query", visible_aliases = & ["-Q"])]
+    #[clap(bin_name = "ame", name = "query", visible_aliases = & ["-Q"])]
     Query(QueryArgs),
 
     /// Gets info about a package
-    #[clap(name = "info", visible_aliases = & ["-Qi"])]
+    #[clap(bin_name = "ame", name = "info", visible_aliases = & ["-Qi"])]
     Info(InfoArgs),
 
     /// Upgrades locally installed packages to their latest versions
-    #[clap(name = "upgrade", visible_aliases = & ["-Syu"])]
+    #[clap(bin_name = "ame", name = "upgrade", visible_aliases = & ["-Syu"])]
     Upgrade(UpgradeArgs),
 
-    /// Generates shell completions for supported shells (bash, zsh, fish, elvish, pwsh)
-    #[clap(name = "gencomp", visible_aliases = & ["-g"])]
+    /// Generates shell completions for supported shells (bash, fish, elvish, pwsh)
+    #[clap(bin_name = "ame", name = "gencomp", visible_aliases = & ["-g"])]
     GenComp(GenCompArgs),
 
     /// Removes all orphaned packages
-    #[clap(name = "clean", visible_aliases = & ["-Sc"])]
+    #[clap(bin_name = "ame", name = "clean", visible_aliases = & ["-Sc"])]
     Clean,
 
     /// Runs pacdiff
-    #[clap(name = "diff", visible_aliases = & ["-d"])]
+    #[clap(bin_name = "ame", name = "diff", visible_aliases = & ["-d"])]
     Diff,
 }
 
@@ -138,7 +138,7 @@ pub struct UpgradeArgs {
 
 #[derive(Default, Debug, Clone, Parser)]
 pub struct GenCompArgs {
-    /// The shell to generate completions for
+    /// The shell to generate completions for (bash, fish, elvish, pwsh)
     #[clap(required = true)]
     pub shell: String,
 }

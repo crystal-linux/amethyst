@@ -218,6 +218,13 @@ fn cmd_gencomp(args: &GenCompArgs) {
         crash!(AppExitCode::Other, "Invalid shell: {}", e);
     });
 
+    if shell == Shell::Zsh {
+        crash!(
+            AppExitCode::Other,
+            "Zsh shell completions are currently unsupported due to a bug in the clap_completion crate"
+        );
+    };
+
     shell.generate(
         &<args::Args as clap::CommandFactory>::command(),
         &mut std::io::stderr(),
