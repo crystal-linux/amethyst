@@ -4,6 +4,7 @@ use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcsearch;
 use crate::{info, log, Options};
 
+use chrono::{Local, TimeZone};
 use colored::Colorize;
 
 #[allow(clippy::module_name_repetitions)]
@@ -22,7 +23,14 @@ pub fn aur_search(query: &str, options: Options) {
             package.name.bold(),
             package.version.green().bold(),
             if package.out_of_date.is_some() {
-                "[out of date]".red().bold()
+                format!(
+                    "[out of date: since {}]",
+                    Local
+                        .timestamp(package.out_of_date.unwrap().try_into().unwrap(), 0)
+                        .date_naive()
+                )
+                .red()
+                .bold()
             } else {
                 "".bold()
             },
