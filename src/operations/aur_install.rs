@@ -109,36 +109,46 @@ fn review(cachedir: &str, pkg: &str, orig_cachedir: &str) {
     };
 }
 
-fn finish(cachedir: &str, pkg: &str) {
+fn finish(cachedir: &str, pkg: &str, options: &Options) {
     // Install all packages from cachedir except `pkg` using --asdeps
     let dirs = list(cachedir);
 
     // Get a list of packages in cachedir
     if dirs.len() > 1 {
         info!("Installing all AUR dependencies");
-        std::process::Command::new("bash")
+        let cmd = std::process::Command::new("bash")
             .args(&[
                 "-cO",
                 "extglob",
-                format!("sudo pacman -U --asdeps {}/!({})/*.zst", cachedir, pkg).as_str(),
+                format!("sudo pacman -U --asdeps {}/!({})/*.zst {}", cachedir, pkg, if options.noconfirm { "--noconfirm" } else { "" }).as_str(),
             ])
             .spawn()
             .unwrap()
             .wait()
             .unwrap();
+        if cmd.success() {
+            info!("All AUR dependencies installed");
+        } else {
+            crash!(AppExitCode::PacmanError, "AUR dependencies failed to install");
+        }
     }
 
     // Install package explicitly
     info!("Installing {}", pkg);
-    std::process::Command::new("bash")
+    let cmd = std::process::Command::new("bash")
         .args(&[
             "-c",
-            format!("sudo pacman -U {}/{}/*.zst", cachedir, pkg).as_str(),
+            format!("sudo pacman -U {}/{}/*.zst {}", cachedir, pkg, if options.noconfirm { "--noconfirm" } else { "" }).as_str(),
         ])
         .spawn()
         .unwrap()
         .wait()
         .unwrap();
+    if cmd.success() {
+        info!("{} installed!", pkg);
+    } else {
+        crash!(AppExitCode::PacmanError, "{} failed to install", pkg);
+    }
 }
 
 pub fn aur_install(a: Vec<String>, options: Options, orig_cachedir: &str) {
@@ -300,7 +310,7 @@ pub fn aur_install(a: Vec<String>, options: Options, orig_cachedir: &str) {
         set_current_dir(&cachedir).unwrap();
 
         if !options.asdeps {
-            finish(&cachedir, pkg);
+            finish(&cachedir, pkg, &options);
         }
     }
 
