@@ -10,6 +10,8 @@ use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcinfo;
 use crate::{crash, info, log, prompt, warn, Options};
 
+const AUR_CACHE: &str = ".cache/ame";
+
 fn list(dir: &str) -> Vec<String> {
     let dirs = fs::read_dir(Path::new(&dir)).unwrap();
     let dirs: Vec<String> = dirs
@@ -120,7 +122,13 @@ fn finish(cachedir: &str, pkg: &str, options: &Options) {
             .args(&[
                 "-cO",
                 "extglob",
-                format!("sudo pacman -U --asdeps {}/!({})/*.zst {}", cachedir, pkg, if options.noconfirm { "--noconfirm" } else { "" }).as_str(),
+                format!(
+                    "sudo pacman -U --asdeps {}/!({})/*.zst {}",
+                    cachedir,
+                    pkg,
+                    if options.noconfirm { "--noconfirm" } else { "" }
+                )
+                .as_str(),
             ])
             .spawn()
             .unwrap()
@@ -129,7 +137,10 @@ fn finish(cachedir: &str, pkg: &str, options: &Options) {
         if cmd.success() {
             info!("All AUR dependencies installed");
         } else {
-            crash!(AppExitCode::PacmanError, "AUR dependencies failed to install");
+            crash!(
+                AppExitCode::PacmanError,
+                "AUR dependencies failed to install"
+            );
         }
     }
 
@@ -138,7 +149,13 @@ fn finish(cachedir: &str, pkg: &str, options: &Options) {
     let cmd = std::process::Command::new("bash")
         .args(&[
             "-c",
-            format!("sudo pacman -U {}/{}/*.zst {}", cachedir, pkg, if options.noconfirm { "--noconfirm" } else { "" }).as_str(),
+            format!(
+                "sudo pacman -U {}/{}/*.zst {}",
+                cachedir,
+                pkg,
+                if options.noconfirm { "--noconfirm" } else { "" }
+            )
+            .as_str(),
         ])
         .spawn()
         .unwrap()
@@ -151,9 +168,40 @@ fn finish(cachedir: &str, pkg: &str, options: &Options) {
     }
 }
 
+fn clone(pkg: &String, pkgcache: &str) {
+    let url = crate::internal::rpc::URL;
+
+    // See if package is already cloned to AUR_CACHE
+    let dirs = list(pkgcache);
+    println!("{:?}", dirs);
+    if dirs.contains(pkg) {
+        // Enter directory and git pull
+        info!("Updating cached package source");
+        set_current_dir(Path::new(&format!(
+            "{}/{}/{}",
+            env::var("HOME").unwrap(),
+            AUR_CACHE,
+            pkg
+        )))
+        .unwrap();
+        ShellCommand::git()
+            .arg("pull")
+            .wait()
+            .silent_unwrap(AppExitCode::GitError);
+    } else {
+        // Clone package into cachedir
+        info!("Cloning package source");
+        set_current_dir(Path::new(&pkgcache)).unwrap();
+        ShellCommand::git()
+            .arg("clone")
+            .arg(format!("{}/{}", url, pkg))
+            .wait()
+            .silent_unwrap(AppExitCode::GitError);
+    }
+}
+
 pub fn aur_install(a: Vec<String>, options: Options, orig_cachedir: &str) {
     // Initialise variables
-    let url = crate::internal::rpc::URL;
     let cachedir = if options.asdeps || !orig_cachedir.is_empty() {
         orig_cachedir.to_string()
     } else {
@@ -188,25 +236,29 @@ pub fn aur_install(a: Vec<String>, options: Options, orig_cachedir: &str) {
         // Get package name
         let pkg = &rpcres.package.as_ref().unwrap().name;
 
+        let pkgcache = format!("{}/{}", env::var("HOME").unwrap(), AUR_CACHE);
+
         if verbosity >= 1 {
             log!("Cloning {} into cachedir", pkg);
         }
-        info!("Cloning package source");
 
         // Clone package into cachedir
-        set_current_dir(Path::new(&cachedir)).unwrap();
-        ShellCommand::git()
-            .arg("clone")
-            .arg(format!("{}/{}", url, pkg))
+        clone(pkg, &pkgcache);
+
+        // Copy package from AUR_CACHE to cachedir
+        Command::new("cp")
+            .arg("-r")
+            .arg(format!(
+                "{}/{}/{}",
+                env::var("HOME").unwrap(),
+                AUR_CACHE,
+                pkg
+            ))
+            .arg(format!("{}/{}", cachedir, pkg))
+            .spawn()
+            .unwrap()
             .wait()
-            .silent_unwrap(AppExitCode::GitError);
-        if verbosity >= 1 {
-            log!(
-                "Cloned {} into cachedir, moving on to resolving dependencies: {:?}",
-                pkg,
-                rpcres.package
-            );
-        }
+            .unwrap();
 
         // Sort dependencies and makedepends
         if verbosity >= 1 {

@@ -23,6 +23,21 @@ pub fn init(options: Options) {
         });
     }
 
+    // If cache dir doesn't exist, create it
+    if !Path::new(&format!("{}/.cache/ame", homedir)).exists() {
+        if verbosity >= 1 {
+            log!("Initialising cache directory");
+        }
+        std::fs::create_dir_all(format!("{}/.cache/ame", homedir)).unwrap_or_else(|e| {
+            crash!(
+                AppExitCode::FailedCreatingPaths,
+                "Couldn't create path: {}/.cache/ame: {}",
+                homedir,
+                e,
+            );
+        });
+    }
+
     // If config dir doesn't exist, create it
     if !Path::new(&format!("{}/.config/ame/", homedir)).exists() {
         if verbosity >= 1 {

@@ -129,7 +129,8 @@ fn cmd_install(args: InstallArgs, options: Options, cachedir: &str) {
             let out = std::process::Command::new("expac")
                 .args(&["-Q", "-l", "\n  ", "  %O", &p])
                 .output()
-                .unwrap().stdout;
+                .unwrap()
+                .stdout;
             let out = String::from_utf8(out).unwrap().trim().to_string();
             if !out.is_empty() {
                 info!("{}:", p);
@@ -146,7 +147,7 @@ fn cmd_remove(args: RemoveArgs, options: Options) {
     info!("Uninstalling packages: {}", &packages.join(", "));
 
     // Remove packages
-    operations::uninstall(packages, options);
+    operations::uninstall(&packages, options);
 }
 
 fn cmd_search(args: &SearchArgs, options: Options) {
