@@ -146,7 +146,7 @@ pub fn prompt_yn(question: String, default_true: bool) -> bool {
     let mut yn: String = String::new();
 
     io::stdout().flush().ok();
-    std::io::stdin().read_line(&mut yn).unwrap();
+    io::stdin().read_line(&mut yn).unwrap();
 
     if yn.trim().to_lowercase() == "n" || yn.trim().to_lowercase() == "no" {
         false
