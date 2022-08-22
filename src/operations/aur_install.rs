@@ -205,6 +205,22 @@ fn clone(pkg: &String, pkgcache: &str, options: &Options) {
             .arg(format!("{}/{}", url, pkg))
             .wait()
             .silent_unwrap(AppExitCode::GitError);
+        // Enter directory and `makepkg -o` to fetch sources
+        if options.verbosity > 1 {
+            info!("Fetching sources for {}", pkg);
+        }
+        info!("Fetching sources");
+        set_current_dir(Path::new(&format!(
+            "{}/{}/{}",
+            env::var("HOME").unwrap(),
+            AUR_CACHE,
+            pkg
+        )))
+        .unwrap();
+        ShellCommand::makepkg()
+            .arg("-o")
+            .wait()
+            .silent_unwrap(AppExitCode::MakePkgError);
     }
 }
 
