@@ -3,7 +3,7 @@ use std::io;
 use std::io::Write;
 use std::process::{exit, Command, Stdio};
 use std::time::UNIX_EPOCH;
-use textwrap::{termwidth, wrap};
+use textwrap::wrap;
 
 use crate::internal::exit_code::AppExitCode;
 use crate::{internal, uwu};
@@ -64,7 +64,9 @@ pub fn log_info(msg: String) {
     } else {
         msg
     };
-    let opts = textwrap::Options::new(termwidth()).subsequent_indent("  ");
+
+    let opts = textwrap::Options::new(crossterm::terminal::size().unwrap().0 as usize - 2)
+        .subsequent_indent("  ");
 
     println!(
         "{} {}",
@@ -79,7 +81,9 @@ pub fn log_warn(msg: String) {
     } else {
         msg
     };
-    let opts = textwrap::Options::new(termwidth()).subsequent_indent("  ");
+
+    let opts = textwrap::Options::new(crossterm::terminal::size().unwrap().0 as usize - 2)
+        .subsequent_indent("  ");
 
     println!(
         "{} {}",
@@ -94,7 +98,9 @@ pub fn log_and_crash(msg: String, exit_code: AppExitCode) -> ! {
     } else {
         msg
     };
-    let opts = textwrap::Options::new(termwidth()).subsequent_indent("  ");
+
+    let opts = textwrap::Options::new(crossterm::terminal::size().unwrap().0 as usize - 2)
+        .subsequent_indent("  ");
 
     println!(
         "{} {}",
@@ -134,7 +140,8 @@ pub fn prompt_yn(question: String, default_true: bool) -> bool {
         question
     };
 
-    let opts = textwrap::Options::new(termwidth()).subsequent_indent("  ");
+    let opts = textwrap::Options::new(crossterm::terminal::size().unwrap().0 as usize - 2)
+        .subsequent_indent("  ");
 
     print!(
         "{} {} {}: ",
@@ -168,7 +175,9 @@ impl Spinner {
         } else {
             text.to_string()
         };
-        let opts = textwrap::Options::new(termwidth()).subsequent_indent("  ");
+
+        let opts = textwrap::Options::new(crossterm::terminal::size().unwrap().0 as usize - 2)
+            .subsequent_indent("  ");
 
         let symbol = format!("{}", OK_SYMBOL.purple());
         let text = format!("{}", wrap(&text, opts).join("\n").bold());
@@ -183,7 +192,9 @@ pub fn spinner_fn(text: String) -> Spinner {
     } else {
         text
     };
-    let opts = textwrap::Options::new(termwidth()).subsequent_indent("  ");
+
+    let opts = textwrap::Options::new(crossterm::terminal::size().unwrap().0 as usize - 2)
+        .subsequent_indent("  ");
 
     Spinner {
         spinner: spinoff::Spinner::new(

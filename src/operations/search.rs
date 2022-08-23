@@ -6,7 +6,7 @@ use crate::{log, Options};
 
 use chrono::{Local, TimeZone};
 use colored::Colorize;
-use textwrap::{termwidth, wrap};
+use textwrap::wrap;
 
 #[allow(clippy::module_name_repetitions)]
 pub fn aur_search(query: &str, options: Options) -> String {
@@ -20,7 +20,8 @@ pub fn aur_search(query: &str, options: Options) -> String {
     let mut results_vec = vec![];
     for package in &res.results {
         // Define wrapping options
-        let opts = textwrap::Options::new(termwidth()).subsequent_indent("    ");
+        let opts = textwrap::Options::new(crossterm::terminal::size().unwrap().0 as usize - 4)
+            .subsequent_indent("    ");
 
         let result = format!(
             "{}{} {} {}\n    {}",
@@ -62,30 +63,76 @@ pub fn aur_search(query: &str, options: Options) -> String {
     results_vec.join("\n")
 }
 
+struct SearchResult {
+    repo: String,
+    name: String,
+    version: String,
+    description: String,
+}
+
 #[allow(clippy::module_name_repetitions)]
 pub fn repo_search(query: &str, options: Options) -> String {
     // Initialise variables
     let verbosity = options.verbosity;
 
     // Query pacman for package info
-    let output = ShellCommand::pacman()
-        .arg("-Ss")
+    let output = ShellCommand::bash()
+        .args(&["-c", &format!("expac -Ss '%r\\\\%n\\\\%v\\\\%d' {}", query)])
         .arg(query)
         .wait_with_output()
         .silent_unwrap(AppExitCode::PacmanError)
         .stdout;
 
+    // Split output into lines
+    let lines = output.trim().split('\n');
+
+    // Initialise results vector
+    let mut results_vec: Vec<SearchResult> = vec![];
+
+    // Iterate over lines
+    for line in lines {
+        let parts: Vec<&str> = line.split('\\').collect();
+        let res = SearchResult {
+            repo: parts[0].to_string(),
+            name: parts[1].to_string(),
+            version: parts[2].to_string(),
+            description: parts[3].to_string(),
+        };
+        results_vec.push(res);
+    }
+
     if verbosity >= 1 {
         log!(
             "Found {} results for \"{}\" in repos",
-            &output.split('\n').count() / 2,
+            &results_vec.len(),
             &query
         );
     }
 
+    // Format output
+    let results_vec = results_vec
+        .into_iter()
+        .map(|res| {
+            let opts = textwrap::Options::new(crossterm::terminal::size().unwrap().0 as usize - 4)
+                .subsequent_indent("    ");
+            format!(
+                "{}{}{} {}\n    {}",
+                res.repo.purple().bold(),
+                "/".purple().bold(),
+                res.name.bold(),
+                res.version.green().bold(),
+                if res.description.is_empty() {
+                    "No description".to_string()
+                } else {
+                    wrap(&res.description, opts).join("\n")
+                },
+            )
+        })
+        .collect::<Vec<String>>();
+
     if output.trim().is_empty() {
         "".to_string()
     } else {
-        output.trim().to_string()
+        results_vec.join("\n")
     }
 }

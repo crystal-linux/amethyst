@@ -17,6 +17,7 @@ use crate::internal::utils::pager;
 use crate::internal::{detect, init, sort, start_sudoloop, structs::Options};
 
 use clap_complete::{Generator, Shell};
+use textwrap::{termwidth, wrap};
 
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
@@ -177,8 +178,12 @@ fn cmd_search(args: &SearchArgs, options: Options) {
         "".to_string()
     };
 
+    let opts = textwrap::Options::new(termwidth())t ;
+
+    // Attempt to wrap result text
+    let results = wrap(&(repo_results + "\n" + &aur_results), opts).join("\n");
+
     // Check if results are longer than terminal height
-    let results = repo_results + &aur_results;
     if results.lines().count() > crossterm::terminal::size().unwrap().1 as usize {
         // If so, paginate results
         #[allow(clippy::let_underscore_drop)]
