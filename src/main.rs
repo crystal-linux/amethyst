@@ -188,7 +188,13 @@ fn cmd_search(args: &SearchArgs, options: Options) {
     let results = repo_results + "\n" + &aur_results;
 
     // Print results either way, so that the user can see the results after they exit `less`
-    println!("{}", results.trim());
+    let text = if internal::uwu_enabled() {
+        uwu!(results.trim())
+    } else {
+        results.trim().to_string()
+    };
+
+    println!("{}", text);
 
     // Check if results are longer than terminal height
     if results.lines().count() > crossterm::terminal::size().unwrap().1 as usize {
