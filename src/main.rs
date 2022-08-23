@@ -9,7 +9,6 @@ use internal::error::SilentUnwrap;
 use std::fs;
 use std::path::Path;
 use std::str::FromStr;
-use textwrap::{termwidth, wrap};
 
 use crate::args::{
     GenCompArgs, InfoArgs, InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs, UpgradeArgs,
@@ -160,36 +159,43 @@ fn cmd_search(args: &SearchArgs, options: Options) {
     let repo = args.repo || both;
     let aur = args.aur || both;
 
+    // Start repo spinner
     let repo_results = if repo {
-        info!("Searching repos for {}", &query_string);
+        let rsp = spinner!("Searching repos for {}", query_string);
 
         // Search repos
-        operations::search(&query_string, options)
+        let ret = operations::search(&query_string, options);
+        rsp.stop_bold("Repo search complete");
+
+        ret
     } else {
         "".to_string()
     };
+
+    // Start AUR spinner
     let aur_results = if aur {
-        info!("Searching AUR for {}", &query_string);
+        let asp = spinner!("Searching AUR for {}", query_string);
 
         // Search AUR
-        operations::aur_search(&query_string, options)
+        let ret = operations::aur_search(&query_string, options);
+        asp.stop_bold("AUR search complete");
+
+        ret
     } else {
         "".to_string()
     };
 
-    let opts = textwrap::Options::new(termwidth());
+    let results = repo_results + "\n" + &aur_results;
 
-    // Attempt to wrap result text
-    let results = wrap(&(repo_results + "\n" + &aur_results), opts).join("\n");
+    // Print results either way, so that the user can see the results after they exit `less`
+    println!("{}", results.trim());
 
     // Check if results are longer than terminal height
     if results.lines().count() > crossterm::terminal::size().unwrap().1 as usize {
         // If so, paginate results
         #[allow(clippy::let_underscore_drop)]
-        let _ = pager(&results);
+        let _ = pager(&results.trim().to_string());
     }
-    // Print results either way, so that the user can see the results after they exit `less`
-    println!("{}", results);
 }
 
 fn cmd_query(args: &QueryArgs) {
