@@ -3,11 +3,13 @@
 
 use args::Args;
 use clap::Parser;
+use clap_complete::{Generator, Shell};
 use internal::commands::ShellCommand;
 use internal::error::SilentUnwrap;
 use std::fs;
 use std::path::Path;
 use std::str::FromStr;
+use textwrap::{termwidth, wrap};
 
 use crate::args::{
     GenCompArgs, InfoArgs, InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs, UpgradeArgs,
@@ -15,9 +17,6 @@ use crate::args::{
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::utils::pager;
 use crate::internal::{detect, init, sort, start_sudoloop, structs::Options};
-
-use clap_complete::{Generator, Shell};
-use textwrap::{termwidth, wrap};
 
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
@@ -178,7 +177,7 @@ fn cmd_search(args: &SearchArgs, options: Options) {
         "".to_string()
     };
 
-    let opts = textwrap::Options::new(termwidth())t ;
+    let opts = textwrap::Options::new(termwidth());
 
     // Attempt to wrap result text
     let results = wrap(&(repo_results + "\n" + &aur_results), opts).join("\n");

@@ -1,12 +1,12 @@
+use chrono::{Local, TimeZone};
+use colored::Colorize;
+use textwrap::wrap;
+
 use crate::internal::commands::ShellCommand;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcsearch;
 use crate::{log, Options};
-
-use chrono::{Local, TimeZone};
-use colored::Colorize;
-use textwrap::wrap;
 
 #[allow(clippy::module_name_repetitions)]
 pub fn aur_search(query: &str, options: Options) -> String {
@@ -45,7 +45,7 @@ pub fn aur_search(query: &str, options: Options) -> String {
                     .description
                     .as_ref()
                     .unwrap_or(&"No description".to_string()),
-                opts
+                opts,
             )
             .join("\n"),
         );

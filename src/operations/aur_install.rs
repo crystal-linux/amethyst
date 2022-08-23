@@ -1,9 +1,8 @@
+use chrono::{Local, TimeZone};
 use std::env::set_current_dir;
 use std::path::Path;
 use std::process::Command;
 use std::{env, fs};
-
-use chrono::{Local, TimeZone};
 
 use crate::internal::commands::ShellCommand;
 use crate::internal::config;
