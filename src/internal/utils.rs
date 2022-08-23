@@ -1,7 +1,7 @@
 use colored::Colorize;
 use std::io;
 use std::io::Write;
-use std::process::exit;
+use std::process::{exit, Command, Stdio};
 use std::time::UNIX_EPOCH;
 use textwrap::{termwidth, wrap};
 
@@ -192,4 +192,24 @@ pub fn spinner_fn(text: String) -> Spinner {
             spinoff::Color::Magenta,
         ),
     }
+}
+
+pub fn pager(text: &String) -> io::Result<()> {
+    let text = if internal::uwu_enabled() {
+        uwu!(text)
+    } else {
+        text.to_string()
+    };
+
+    let mut pager = Command::new("less")
+        .arg("-R")
+        .stdin(Stdio::piped())
+        .spawn()?;
+
+    let stdin = pager.stdin.as_mut().unwrap();
+    stdin.write_all(text.as_bytes())?;
+    stdin.flush()?;
+    pager.wait()?;
+
+    Ok(())
 }

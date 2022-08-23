@@ -2,22 +2,27 @@ use crate::internal::commands::ShellCommand;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcsearch;
-use crate::{info, log, Options};
+use crate::{log, Options};
 
 use chrono::{Local, TimeZone};
 use colored::Colorize;
+use textwrap::{termwidth, wrap};
 
 #[allow(clippy::module_name_repetitions)]
-pub fn aur_search(query: &str, options: Options) {
-    // Initialise variables
-    let verbosity = options.verbosity;
-
+pub fn aur_search(query: &str, options: Options) -> String {
     // Query AUR for package info
     let res = rpcsearch(query);
 
+    // Get verbosity
+    let verbosity = options.verbosity;
+
     // Format output
+    let mut results_vec = vec![];
     for package in &res.results {
-        println!(
+        // Define wrapping options
+        let opts = textwrap::Options::new(termwidth()).subsequent_indent("    ");
+
+        let result = format!(
             "{}{} {} {}\n    {}",
             "aur/".cyan().bold(),
             package.name.bold(),
@@ -34,24 +39,31 @@ pub fn aur_search(query: &str, options: Options) {
             } else {
                 "".bold()
             },
-            package
-                .description
-                .as_ref()
-                .unwrap_or(&"No description".to_string())
+            wrap(
+                package
+                    .description
+                    .as_ref()
+                    .unwrap_or(&"No description".to_string()),
+                opts
+            )
+            .join("\n"),
+        );
+        results_vec.push(result);
+    }
+
+    if verbosity > 1 {
+        log!(
+            "Found {} results for \"{}\" in the AUR",
+            res.results.len(),
+            query
         );
     }
 
-    if res.results.is_empty() {
-        info!("No results found for \"{}\" in the AUR", query);
-    }
-
-    if verbosity >= 1 {
-        log!("Found {} resuls for \"{}\" in AUR", res.resultcount, query);
-    }
+    results_vec.join("\n")
 }
 
 #[allow(clippy::module_name_repetitions)]
-pub fn repo_search(query: &str, options: Options) {
+pub fn repo_search(query: &str, options: Options) -> String {
     // Initialise variables
     let verbosity = options.verbosity;
 
@@ -72,8 +84,8 @@ pub fn repo_search(query: &str, options: Options) {
     }
 
     if output.trim().is_empty() {
-        info!("No results found for \"{}\" in the repos", query);
+        "".to_string()
     } else {
-        println!("{}", output.trim());
+        output.trim().to_string()
     }
 }

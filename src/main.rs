@@ -13,6 +13,7 @@ use crate::args::{
     GenCompArgs, InfoArgs, InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs, UpgradeArgs,
 };
 use crate::internal::exit_code::AppExitCode;
+use crate::internal::utils::pager;
 use crate::internal::{detect, init, sort, start_sudoloop, structs::Options};
 
 use clap_complete::{Generator, Shell};
@@ -153,26 +154,38 @@ fn cmd_remove(args: RemoveArgs, options: Options) {
 fn cmd_search(args: &SearchArgs, options: Options) {
     // Initialise variables
     let query_string = args.search.join(" ");
-    if args.aur {
-        info!("Searching AUR for {}", &query_string);
 
-        // Search AUR
-        operations::aur_search(&query_string, options);
-    }
-    if args.repo {
+    // Logic for searching
+    let both = !args.repo && !args.aur;
+    let repo = args.repo || both;
+    let aur = args.aur || both;
+
+    let repo_results = if repo {
         info!("Searching repos for {}", &query_string);
 
         // Search repos
-        operations::search(&query_string, options);
-    }
+        operations::search(&query_string, options)
+    } else {
+        "".to_string()
+    };
+    let aur_results = if aur {
+        info!("Searching AUR for {}", &query_string);
 
-    if !args.aur && !args.repo {
-        info!("Searching AUR and repos for {}", &query_string);
+        // Search AUR
+        operations::aur_search(&query_string, options)
+    } else {
+        "".to_string()
+    };
 
-        // If no search type specified, search both
-        operations::search(&query_string, options);
-        operations::aur_search(&query_string, options);
+    // Check if results are longer than terminal height
+    let results = repo_results + &aur_results;
+    if results.lines().count() > crossterm::terminal::size().unwrap().1 as usize {
+        // If so, paginate results
+        #[allow(clippy::let_underscore_drop)]
+        let _ = pager(&results);
     }
+    // Print results either way, so that the user can see the results after they exit `less`
+    println!("{}", results);
 }
 
 fn cmd_query(args: &QueryArgs) {

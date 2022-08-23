@@ -121,7 +121,7 @@ fn finish(cachedir: &str, pkg: &str, options: &Options) {
 
     // Get a list of packages in cachedir
     if dirs.len() > 1 {
-        info!("Installing all AUR dependencies");
+        info!("Installing AUR dependencies for {}", pkg);
         let cmd = std::process::Command::new("bash")
             .args(&[
                 "-cO",
@@ -139,7 +139,7 @@ fn finish(cachedir: &str, pkg: &str, options: &Options) {
             .wait()
             .unwrap();
         if cmd.success() {
-            info!("All AUR dependencies installed");
+            info!("All AUR dependencies for package {} installed", pkg);
         } else {
             crash!(
                 AppExitCode::PacmanError,
@@ -181,7 +181,7 @@ fn clone(pkg: &String, pkgcache: &str, options: &Options) {
     if dirs.contains(pkg) {
         // Enter directory and git pull
         if options.verbosity > 1 {
-            info!("Updating cached PKGBUILD for {}", pkg);
+            log!("Updating cached PKGBUILD for {}", pkg);
         }
         info!("Updating cached package source");
         set_current_dir(Path::new(&format!(
@@ -209,7 +209,7 @@ fn clone(pkg: &String, pkgcache: &str, options: &Options) {
             .silent_unwrap(AppExitCode::GitError);
         // Enter directory and `makepkg -o` to fetch sources
         if options.verbosity > 1 {
-            info!("Fetching sources for {}", pkg);
+            log!("Fetching sources for {}", pkg);
         }
         info!("Fetching sources");
         set_current_dir(Path::new(&format!(
