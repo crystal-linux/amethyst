@@ -4,6 +4,7 @@ use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::{prompt, spinner, warn};
 
+/// Searches the filesystem for .pacnew files and helps the user deal with them.
 pub fn detect() {
     // Start spinner
     let sp = spinner!("Scanning for pacnew files");

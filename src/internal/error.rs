@@ -20,7 +20,7 @@ impl Display for AppError {
         match self {
             Self::Io(io) => Display::fmt(io, f),
             Self::Other(s) => Display::fmt(s, f),
-            Self::NonZeroExit => Display::fmt("exited with non zero code", f),
+            Self::NonZeroExit => Display::fmt("Exited with non-zero exit code", f),
         }
     }
 }
@@ -53,7 +53,7 @@ impl<T> SilentUnwrap<T> for AppResult<T> {
     fn silent_unwrap(self, exit_code: AppExitCode) -> T {
         match self {
             Ok(val) => val,
-            Err(_) => crash!(exit_code, "an error occurred"),
+            Err(_) => crash!(exit_code, "An error occurred"),
         }
     }
 }

@@ -9,6 +9,7 @@ use crate::log;
 use crate::prompt;
 use crate::Options;
 
+/// Help the user in clearing orphaned packages and pacman cache.
 pub fn clean(options: Options) {
     let verbosity = options.verbosity;
     let noconfirm = options.noconfirm;
@@ -69,14 +70,27 @@ pub fn clean(options: Options) {
         }
     }
 
+    // Prompt the user whether to clear the Amethyst cache
+    let clear_ame_cache = prompt!(default false, "Clear Amethyst's internal PKGBUILD cache?");
+    if clear_ame_cache {
+        // Remove ~/.cache/ame
+        Command::new("rm")
+            .arg("-rf")
+            .arg("~/.cache/ame")
+            .spawn()
+            .unwrap()
+            .wait()
+            .unwrap();
+    }
+
     // Prompt the user whether to clear cache or not
-    let clear_cache = if noconfirm {
+    let clear_pacman_cache = if noconfirm {
         true
     } else {
         prompt!(default false, "Also clear pacman's package cache?")
     };
 
-    if clear_cache {
+    if clear_pacman_cache {
         // Build pacman args
         let mut pacman_args = vec!["-Sc"];
         if noconfirm {

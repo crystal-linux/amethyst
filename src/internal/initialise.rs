@@ -3,6 +3,7 @@ use std::path::Path;
 
 use crate::{crash, internal::exit_code::AppExitCode, log, Options};
 
+/// Ensure all required directories and files exist.
 pub fn init(options: Options) {
     // Initialise variables
     let verbosity = options.verbosity;

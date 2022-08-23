@@ -3,6 +3,7 @@ use std::process::{Command, Stdio};
 use crate::internal::{clean, rpc, structs};
 use crate::{log, Options};
 
+/// Sorts the given packages into an [`crate::internal::structs::Sorted`]
 pub fn sort(input: &[String], options: Options) -> structs::Sorted {
     // Initialise variables
     let mut repo: Vec<String> = vec![];

@@ -1,4 +1,5 @@
 #[allow(clippy::module_name_repetitions)]
+/// Defined exit codes for the program
 pub enum AppExitCode {
     RunAsRoot = 1,
     FailedCreatingPaths = 2,

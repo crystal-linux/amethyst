@@ -15,6 +15,7 @@ use crate::{crash, info, log, prompt, warn, Options};
 
 const AUR_CACHE: &str = ".cache/ame";
 
+/// Return a list of all files/dirs in a directory.
 fn list(dir: &str) -> Vec<String> {
     let dirs = fs::read_dir(Path::new(&dir)).unwrap();
     let dirs: Vec<String> = dirs
@@ -34,6 +35,7 @@ fn list(dir: &str) -> Vec<String> {
     dirs
 }
 
+/// Returns and creates a temporary directory for amethyst to use
 fn mktemp() -> String {
     let tempdir = Command::new("mktemp")
         .args(&["-d", "/tmp/ame.XXXXXX.tmp"])
@@ -44,6 +46,7 @@ fn mktemp() -> String {
     String::from_utf8(tempdir).unwrap().trim().to_string()
 }
 
+/// Help the user review and/or edit an AUR package before installing
 fn review(cachedir: &str, pkg: &str, orig_cachedir: &str) {
     // Prompt user to view PKGBUILD
     let p0 = prompt!(default false, "Would you like to review and/or edit {}'s PKGBUILD (and any adjacent build files if present)?", pkg);
@@ -114,6 +117,7 @@ fn review(cachedir: &str, pkg: &str, orig_cachedir: &str) {
     };
 }
 
+/// Finalize a build/install process
 fn finish(cachedir: &str, pkg: &str, options: &Options) {
     // Install all packages from cachedir except `pkg` using --asdeps
     let dirs = list(cachedir);
@@ -171,6 +175,7 @@ fn finish(cachedir: &str, pkg: &str, options: &Options) {
     }
 }
 
+/// Clone a package from the AUR
 fn clone(pkg: &String, pkgcache: &str, options: &Options) {
     let url = crate::internal::rpc::URL;
 
@@ -225,6 +230,7 @@ fn clone(pkg: &String, pkgcache: &str, options: &Options) {
     }
 }
 
+/// General function to handle installing AUR packages.
 pub fn aur_install(a: Vec<String>, options: Options, orig_cachedir: &str) {
     // Initialise variables
     let cachedir = if options.asdeps || !orig_cachedir.is_empty() {

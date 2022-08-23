@@ -3,6 +3,7 @@ use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::{crash, info, log, Options};
 
+/// Help the user install a package from the pacman repos
 pub fn install(packages: &[String], options: Options) {
     info!("Installing packages {} from repos", &packages.join(", "));
 

@@ -3,6 +3,7 @@ use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::{log, Options};
 
+/// Helps the user in uninstalling installed packages.
 pub fn uninstall(packages: &[String], options: Options) {
     // Build pacman args
     let mut pacman_args = vec!["-Rs"];

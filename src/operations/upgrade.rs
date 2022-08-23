@@ -13,6 +13,7 @@ struct QueriedPackage {
     pub version: String,
 }
 
+/// Helps the user upgrade installed packages, repo and AUR.
 pub fn upgrade(options: Options, args: UpgradeArgs, cachedir: &str) {
     // Initialise variables
     let verbosity = options.verbosity;

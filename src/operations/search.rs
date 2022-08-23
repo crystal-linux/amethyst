@@ -9,6 +9,7 @@ use crate::internal::rpc::rpcsearch;
 use crate::{log, Options};
 
 #[allow(clippy::module_name_repetitions)]
+/// Searches for packages from the AUR and returns wrapped results
 pub fn aur_search(query: &str, options: Options) -> String {
     // Query AUR for package info
     let res = rpcsearch(query);
@@ -71,6 +72,7 @@ struct SearchResult {
 }
 
 #[allow(clippy::module_name_repetitions)]
+/// Searches for packages from the repos and returns wrapped results
 pub fn repo_search(query: &str, options: Options) -> String {
     // Initialise variables
     let verbosity = options.verbosity;

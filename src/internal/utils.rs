@@ -17,6 +17,7 @@ const PROMPT_YN_DEFAULT_TRUE: &str = "[Y/n]";
 const PROMPT_YN_DEFAULT_FALSE: &str = "[y/N]";
 
 #[macro_export]
+/// Macro for printing a message to stdout.
 macro_rules! info {
     ($($arg:tt)+) => {
         $crate::internal::utils::log_info(format!($($arg)+))
@@ -24,6 +25,7 @@ macro_rules! info {
 }
 
 #[macro_export]
+/// Macro for printing a warning message non-destructively.
 macro_rules! warn {
     ($($arg:tt)+) => {
         $crate::internal::utils::log_warn(format!($($arg)+))
@@ -31,6 +33,7 @@ macro_rules! warn {
 }
 
 #[macro_export]
+/// Macro for printing a message and destructively exiting
 macro_rules! crash {
     ($exit_code:expr, $($arg:tt)+) => {
         $crate::internal::utils::log_and_crash(format!($($arg)+), $exit_code)
@@ -38,6 +41,7 @@ macro_rules! crash {
 }
 
 #[macro_export]
+/// Macro for logging to stderr
 macro_rules! log {
     ($($arg:tt)+) => {
         $crate::internal::utils::log_debug(format!($($arg)+))
@@ -45,6 +49,7 @@ macro_rules! log {
 }
 
 #[macro_export]
+/// Macro for prompting the user with a yes/no question.
 macro_rules! prompt {
     (default $default:expr, $($arg:tt)+) => {
         $crate::internal::utils::prompt_yn(format!($($arg)+), $default)
@@ -52,12 +57,14 @@ macro_rules! prompt {
 }
 
 #[macro_export]
+/// Macro for creating a spinner.
 macro_rules! spinner {
     ($($arg:tt)+) => {
         $crate::internal::utils::spinner_fn(format!($($arg)+))
     }
 }
 
+/// Print a formatted message to stdout.
 pub fn log_info(msg: String) {
     let msg = if internal::uwu_enabled() {
         uwu!(&msg)
@@ -75,6 +82,7 @@ pub fn log_info(msg: String) {
     );
 }
 
+/// Print a non-destructive warning message
 pub fn log_warn(msg: String) {
     let msg = if internal::uwu_enabled() {
         uwu!(&msg)
@@ -92,6 +100,7 @@ pub fn log_warn(msg: String) {
     );
 }
 
+/// Logs a message and exits the program with the given exit code.
 pub fn log_and_crash(msg: String, exit_code: AppExitCode) -> ! {
     let msg = if internal::uwu_enabled() {
         uwu!(&msg)
@@ -110,6 +119,7 @@ pub fn log_and_crash(msg: String, exit_code: AppExitCode) -> ! {
     exit(exit_code as i32);
 }
 
+/// Logs a message to stderr with timestamp
 pub fn log_debug(msg: String) {
     let msg = if internal::uwu_enabled() && internal::uwu_debug_enabled() {
         uwu!(&msg)
@@ -127,6 +137,7 @@ pub fn log_debug(msg: String) {
     );
 }
 
+/// Prompts the user for a yes/no answer.
 pub fn prompt_yn(question: String, default_true: bool) -> bool {
     let yn_prompt = if default_true {
         PROMPT_YN_DEFAULT_TRUE
@@ -186,6 +197,7 @@ impl Spinner {
     }
 }
 
+/// Returns a spinner that can be used to display progress.
 pub fn spinner_fn(text: String) -> Spinner {
     let text = if internal::uwu_enabled() {
         uwu!(&text)
@@ -205,6 +217,7 @@ pub fn spinner_fn(text: String) -> Spinner {
     }
 }
 
+/// Opens an [`&String`] in `less`.
 pub fn pager(text: &String) -> io::Result<()> {
     let text = if internal::uwu_enabled() {
         uwu!(text)
