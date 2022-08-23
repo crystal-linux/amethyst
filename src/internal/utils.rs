@@ -217,7 +217,7 @@ pub fn spinner_fn(text: String) -> Spinner {
     }
 }
 
-/// Opens an [`&String`] in `less`.
+/// Opens a String in `less`.
 pub fn pager(text: &String) -> io::Result<()> {
     let text = if internal::uwu_enabled() {
         uwu!(text)
