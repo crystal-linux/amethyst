@@ -35,7 +35,7 @@ pub enum Operation {
     #[clap(bin_name = "ame", name = "remove", visible_aliases = & ["rm", "-Rs"])]
     Remove(RemoveArgs),
 
-    /// Searches for the relevant packages in both the AUR and repos
+    /// Searches for packages matching a regex-supported pattern in the AUR and/or the repos
     #[clap(bin_name = "ame", name = "search", visible_aliases = & ["-Ss"])]
     Search(SearchArgs),
 
