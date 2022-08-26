@@ -6,8 +6,8 @@ use clap::Parser;
 use clap_complete::{Generator, Shell};
 use internal::commands::ShellCommand;
 use internal::error::SilentUnwrap;
-use std::fs;
 use std::env;
+use std::fs;
 use std::path::Path;
 use std::str::FromStr;
 
@@ -102,10 +102,7 @@ fn cmd_install(args: InstallArgs, options: Options, cachedir: &str) {
     let packages = args.packages;
 
     if args.aur && args.repo {
-        crash!(
-            AppExitCode::Other,
-            "Cannot specify both --aur and --repo"
-        );
+        crash!(AppExitCode::Other, "Cannot specify both --aur and --repo");
     }
 
     let aur = args.aur || env::args().collect::<Vec<String>>()[1] == "-Sa";
