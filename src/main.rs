@@ -7,6 +7,7 @@ use clap_complete::{Generator, Shell};
 use internal::commands::ShellCommand;
 use internal::error::SilentUnwrap;
 use std::fs;
+use std::env;
 use std::path::Path;
 use std::str::FromStr;
 
@@ -99,6 +100,17 @@ fn main() {
 fn cmd_install(args: InstallArgs, options: Options, cachedir: &str) {
     // Initialise variables
     let packages = args.packages;
+
+    if args.aur && args.repo {
+        crash!(
+            AppExitCode::Other,
+            "Cannot specify both --aur and --repo"
+        );
+    }
+
+    let aur = args.aur || env::args().collect::<Vec<String>>()[1] == "-Sa";
+    let repo = args.repo || env::args().collect::<Vec<String>>()[1] == "-Sr";
+
     let sorted = sort(&packages, options);
     let config = internal::config::read();
 
@@ -113,11 +125,11 @@ fn cmd_install(args: InstallArgs, options: Options, cachedir: &str) {
         );
     }
 
-    if !sorted.repo.is_empty() {
+    if !repo && !aur && !sorted.repo.is_empty() || repo && !sorted.repo.is_empty() {
         // If repo packages found, install them
         operations::install(&sorted.repo, options);
     }
-    if !sorted.aur.is_empty() {
+    if !repo && !aur && !sorted.aur.is_empty() || aur && !sorted.aur.is_empty() {
         // If AUR packages found, install them
         operations::aur_install(sorted.aur, options, cachedir);
     }
@@ -155,12 +167,12 @@ fn cmd_search(args: &SearchArgs, options: Options) {
     let query_string = args.search.join(" ");
 
     // Logic for searching
-    let both = !args.repo && !args.aur;
-    let repo = args.repo || both;
-    let aur = args.aur || both;
+    let repo = args.repo || env::args().collect::<Vec<String>>()[1] == "-Ssr";
+    let aur = args.aur || env::args().collect::<Vec<String>>()[1] == "-Ssa";
+    let both = !repo && !aur;
 
     // Start repo spinner
-    let repo_results = if repo {
+    let repo_results = if repo || both {
         let rsp = spinner!("Searching repos for {}", query_string);
 
         // Search repos
@@ -173,7 +185,7 @@ fn cmd_search(args: &SearchArgs, options: Options) {
     };
 
     // Start AUR spinner
-    let aur_results = if aur {
+    let aur_results = if aur || both {
         // Strip query of any non-alphanumeric characters
         let query_string = query_string.replace(|c: char| !c.is_alphanumeric() && c != '-', "");
 

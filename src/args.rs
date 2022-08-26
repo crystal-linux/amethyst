@@ -28,7 +28,7 @@ pub struct Args {
 #[derive(Debug, Clone, Subcommand)]
 pub enum Operation {
     /// Installs a package from either the AUR or the Pacman-defined repositories
-    #[clap(bin_name = "ame", name = "install", visible_aliases = & ["-S"])]
+    #[clap(bin_name = "ame", name = "install", visible_aliases = & ["-S"], aliases = & ["-Sa", "-Sr"])]
     Install(InstallArgs),
 
     /// Removes a previously installed package
@@ -36,11 +36,11 @@ pub enum Operation {
     Remove(RemoveArgs),
 
     /// Searches for packages matching a regex-supported pattern in the AUR and/or the repos
-    #[clap(bin_name = "ame", name = "search", visible_aliases = & ["-Ss"])]
+    #[clap(bin_name = "ame", name = "search", visible_aliases = & ["-Ss"], aliases = & ["-Ssa", "-Ssr"])]
     Search(SearchArgs),
 
     /// Queries installed packages
-    #[clap(bin_name = "ame", name = "query", visible_aliases = & ["-Q"])]
+    #[clap(bin_name = "ame", name = "query", visible_aliases = & ["-Q"], aliases = & ["-Qa", "-Qr", "-Qm", "-Qn"])]
     Query(QueryArgs),
 
     /// Gets info about a package
@@ -76,11 +76,11 @@ pub struct InstallArgs {
     #[clap(required = true)]
     pub packages: Vec<String>,
 
-    /// Installs only from the AUR
+    /// Installs only from the AUR [-Sa]
     #[clap(long, short)]
     pub aur: bool,
 
-    /// Install the packages from the pacman-defined repositories
+    /// Install the packages only from the pacman-defined repositories [-Sr]
     #[clap(long, short)]
     pub repo: bool,
 }
@@ -94,11 +94,11 @@ pub struct RemoveArgs {
 
 #[derive(Default, Debug, Clone, Parser)]
 pub struct SearchArgs {
-    /// Searches for the relevant packages in both the AUR and repos
+    /// Searches for the relevant packages in both the AUR and repos [-Ssa]
     #[clap(long, short)]
     pub aur: bool,
 
-    /// Searches only local repos for the package
+    /// Searches only pacman repos for the package [-Ssr]
     #[clap(long, short)]
     pub repo: bool,
 

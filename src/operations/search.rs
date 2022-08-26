@@ -91,6 +91,12 @@ pub fn repo_search(query: &str, options: Options) -> String {
     // Initialise results vector
     let mut results_vec: Vec<SearchResult> = vec![];
 
+    let clone = lines.clone().collect::<Vec<&str>>();
+    if clone.len() == 1 && clone[0] == "" {
+        // If no results, return empty string
+        return "".to_string();
+    }
+
     // Iterate over lines
     for line in lines {
         let parts: Vec<&str> = line.split('\\').collect();
