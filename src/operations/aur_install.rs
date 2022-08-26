@@ -181,7 +181,6 @@ fn clone(pkg: &String, pkgcache: &str, options: &Options) {
 
     // See if package is already cloned to AUR_CACHE
     let dirs = list(pkgcache);
-    println!("{:?}", dirs);
     if dirs.contains(pkg) {
         // Enter directory and git pull
         if options.verbosity > 1 {
@@ -224,7 +223,7 @@ fn clone(pkg: &String, pkgcache: &str, options: &Options) {
         )))
         .unwrap();
         ShellCommand::makepkg()
-            .arg("-o")
+            .arg("-od")
             .wait()
             .silent_unwrap(AppExitCode::MakePkgError);
     }
