@@ -1,8 +1,25 @@
 {
-	"name": "Amethyst",
-	"build": {
-		"dockerfile": "Dockerfile",
-	},
+  "name": "Amethyst",
 
-	"remoteUser": "vscode"
+  "build": {
+    "dockerfile": "Dockerfile",
+  },
+
+  "containerEnv": {
+    "PROJECT_DIR": "${containerWorkspaceFolder}"
+  },
+
+  "settings": {
+    "terminal.integrated.shell.linux": "/bin/bash"
+  },
+
+  "extensions": [
+    "vadimcn.vscode-lldb",
+    "mutantdino.resourcemonitor",
+    "matklad.rust-analyzer",
+    "tamasfe.even-better-toml",
+    "serayuzgur.crates"
+  ],
+
+  "remoteUser": "vscode",
 }
