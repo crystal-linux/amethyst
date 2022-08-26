@@ -130,7 +130,7 @@ fn finish(cachedir: &str, pkg: &str, options: &Options) {
                 "-cO",
                 "extglob",
                 format!(
-                    "sudo pacman -U --asdeps {}/!({})/*.zst {}",
+                    "sudo pacman -U --asdeps {}/!({})/*.pkg.tar.* {}",
                     cachedir,
                     pkg,
                     if options.noconfirm { "--noconfirm" } else { "" }
@@ -157,7 +157,7 @@ fn finish(cachedir: &str, pkg: &str, options: &Options) {
         .args(&[
             "-c",
             format!(
-                "sudo pacman -U {}/{}/*.zst {}",
+                "sudo pacman -U {}/{}/*.pkg.tar.* {}",
                 cachedir,
                 pkg,
                 if options.noconfirm { "--noconfirm" } else { "" }
