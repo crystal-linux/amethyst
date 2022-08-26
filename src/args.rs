@@ -3,7 +3,7 @@
 use clap::{Parser, Subcommand, ValueHint};
 
 #[derive(Debug, Clone, Parser)]
-#[clap(bin_name = "ame", name = "Amethyst", version = env ! ("CARGO_PKG_VERSION"), about = env ! ("CARGO_PKG_DESCRIPTION"), infer_subcommands = true)]
+#[clap(bin_name = "ame", name = "Amethyst", version = env ! ("CARGO_PKG_VERSION"), about = env ! ("CARGO_PKG_DESCRIPTION"), infer_subcommands = true, allow_external_subcommands = true, allow_hyphen_values = true)]
 pub struct Args {
     #[clap(subcommand)]
     pub subcommand: Option<Operation>,
@@ -109,12 +109,12 @@ pub struct SearchArgs {
 
 #[derive(Default, Debug, Clone, Parser)]
 pub struct QueryArgs {
-    /// Lists AUR/foreign packages
-    #[clap(long, short, from_global)]
+    /// Lists AUR/foreign packages [-Qa, -Qm]
+    #[clap(long, short)]
     pub aur: bool,
 
-    /// Lists repo/native packages
-    #[clap(long, short, from_global)]
+    /// Lists repo/native packages [-Qr, -Qn]
+    #[clap(long, short)]
     pub repo: bool,
 }
 

@@ -2,7 +2,7 @@
 #![allow(clippy::too_many_lines)]
 
 use args::Args;
-use clap::Parser;
+use clap::{Parser, CommandFactory};
 use clap_complete::{Generator, Shell};
 use internal::commands::ShellCommand;
 use internal::error::SilentUnwrap;
@@ -30,6 +30,7 @@ fn main() {
     if unsafe { libc::geteuid() } == 0 {
         crash!( AppExitCode::RunAsRoot, "Running amethyst as root is disallowed as it can lead to system breakage. Instead, amethyst will prompt you when it needs superuser permissions");
     }
+
 
     // Parse arguments
     let args: Args = Args::parse();
@@ -74,6 +75,25 @@ fn main() {
             .to_string()
     };
 
+    // List of possible options
+    let opers = vec!["install", "remove", "upgrade", "search", "query", "info", "clean", "diff", "gencomp"];
+
+    // If arg is completely unrecognized, attempt to pass it to pacman
+    match args::Args::command().get_matches().subcommand() {
+        Some((ext, ext_m)) => {
+            if !opers.contains(&ext) {
+                let mut m = ext_m.values_of("").unwrap_or_default().collect::<Vec<&str>>();
+                m.insert(0, ext);
+                
+                info!("Passing unrecognized flags \"{}\" to pacman", m.join(" "));
+
+                let child = ShellCommand::pacman().args(m).elevated().wait().silent_unwrap(AppExitCode::PacmanError);
+                std::process::exit(child.code().unwrap_or(1));
+            }
+        }
+        _ => {}
+    }
+
     // Match args
     match args.subcommand.unwrap_or_default() {
         Operation::Install(install_args) => cmd_install(install_args, options, &cachedir),
@@ -95,6 +115,8 @@ fn main() {
             cmd_gencomp(&gencomp_args);
         }
     }
+
+
 }
 
 fn cmd_install(args: InstallArgs, options: Options, cachedir: &str) {
@@ -217,21 +239,25 @@ fn cmd_search(args: &SearchArgs, options: Options) {
 }
 
 fn cmd_query(args: &QueryArgs) {
-    if args.aur {
+    let aur = args.aur || env::args().collect::<Vec<String>>()[1] == "-Qa" || env::args().collect::<Vec<String>>()[1] == "-Qm";
+    let repo = args.repo || env::args().collect::<Vec<String>>()[1] == "-Qr" || env::args().collect::<Vec<String>>()[1] == "-Qn";
+    let both = !aur && !repo;
+
+    if aur {
         // If AUR query, query AUR
         ShellCommand::pacman()
             .arg("-Qm")
             .wait_success()
             .silent_unwrap(AppExitCode::PacmanError);
     }
-    if args.repo {
+    if repo {
         // If repo query, query repos
         ShellCommand::pacman()
             .arg("-Qn")
             .wait_success()
             .silent_unwrap(AppExitCode::PacmanError);
     }
-    if !args.repo && !args.aur {
+    if both {
         // If no query type specified, query both
         ShellCommand::pacman()
             .arg("-Qn")
