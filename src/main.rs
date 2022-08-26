@@ -174,6 +174,9 @@ fn cmd_search(args: &SearchArgs, options: Options) {
 
     // Start AUR spinner
     let aur_results = if aur {
+        // Strip query of any non-alphanumeric characters
+        let query_string = query_string.replace(|c: char| !c.is_alphanumeric() && c != '-', "");
+
         let asp = spinner!("Searching AUR for {}", query_string);
 
         // Search AUR
