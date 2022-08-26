@@ -47,7 +47,7 @@ pub enum Operation {
     #[clap(bin_name = "ame", name = "info", visible_aliases = & ["-Qi"])]
     Info(InfoArgs),
 
-    /// Upgrades locally installed packages to their latest versions
+    /// Upgrades locally installed packages to their latest versions (Default)
     #[clap(bin_name = "ame", name = "upgrade", visible_aliases = & ["-Syu"])]
     Upgrade(UpgradeArgs),
 
