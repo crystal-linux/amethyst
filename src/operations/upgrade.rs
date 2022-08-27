@@ -1,4 +1,5 @@
-use crate::builder::pacman::PacmanQueryBuilder;
+use crate::args::UpgradeArgs;
+use crate::builder::pacman::{PacmanColor, PacmanQueryBuilder};
 use crate::internal::commands::ShellCommand;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
@@ -7,7 +8,18 @@ use crate::operations::aur_install::aur_install;
 use crate::{info, log, prompt, warn, Options};
 
 /// Upgrades all installed packages
-pub async fn upgrade(options: Options) {
+#[tracing::instrument(level = "trace")]
+pub async fn upgrade(args: UpgradeArgs, options: Options) {
+    if args.repo {
+        upgrade_repo(options).await;
+    }
+    if args.aur {
+        upgrade_aur(options).await;
+    }
+}
+
+#[tracing::instrument(level = "trace")]
+async fn upgrade_repo(options: Options) {
     let verbosity = options.verbosity;
     let noconfirm = options.noconfirm;
 
@@ -38,14 +50,19 @@ pub async fn upgrade(options: Options) {
             std::process::exit(AppExitCode::PacmanError as i32);
         }
     }
+}
+
+#[tracing::instrument(level = "trace")]
+async fn upgrade_aur(options: Options) {
+    let verbosity = options.verbosity;
 
     if verbosity >= 1 {
         log!("Upgrading AUR packages");
     }
 
-    let non_native_pkgs = PacmanQueryBuilder::default()
-        .foreign(true)
-        .query()
+    let non_native_pkgs = PacmanQueryBuilder::foreign()
+        .color(PacmanColor::Never)
+        .query_with_output()
         .await
         .silent_unwrap(AppExitCode::PacmanError);
 

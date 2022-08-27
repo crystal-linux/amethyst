@@ -3,7 +3,7 @@
 # Developer:  Michal S <michal[at]tar[dot]black>
 
 pkgname=amethyst
-pkgver=3.3.0
+pkgver=3.6.0
 pkgrel=1
 pkgdesc="A fast and efficient AUR helper"
 arch=('x86_64')
@@ -11,7 +11,7 @@ url="https://github.com/crystal-linux/amethyst"
 license=('GPL3')
 source=("git+$url")
 sha256sums=('SKIP')
-depends=('git' 'binutils' 'fakeroot' 'pacman-contrib')
+depends=('git' 'binutils' 'fakeroot' 'pacman-contrib' 'vim' 'expac' 'less')
 makedepends=('cargo')
 conflicts=('ame')
 
@@ -22,9 +22,9 @@ prepare() {
 
 build() {
     cd "$srcdir/$pkgname"
-    export RUSTUP_TOOLCHAIN=stable
+    export RUSTUP_TOOLCHAIN=nightly
     export CARGO_TARGET_DIR=target
-    cargo build --frozen --release --all-features
+    cargo build --frozen --release
 }
 
 package() {

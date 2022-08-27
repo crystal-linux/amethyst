@@ -1,4 +1,5 @@
 #[derive(Debug, serde::Serialize)]
+/// Struct for packages exiting [`crate::internal::sort()`].
 pub struct Sorted {
     #[allow(dead_code)]
     pub repo: Vec<String>,
@@ -10,14 +11,14 @@ pub struct Sorted {
 
 impl Sorted {
     pub fn new(repo: Vec<String>, aur: Vec<String>, nf: Vec<String>) -> Self {
-        let a: Sorted = Sorted { repo, aur, nf };
-        a
+        Self { repo, aur, nf }
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Debug, Copy)]
+/// Options to be passed down to internal functions
 pub struct Options {
-    pub verbosity: i32,
+    pub verbosity: usize,
     pub noconfirm: bool,
     pub asdeps: bool,
 }

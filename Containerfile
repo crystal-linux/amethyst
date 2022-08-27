@@ -10,10 +10,10 @@ WORKDIR /usr/src
 RUN cargo new amethyst
 WORKDIR /usr/src/amethyst
 COPY Cargo.toml Cargo.lock ./
-RUN cargo fetch
-COPY src ./src
 RUN mkdir target
 COPY target/debug/build ./target/debug/build
+RUN cargo fetch
+COPY src ./src
 RUN cargo build --frozen
 RUN mkdir /tmp/ame
 RUN cp target/debug/ame /tmp/ame/
@@ -30,5 +30,5 @@ RUN rm -f $(pacdiff -o -f)
 USER ame
 RUN mkdir -p /home/ame/.local/share
 RUN touch /home/ame/.zshrc
-ENV AME_LOG=debug,hyper=info
+ENV AME_LOG=debug,hyper=info,mio=info,want=info
 ENTRYPOINT ["zsh"]

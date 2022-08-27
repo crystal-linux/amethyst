@@ -1,4 +1,5 @@
-use args::Args;
+use args::{Args, GenCompArgs, InfoArgs};
+use builder::pacman::PacmanQueryBuilder;
 use clap::Parser;
 use internal::commands::ShellCommand;
 use internal::error::SilentUnwrap;
@@ -7,12 +8,10 @@ use crate::args::{InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs};
 use crate::internal::detect;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::{init, sort, start_sudoloop, structs::Options};
+use clap_complete::{Generator, Shell};
 use std::str::FromStr;
 use tracing_subscriber::fmt::format::FmtSpan;
 use tracing_subscriber::EnvFilter;
-
-#[global_allocator]
-static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 mod args;
 mod builder;
@@ -21,6 +20,7 @@ mod operations;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() {
+    color_eyre::install().unwrap();
     if unsafe { libc::geteuid() } == 0 {
         crash!( AppExitCode::RunAsRoot, "Running amethyst as root is disallowed as it can lead to system breakage. Instead, amethyst will prompt you when it needs superuser permissions");
     }
@@ -28,7 +28,7 @@ async fn main() {
 
     let args: Args = Args::parse();
 
-    let verbosity = args.verbose as i32;
+    let verbosity = args.verbose;
     let noconfirm = args.no_confirm;
 
     let options = Options {
@@ -48,14 +48,17 @@ async fn main() {
         Operation::Remove(remove_args) => cmd_remove(remove_args, options).await,
         Operation::Search(search_args) => cmd_search(search_args, options).await,
         Operation::Query(query_args) => cmd_query(query_args).await,
-        Operation::Upgrade => {
+        Operation::Upgrade(upgrade_args) => {
             info!("Performing system upgrade");
-            operations::upgrade(options).await;
+            operations::upgrade(upgrade_args, options).await;
         }
         Operation::Clean => {
             info!("Removing orphaned packages");
             operations::clean(options).await;
         }
+        Operation::Info(info_args) => cmd_info(info_args).await,
+        Operation::GenComp(gen_args) => cmd_gencomp(&gen_args),
+        Operation::Diff => todo!(),
     }
 
     detect().await;
@@ -76,11 +79,12 @@ fn init_logger() {
         .init();
 }
 
+#[tracing::instrument(level = "trace")]
 async fn cmd_install(args: InstallArgs, options: Options) {
     let packages = args.packages;
     let sorted = sort(&packages, options).await;
 
-    info!("Attempting to install packages: {}", packages.join(", "));
+    // info!("Attempting to install packages: {}", packages.join(", "));
 
     if !sorted.repo.is_empty() {
         operations::install(sorted.repo, options).await;
@@ -113,12 +117,14 @@ async fn cmd_install(args: InstallArgs, options: Options) {
     }
 }
 
+#[tracing::instrument(level = "trace")]
 async fn cmd_remove(args: RemoveArgs, options: Options) {
     let packages = args.packages;
     info!("Uninstalling packages: {}", &packages.join(", "));
     operations::uninstall(packages, options).await;
 }
 
+#[tracing::instrument(level = "trace")]
 async fn cmd_search(args: SearchArgs, options: Options) {
     let query_string = args.search.join(" ");
     if args.aur {
@@ -137,6 +143,7 @@ async fn cmd_search(args: SearchArgs, options: Options) {
     }
 }
 
+#[tracing::instrument(level = "trace")]
 async fn cmd_query(args: QueryArgs) {
     if args.aur {
         ShellCommand::pacman()
@@ -164,4 +171,32 @@ async fn cmd_query(args: QueryArgs) {
             .await
             .silent_unwrap(AppExitCode::PacmanError);
     }
+}
+
+#[tracing::instrument(level = "trace")]
+async fn cmd_info(args: InfoArgs) {
+    PacmanQueryBuilder::info()
+        .package(args.package)
+        .query()
+        .await
+        .silent_unwrap(AppExitCode::PacmanError);
+}
+
+#[tracing::instrument(level = "trace")]
+fn cmd_gencomp(args: &GenCompArgs) {
+    let shell: Shell = Shell::from_str(&args.shell).unwrap_or_else(|e| {
+        crash!(AppExitCode::Other, "Invalid shell: {}", e);
+    });
+
+    if shell == Shell::Zsh {
+        crash!(
+            AppExitCode::Other,
+            "Zsh shell completions are currently unsupported due to a bug in the clap_completion crate"
+        );
+    };
+
+    shell.generate(
+        &<args::Args as clap::CommandFactory>::command(),
+        &mut std::io::stderr(),
+    );
 }

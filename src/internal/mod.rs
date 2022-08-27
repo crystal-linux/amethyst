@@ -1,11 +1,15 @@
 pub use clean::*;
+pub use clean::*;
 pub use detect::*;
 pub use initialise::*;
+pub use initialise::*;
 pub use sort::*;
-use std::env;
+pub use sort::*;
+pub use sudoloop::*;
 
 mod clean;
 pub mod commands;
+pub mod config;
 mod detect;
 pub mod error;
 pub mod exit_code;
@@ -16,13 +20,8 @@ pub mod rpc;
 mod sort;
 pub mod structs;
 #[macro_use]
-pub(crate) mod utils;
+pub mod utils;
 mod sudoloop;
-
-pub use clean::*;
-pub use initialise::*;
-pub use sort::*;
-pub use sudoloop::*;
 
 #[macro_export]
 macro_rules! uwu {
@@ -42,11 +41,13 @@ macro_rules! uwu {
 }
 
 pub fn uwu_enabled() -> bool {
-    env::var("AME_UWU").unwrap_or_else(|_| "".to_string()) == "true"
+    let config = config::read();
+    config.extra.uwu.unwrap_or(false)
 }
 
 pub fn uwu_debug_enabled() -> bool {
-    env::var("AME_UWU_DEBUG").unwrap_or_else(|_| "".to_string()) == "true"
+    let config = config::read();
+    config.extra.uwu_debug.unwrap_or(false)
 }
 
 /// Checks if we're running in a tty. If we do we can assume that

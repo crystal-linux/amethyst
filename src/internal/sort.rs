@@ -6,6 +6,7 @@ use crate::{log, Options};
 use super::error::SilentUnwrap;
 use super::exit_code::AppExitCode;
 
+#[tracing::instrument(level = "trace")]
 pub async fn sort(input: &[String], options: Options) -> structs::Sorted {
     let mut repo_packages: Vec<String> = vec![];
     let mut aur_packages: Vec<String> = vec![];

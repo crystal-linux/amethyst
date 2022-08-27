@@ -4,6 +4,7 @@ use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcsearch;
 use crate::{log, Options};
 
+#[tracing::instrument(level = "trace")]
 pub async fn aur_search(query: &str, options: Options) {
     let verbosity = options.verbosity;
     let packages = rpcsearch(query.to_string())
@@ -23,6 +24,7 @@ pub async fn aur_search(query: &str, options: Options) {
     }
 }
 
+#[tracing::instrument(level = "trace")]
 pub async fn repo_search(query: &str, options: Options) {
     let verbosity = options.verbosity;
     let output = ShellCommand::pacman()

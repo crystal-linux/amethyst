@@ -12,6 +12,7 @@ use crate::internal::rpc::rpcinfo;
 use crate::{crash, info, internal::fs_utils::rmdir_recursive, log, prompt, Options};
 
 /// Installs a given list of packages from the aur
+#[tracing::instrument(level = "trace")]
 #[async_recursion]
 pub async fn aur_install(packages: Vec<String>, options: Options) {
     let url = crate::internal::rpc::URL;
