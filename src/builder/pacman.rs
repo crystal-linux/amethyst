@@ -27,6 +27,7 @@ impl PacmanInstallBuilder {
         self
     }
 
+    #[allow(clippy::wrong_self_convention)]
     pub fn as_deps(mut self, as_deps: bool) -> Self {
         self.as_deps = as_deps;
 
@@ -47,4 +48,47 @@ impl PacmanInstallBuilder {
 
         command.args(self.packages).wait_success().await
     }
+}
+
+#[derive(Debug, Default)]
+pub struct PacmanQueryBuilder {
+    foreign: bool,
+}
+
+impl PacmanQueryBuilder {
+    /// Query for foreign packages
+    pub fn foreign(mut self, foreign: bool) -> Self {
+        self.foreign = foreign;
+
+        self
+    }
+
+    #[tracing::instrument(level = "debug")]
+    pub async fn query(self) -> AppResult<Vec<BasicPackageInfo>> {
+        let mut command = ShellCommand::pacman().arg("-Q").arg("--color").arg("never");
+
+        if self.foreign {
+            command = command.arg("-m");
+        }
+
+        let output = command.wait_with_output().await?;
+        let packages = output
+            .stdout
+            .split('\n')
+            .filter(|p| !p.is_empty())
+            .filter_map(|p| p.split_once(' '))
+            .map(|(name, version)| BasicPackageInfo {
+                name: name.to_string(),
+                version: version.to_string(),
+            })
+            .collect();
+
+        Ok(packages)
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct BasicPackageInfo {
+    pub name: String,
+    pub version: String,
 }
