@@ -4,8 +4,11 @@
 use args::Args;
 use clap::{CommandFactory, Parser};
 use clap_complete::{Generator, Shell};
+use strsim::sorensen_dice;
+
 use internal::commands::ShellCommand;
 use internal::error::SilentUnwrap;
+
 use std::env;
 use std::fs;
 use std::path::Path;
@@ -17,6 +20,7 @@ use crate::args::{
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::utils::pager;
 use crate::internal::{detect, init, sort, start_sudoloop, structs::Options};
+use crate::operations::ResultsVec;
 
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
@@ -186,7 +190,7 @@ fn cmd_remove(args: RemoveArgs, options: Options) {
 
 fn cmd_search(args: &SearchArgs, options: Options) {
     // Initialise variables
-    let query_string = args.search.join(" ");
+    let query_string = &args.search;
 
     // Logic for searching
     let repo = args.repo || env::args().collect::<Vec<String>>()[1] == "-Ssr";
@@ -198,12 +202,12 @@ fn cmd_search(args: &SearchArgs, options: Options) {
         let rsp = spinner!("Searching repos for {}", query_string);
 
         // Search repos
-        let ret = operations::search(&query_string, options);
+        let ret = operations::search(query_string, options);
         rsp.stop_bold("Repo search complete");
 
         ret
     } else {
-        "".to_string()
+        Vec::new()
     };
 
     // Start AUR spinner
@@ -214,30 +218,46 @@ fn cmd_search(args: &SearchArgs, options: Options) {
         let asp = spinner!("Searching AUR for {}", query_string);
 
         // Search AUR
-        let ret = operations::aur_search(&query_string, options, args.by.unwrap_or_default());
+        let ret = operations::aur_search(&query_string, options);
         asp.stop_bold("AUR search complete");
 
         ret
     } else {
-        "".to_string()
+        Vec::new()
     };
 
-    let results = repo_results + "\n" + &aur_results;
+    let mut results = repo_results
+        .into_iter()
+        .chain(aur_results)
+        .collect::<Vec<_>>();
+
+    // Sort results by how closely they match the query
+    results.sort_by(|a, b| {
+        let a_score = sorensen_dice(&a.name, query_string);
+        let b_score = sorensen_dice(&b.name, query_string);
+        b_score
+            .partial_cmp(&a_score)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
+
+    let results = ResultsVec::from(results);
 
     // Print results either way, so that the user can see the results after they exit `less`
     let text = if internal::uwu_enabled() {
-        uwu!(results.trim())
+        uwu!(results.to_string())
     } else {
-        results.trim().to_string()
+        results.to_string()
     };
+
+    let text = text.trim().to_string();
 
     println!("{}", text);
 
     // Check if results are longer than terminal height
-    if results.lines().count() > crossterm::terminal::size().unwrap().1 as usize {
+    if results.0.len() > (crossterm::terminal::size().unwrap().1 / 2).into() {
         // If so, paginate results
         #[allow(clippy::let_underscore_drop)]
-        let _ = pager(&results.trim().to_string());
+        let _ = pager(&results.to_string());
     }
 }
 

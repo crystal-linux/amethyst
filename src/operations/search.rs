@@ -3,7 +3,6 @@ use colored::Colorize;
 use textwrap::wrap;
 
 use std::fmt::Display;
-use std::str::FromStr;
 
 use crate::internal::commands::ShellCommand;
 use crate::internal::error::SilentUnwrap;
@@ -12,72 +11,69 @@ use crate::internal::rpc::rpcsearch;
 use crate::{log, Options};
 
 #[allow(clippy::module_name_repetitions)]
-#[derive(Debug, Clone, Copy)]
-pub enum SearchBy {
-    Name,
-    NameDesc,
-    Maintainer,
-    Depends,
-    MakeDepends,
-    OptDepends,
-    CheckDepends,
+#[derive(Debug, Clone)]
+pub struct SearchResult {
+    pub repo: String,
+    pub name: String,
+    pub version: String,
+    pub ood: Option<usize>,
+    pub description: String,
 }
 
-impl FromStr for SearchBy {
-    type Err = String;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "name" => Ok(Self::Name),
-            "name-desc" => Ok(Self::NameDesc),
-            "maintainer" => Ok(Self::Maintainer),
-            "depends" => Ok(Self::Depends),
-            "makedepends" => Ok(Self::MakeDepends),
-            "optdepends" => Ok(Self::OptDepends),
-            "checkdepends" => Ok(Self::CheckDepends),
-            _ => Err(format!("Invalid search-by directive \"{}\"", s)),
-        }
-    }
-}
-
-impl Display for SearchBy {
+impl Display for SearchResult {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Name => write!(f, "name"),
-            Self::NameDesc => write!(f, "name-desc"),
-            Self::Maintainer => write!(f, "maintainer"),
-            Self::Depends => write!(f, "depends"),
-            Self::MakeDepends => write!(f, "makedepends"),
-            Self::OptDepends => write!(f, "optdepends"),
-            Self::CheckDepends => write!(f, "checkdepends"),
+        let opts = textwrap::Options::new(crossterm::terminal::size().unwrap().0 as usize - 4)
+            .subsequent_indent("    ");
+        let description = wrap(&self.description, opts).join("\n");
+        write!(
+            f,
+            "{}{} {} {}\n    {}",
+            if self.repo == "aur" {
+                (self.repo.clone() + "/").bold().cyan()
+            } else {
+                (self.repo.clone() + "/").bold().purple()
+            },
+            self.name.bold(),
+            self.version.bold().green(),
+            if self.ood.is_some() {
+                format!(
+                    "[out of date: since {}]",
+                    Local
+                        .timestamp(self.ood.unwrap().try_into().unwrap(), 0)
+                        .date_naive()
+                )
+                .bold()
+                .red()
+            } else {
+                "".bold()
+            },
+            description
+        )
+    }
+}
+
+pub struct ResultsVec(pub Vec<SearchResult>);
+
+impl From<Vec<SearchResult>> for ResultsVec {
+    fn from(v: Vec<SearchResult>) -> Self {
+        Self(v)
+    }
+}
+
+impl Display for ResultsVec {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for result in &self.0 {
+            writeln!(f, "{}", result)?;
         }
-    }
-}
-
-impl Default for SearchBy {
-    fn default() -> Self {
-        Self::NameDesc
-    }
-}
-
-impl SearchBy {
-    pub fn variants() -> Vec<&'static str> {
-        vec![
-            "name",
-            "name-desc",
-            "maintainer",
-            "depends",
-            "makedepends",
-            "optdepends",
-            "checkdepends",
-        ]
+        Ok(())
     }
 }
 
 #[allow(clippy::module_name_repetitions)]
 /// Searches for packages from the AUR and returns wrapped results
-pub fn aur_search(query: &str, options: Options, by: SearchBy) -> String {
+pub fn aur_search(query: &str, options: Options) -> Vec<SearchResult> {
     // Query AUR for package info
-    let res = rpcsearch(query, by);
+    let res = rpcsearch(query);
 
     // Get verbosity
     let verbosity = options.verbosity;
@@ -85,36 +81,17 @@ pub fn aur_search(query: &str, options: Options, by: SearchBy) -> String {
     // Format output
     let mut results_vec = vec![];
     for package in &res.results {
-        // Define wrapping options
-        let opts = textwrap::Options::new(crossterm::terminal::size().unwrap().0 as usize - 4)
-            .subsequent_indent("    ");
-
-        let result = format!(
-            "{}{} {} {}\n    {}",
-            "aur/".cyan().bold(),
-            package.name.bold(),
-            package.version.green().bold(),
-            if package.out_of_date.is_some() {
-                format!(
-                    "[out of date: since {}]",
-                    Local
-                        .timestamp(package.out_of_date.unwrap().try_into().unwrap(), 0)
-                        .date_naive()
-                )
-                .red()
-                .bold()
-            } else {
-                "".bold()
-            },
-            wrap(
-                package
-                    .description
-                    .as_ref()
-                    .unwrap_or(&"No description".to_string()),
-                opts,
-            )
-            .join("\n"),
-        );
+        let result = SearchResult {
+            repo: "aur".to_string(),
+            name: package.name.to_string(),
+            version: package.version.to_string(),
+            ood: package.out_of_date,
+            description: package
+                .description
+                .as_ref()
+                .unwrap_or(&"No description".to_string())
+                .to_string(),
+        };
         results_vec.push(result);
     }
 
@@ -126,19 +103,12 @@ pub fn aur_search(query: &str, options: Options, by: SearchBy) -> String {
         );
     }
 
-    results_vec.join("\n")
-}
-
-struct SearchResult {
-    repo: String,
-    name: String,
-    version: String,
-    description: String,
+    results_vec
 }
 
 #[allow(clippy::module_name_repetitions)]
 /// Searches for packages from the repos and returns wrapped results
-pub fn repo_search(query: &str, options: Options) -> String {
+pub fn repo_search(query: &str, options: Options) -> Vec<SearchResult> {
     // Initialise variables
     let verbosity = options.verbosity;
 
@@ -156,22 +126,19 @@ pub fn repo_search(query: &str, options: Options) -> String {
     // Initialise results vector
     let mut results_vec: Vec<SearchResult> = vec![];
 
-    let clone = lines.clone().collect::<Vec<&str>>();
-    if clone.len() == 1 && clone[0].is_empty() {
-        // If no results, return empty string
-        return "".to_string();
-    }
-
     // Iterate over lines
     for line in lines {
-        let parts: Vec<&str> = line.split('\\').collect();
-        let res = SearchResult {
-            repo: parts[0].to_string(),
-            name: parts[1].to_string(),
-            version: parts[2].to_string(),
-            description: parts[3].to_string(),
-        };
-        results_vec.push(res);
+        if line.contains('\\') {
+            let parts: Vec<&str> = line.split('\\').collect();
+            let res = SearchResult {
+                repo: parts[0].to_string(),
+                name: parts[1].to_string(),
+                version: parts[2].to_string(),
+                ood: None,
+                description: parts[3].to_string(),
+            };
+            results_vec.push(res);
+        }
     }
 
     if verbosity >= 1 {
@@ -182,30 +149,5 @@ pub fn repo_search(query: &str, options: Options) -> String {
         );
     }
 
-    // Format output
-    let results_vec = results_vec
-        .into_iter()
-        .map(|res| {
-            let opts = textwrap::Options::new(crossterm::terminal::size().unwrap().0 as usize - 4)
-                .subsequent_indent("    ");
-            format!(
-                "{}{}{} {}\n    {}",
-                res.repo.purple().bold(),
-                "/".purple().bold(),
-                res.name.bold(),
-                res.version.green().bold(),
-                if res.description.is_empty() {
-                    "No description".to_string()
-                } else {
-                    wrap(&res.description, opts).join("\n")
-                },
-            )
-        })
-        .collect::<Vec<String>>();
-
-    if output.trim().is_empty() {
-        "".to_string()
-    } else {
-        results_vec.join("\n")
-    }
+    results_vec
 }
