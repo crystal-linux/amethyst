@@ -1,13 +1,15 @@
-use crate::ShellCommand;
 use std::thread;
 use std::time::Duration;
 
-/// Loop sudo so it doesn't time out
+use crate::ShellCommand;
+
+/// Loop sudo so longer builds don't time out
+#[allow(clippy::module_name_repetitions)]
 pub fn start_sudoloop() {
     prompt_sudo();
     std::thread::spawn(|| loop {
         prompt_sudo();
-        thread::sleep(Duration::from_secs(3 * 60))
+        thread::sleep(Duration::from_secs(3 * 60));
     });
 }
 
