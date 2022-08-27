@@ -1,7 +1,7 @@
 use async_recursion::async_recursion;
 use std::env;
 use std::env::set_current_dir;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use tokio::fs;
 
@@ -9,7 +9,7 @@ use crate::internal::commands::ShellCommand;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcinfo;
-use crate::{crash, info, log, prompt, Options};
+use crate::{crash, info, internal::fs_utils::rmdir_recursive, log, prompt, Options};
 
 /// Installs a given list of packages from the aur
 #[async_recursion]
@@ -25,17 +25,20 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
 
     info!("Installing packages {} from the AUR", packages.join(", "));
 
-    for package in packages {
-        let rpcres = rpcinfo(&package);
+    for package_name in packages {
+        let rpcres = rpcinfo(&package_name)
+            .await
+            .silent_unwrap(AppExitCode::RpcError);
 
-        if !rpcres.found {
+        if rpcres.is_none() {
             break;
         }
 
-        let pkg = &rpcres.package.as_ref().unwrap().name;
+        let package = rpcres.unwrap();
+        let pkg_name = package.metadata.name;
 
         if verbosity >= 1 {
-            log!("Cloning {} into cachedir", pkg);
+            log!("Cloning {} into cachedir", pkg_name);
         }
 
         info!("Cloning package source");
@@ -43,7 +46,7 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
         set_current_dir(Path::new(&cachedir)).unwrap();
         ShellCommand::git()
             .arg("clone")
-            .arg(format!("{}/{}", url, pkg))
+            .arg(format!("{}/{}", url, pkg_name))
             .wait()
             .await
             .silent_unwrap(AppExitCode::GitError);
@@ -51,30 +54,29 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
         if verbosity >= 1 {
             log!(
                 "Cloned {} into cachedir, moving on to resolving dependencies",
-                pkg
+                pkg_name
             );
             log!(
                 "Raw dependencies for package {} are:\n{:?}",
-                pkg,
-                rpcres.package.as_ref().unwrap().depends.join(", ")
+                pkg_name,
+                package.depends,
             );
             log!(
                 "Raw makedepends for package {} are:\n{:?}",
-                pkg,
-                rpcres.package.as_ref().unwrap().make_depends.join(", ")
+                pkg_name,
+                package.make_depends.join(", "),
             );
         }
 
         // dep sorting
         log!("Sorting dependencies");
-        let sorted = crate::internal::sort(&rpcres.package.as_ref().unwrap().depends, options);
+        let sorted = crate::internal::sort(&package.depends, options).await;
         log!("Sorting make dependencies");
-        let md_sorted =
-            crate::internal::sort(&rpcres.package.as_ref().unwrap().make_depends, options);
+        let md_sorted = crate::internal::sort(&package.make_depends, options).await;
 
         if verbosity >= 1 {
-            log!("Sorted dependencies for {} are:\n{:?}", pkg, &sorted);
-            log!("Sorted makedepends for {} are:\n{:?}", pkg, &md_sorted);
+            log!("Sorted dependencies for {} are:\n{:?}", pkg_name, &sorted);
+            log!("Sorted makedepends for {} are:\n{:?}", pkg_name, &md_sorted);
         }
 
         let newopts = Options {
@@ -88,20 +90,20 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
                 AppExitCode::MissingDeps,
                 "Could not find dependencies {} for package {}, aborting",
                 sorted.nf.join(", "),
-                pkg,
+                pkg_name,
             );
         }
 
         if !noconfirm {
             let p1 = prompt!(default false,
                 "Would you like to review {}'s PKGBUILD (and any .install files if present)?",
-                pkg
+                pkg_name,
             );
             let editor: &str = &env::var("PAGER").unwrap_or_else(|_| "less".parse().unwrap());
 
             if p1 {
                 Command::new(editor)
-                    .arg(format!("{}/PKGBUILD", pkg))
+                    .arg(format!("{}/PKGBUILD", pkg_name))
                     .spawn()
                     .unwrap()
                     .wait()
@@ -109,7 +111,7 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
 
                 let status = ShellCommand::bash()
                     .arg("-c")
-                    .arg(format!("ls {}/*.install &> /dev/null", pkg))
+                    .arg(format!("ls {}/*.install &> /dev/null", pkg_name))
                     .wait()
                     .await
                     .silent_unwrap(AppExitCode::Other);
@@ -117,15 +119,15 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
                 if status.success() {
                     ShellCommand::bash()
                         .arg("-c")
-                        .arg(format!("{} {}/*.install", editor, pkg))
+                        .arg(format!("{} {}/*.install", editor, pkg_name))
                         .wait()
                         .await
                         .silent_unwrap(AppExitCode::Other);
                 }
 
-                let p2 = prompt!(default true, "Would you still like to install {}?", pkg);
+                let p2 = prompt!(default true, "Would you still like to install {}?", pkg_name);
                 if !p2 {
-                    fs::remove_dir_all(format!("{}/{}", cachedir, pkg))
+                    fs::remove_dir_all(format!("{}/{}", cachedir, pkg_name))
                         .await
                         .unwrap();
                     crash!(AppExitCode::UserCancellation, "Not proceeding");
@@ -155,7 +157,7 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
 
         // package building and installing
         info!("Building time!");
-        set_current_dir(format!("{}/{}", cachedir, pkg)).unwrap();
+        set_current_dir(format!("{}/{}", cachedir, pkg_name)).unwrap();
         let status = ShellCommand::makepkg()
             .args(makepkg_args)
             .wait()
@@ -163,22 +165,18 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
             .silent_unwrap(AppExitCode::MakePkgError);
 
         if !status.success() {
-            fs::remove_dir_all(format!("{}/{}", cachedir, pkg))
+            fs::remove_dir_all(format!("{}/{}", cachedir, pkg_name))
                 .await
                 .unwrap();
             crash!(
                 AppExitCode::PacmanError,
                 "Error encountered while installing {}, aborting",
-                pkg,
+                pkg_name,
             );
         }
 
         set_current_dir(&cachedir).unwrap();
-        fs::remove_dir_all(format!("{}/{}", cachedir, &pkg))
-            .await
-            .unwrap();
-
-        // pushes package to database
-        crate::database::add(rpcres.package.unwrap(), options);
+        let package_cache = PathBuf::from(format!("{cachedir}/{pkg_name}"));
+        rmdir_recursive(&package_cache).await.unwrap()
     }
 }

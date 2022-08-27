@@ -3,7 +3,7 @@ use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcinfo;
 use crate::operations::aur_install::aur_install;
-use crate::{info, log, prompt, Options};
+use crate::{info, log, prompt, warn, Options};
 
 /// Upgrades all installed packages
 pub async fn upgrade(options: Options) {
@@ -42,18 +42,40 @@ pub async fn upgrade(options: Options) {
         log!("Upgrading AUR packages");
     }
 
-    let packages = crate::database::query(options);
+    let pacman_output = ShellCommand::pacman()
+        .arg("-Qm")
+        .args(&["--color", "never"])
+        .wait_with_output()
+        .await
+        .silent_unwrap(AppExitCode::PacmanError);
+    let non_native_pkgs = pacman_output
+        .stdout
+        .split('\n')
+        .filter(|p| !p.is_empty())
+        .filter_map(|p| p.split_once(' '))
+        .collect::<Vec<(&str, &str)>>();
 
     if verbosity >= 1 {
-        log!("{:?}", &packages);
+        log!("{:?}", non_native_pkgs);
     }
     let mut aur_upgrades = vec![];
 
-    for package in packages {
-        let remote_package = rpcinfo(&package.name);
+    for (pkg_name, pkg_version) in non_native_pkgs {
+        if verbosity >= 1 {
+            log!(
+                "remote package: name = {}, version = {}",
+                pkg_name,
+                pkg_version
+            );
+        }
+        let remote_package = rpcinfo(pkg_name).await.silent_unwrap(AppExitCode::RpcError);
 
-        if remote_package.package.unwrap().version != package.version {
-            aur_upgrades.push(package.name);
+        if let Some(remote_package) = remote_package {
+            if remote_package.metadata.version != pkg_version {
+                aur_upgrades.push(pkg_name.to_string());
+            }
+        } else {
+            warn!("Could not find the remote package for {}", pkg_name);
         }
     }
 

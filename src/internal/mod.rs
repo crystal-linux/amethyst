@@ -9,6 +9,7 @@ pub mod commands;
 mod detect;
 pub mod error;
 pub mod exit_code;
+pub mod fs_utils;
 mod initialise;
 pub mod rpc;
 mod sort;

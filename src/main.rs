@@ -7,12 +7,14 @@ use crate::args::{InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs};
 use crate::internal::detect;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::{init, sort, start_sudoloop, structs::Options};
+use tracing_subscriber::fmt::format::FmtSpan;
+use tracing_subscriber::EnvFilter;
+use std::str::FromStr;
 
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 mod args;
-mod database;
 mod internal;
 mod operations;
 
@@ -21,6 +23,7 @@ async fn main() {
     if unsafe { libc::geteuid() } == 0 {
         crash!( AppExitCode::RunAsRoot, "Running amethyst as root is disallowed as it can lead to system breakage. Instead, amethyst will prompt you when it needs superuser permissions");
     }
+    init_logger();
 
     let args: Args = Args::parse();
 
@@ -57,9 +60,25 @@ async fn main() {
     detect().await;
 }
 
+/// Initializes the tracing logger
+/// Can be used for debug purposes _or_ verbose output
+fn init_logger() {
+    const DEFAULT_ENV_FILTER: &str = "warn";
+    let filter_string =
+        std::env::var("AME_LOG").unwrap_or_else(|_| DEFAULT_ENV_FILTER.to_string());
+    let env_filter =
+        EnvFilter::from_str(&*filter_string).expect("failed to parse env filter string");
+    tracing_subscriber::fmt::SubscriberBuilder::default()
+        .with_env_filter(env_filter)
+        .with_writer(std::io::stdout)
+        .with_span_events(FmtSpan::NEW | FmtSpan::CLOSE)
+        .compact()
+        .init();
+}
+
 async fn cmd_install(args: InstallArgs, options: Options) {
     let packages = args.packages;
-    let sorted = sort(&packages, options);
+    let sorted = sort(&packages, options).await;
 
     info!("Attempting to install packages: {}", packages.join(", "));
 

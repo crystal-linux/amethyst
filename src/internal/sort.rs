@@ -3,7 +3,10 @@ use std::process::{Command, Stdio};
 use crate::internal::{clean, rpc, structs};
 use crate::{log, Options};
 
-pub fn sort(input: &[String], options: Options) -> structs::Sorted {
+use super::error::SilentUnwrap;
+use super::exit_code::AppExitCode;
+
+pub async fn sort(input: &[String], options: Options) -> structs::Sorted {
     let mut repo_packages: Vec<String> = vec![];
     let mut aur_packages: Vec<String> = vec![];
     let mut missing_packages: Vec<String> = vec![];
@@ -28,7 +31,11 @@ pub fn sort(input: &[String], options: Options) -> structs::Sorted {
                 log!("{} found in repos", package);
             }
             repo_packages.push(package.to_string());
-        } else if rpc::rpcinfo(&package).found {
+        } else if rpc::rpcinfo(&package)
+            .await
+            .silent_unwrap(AppExitCode::RpcError)
+            .is_some()
+        {
             if verbosity >= 1 {
                 log!("{} found in AUR", package);
             }

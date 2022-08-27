@@ -31,7 +31,6 @@ pub async fn uninstall(packages: Vec<String>, options: Options) {
     }
 
     for package in packages {
-        crate::database::remove(&package, options);
         if Path::new(&format!(
             "{}/.cache/ame/{}",
             env::var("HOME").unwrap(),

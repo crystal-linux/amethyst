@@ -52,16 +52,20 @@ codegen-units = 1
 
 [dependencies]
 mimalloc = { version = "0.1.29", default-features = false }
-clap = { version = "3.2.8", features = [ "derive", "wrap_help" ] }
-regex = { version = "1.5.6", default-features = false, features = [ "std", "unicode-perl" ] }
-rusqlite = { version = "0.26.3", default-features = false }
+clap = { version = "3.2.17", features = [ "derive", "wrap_help" ] }
+regex = { version = "1.6.0", default-features = false, features = [ "std", "unicode-perl" ] }
+rusqlite = { version = "0.28.0", default-features = false }
 colored = "2.0.0"
-ureq = { version = "2.4.0", default-features = false, features = [ "native-tls", "json" ] }
-serde = { version = "1.0.138", default-features = false, features = [ "derive", "serde_derive" ] }
+ureq = { version = "2.5.0", default-features = false, features = [ "native-tls", "json" ] }
+serde = { version = "1.0.144", default-features = false, features = [ "derive", "serde_derive" ] }
 native-tls = { version = "0.2.10", default-features = false }
-libc = { version = "0.2.126", default-features = false }
+libc = { version = "0.2.132", default-features = false }
 async-recursion = "1.0.0"
+aur-rpc = "0.1.2"
+futures = "0.3.23"
+tracing = "0.1.36"
+tracing-subscriber = { version = "0.3.15", features = ["env-filter"] }
 
 [dependencies.tokio]
-version = "1.19.2" 
+version = "1.20.1"
 features = ["rt", "io-std", "io-util", "process", "time", "macros", "tracing", "fs"]

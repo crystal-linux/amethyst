@@ -6,22 +6,20 @@ use crate::{log, Options};
 
 pub async fn aur_search(query: &str, options: Options) {
     let verbosity = options.verbosity;
-    let res = rpcsearch(query.to_string());
+    let packages = rpcsearch(query.to_string())
+        .await
+        .silent_unwrap(AppExitCode::RpcError);
+    let total_results = packages.len();
 
-    for package in &res.results {
+    for package in &packages {
         println!(
             "aur/{} {}\n    {}",
-            package.name,
-            package.version,
-            package
-                .description
-                .as_ref()
-                .unwrap_or(&"No description".to_string())
+            package.name, package.version, package.description
         )
     }
 
     if verbosity >= 1 {
-        log!("Found {} resuls for \"{}\" in AUR", res.resultcount, query);
+        log!("Found {total_results} resuls for \"{query}\" in AUR",);
     }
 }
 

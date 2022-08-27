@@ -11,6 +11,7 @@ pub type AppResult<T> = Result<T, AppError>;
 pub enum AppError {
     Io(std::io::Error),
     Other(String),
+    Rpc(aur_rpc::error::RPCError),
     NonZeroExit,
 }
 
@@ -20,6 +21,7 @@ impl Display for AppError {
             AppError::Io(io) => Display::fmt(io, f),
             AppError::Other(s) => Display::fmt(s, f),
             AppError::NonZeroExit => Display::fmt("exited with non zero code", f),
+            AppError::Rpc(e) => Display::fmt(e, f),
         }
     }
 }
@@ -29,6 +31,12 @@ impl Error for AppError {}
 impl From<io::Error> for AppError {
     fn from(e: io::Error) -> Self {
         Self::Io(e)
+    }
+}
+
+impl From<aur_rpc::error::RPCError> for AppError {
+    fn from(e: aur_rpc::error::RPCError) -> Self {
+        Self::Rpc(e)
     }
 }
 
