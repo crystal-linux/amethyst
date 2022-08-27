@@ -1,3 +1,5 @@
+#[allow(clippy::module_name_repetitions)]
+/// Defined exit codes for the program
 pub enum AppExitCode {
     RunAsRoot = 1,
     FailedCreatingPaths = 2,
@@ -6,5 +8,6 @@ pub enum AppExitCode {
     PacmanError = 5,
     GitError = 6,
     MakePkgError = 7,
+    ConfigParseError = 8,
     Other = 63,
 }

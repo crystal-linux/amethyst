@@ -2,6 +2,7 @@ use regex::Regex;
 
 use crate::{log, Options};
 
+/// Strips packages from versioning and other extraneous information.
 pub fn clean(a: &[String], options: Options) -> Vec<String> {
     // Strip versioning from package names
     let r = Regex::new(r"(\S+)((?:>=|<=|>|<|=\W)\S+$)").unwrap();

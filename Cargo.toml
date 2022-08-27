@@ -1,10 +1,13 @@
 [package]
 name = "Amethyst"
-version = "3.5.0"
+version = "3.6.0"
 authors = ["michal <michal@tar.black>", "axtlos <axtlos@tar.black>"]
 edition = "2021"
 description = "A fast and efficient AUR helper"
+repository = "https://github.com/crystal-linux/amethyst"
 license-file = "LICENSE.md"
+keywords = ["aur", "crystal-linux", "pacman", "aur-helper"]
+categories = ["command-line-utilities"]
 default-run = "ame"
 
 [[bin]]
@@ -20,11 +23,16 @@ codegen-units = 1
 [dependencies]
 mimalloc = { version = "0.1.29", default-features = false }
 clap = { version = "3.2.8", features = [ "derive", "wrap_help" ] }
+clap_complete = "3.2.4"
 regex = { version = "1.5.6", default-features = false, features = [ "std", "unicode-perl" ] }
 colored = "2.0.0"
 ureq = { version = "2.4.0", default-features = false, features = [ "native-tls", "json" ] }
-serde = { version = "1.0.138", default-features = false, features = [ "derive", "serde_derive" ] }
+serde = { version = "1.0.144", default-features = false, features = [ "derive", "serde_derive" ] }
 native-tls = { version = "0.2.10", default-features = false }
 libc = { version = "0.2.126", default-features = false }
 rm_rf = { version = "0.6.2", default-features = false }
-spinoff = { version = "0.5.3", default-features = false }
+spinoff = { version = "0.5.2", default-features = false }
+textwrap = { version = "0.15.0", features = [ "terminal_size", "smawk" ] }
+chrono = { version = "0.4.22", default-features = false, features = [ "clock", "std", "wasmbind" ] }
+toml = { version = "0.5.9", default-features = false }
+crossterm = { version = "0.25.0", default-features = false }

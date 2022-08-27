@@ -3,6 +3,7 @@ use std::process::{Command, Stdio};
 use crate::internal::{clean, rpc, structs};
 use crate::{log, Options};
 
+/// Sorts the given packages into an [`crate::internal::structs::Sorted`]
 pub fn sort(input: &[String], options: Options) -> structs::Sorted {
     // Initialise variables
     let mut repo: Vec<String> = vec![];
@@ -26,13 +27,13 @@ pub fn sort(input: &[String], options: Options) -> structs::Sorted {
             .status()
             .expect("Something has gone wrong");
 
-        if let Some(0) = rs.code() {
+        if rs.code() == Some(0) {
             // If it is, add it to the repo vector
             if verbosity >= 1 {
                 log!("{} found in repos", b);
             }
             repo.push(b.to_string());
-        } else if rpc::rpcinfo(b.to_string()).found {
+        } else if rpc::rpcinfo(&b).found {
             // Otherwise, check if it is in the AUR, if it is, add it to the AUR vector
             if verbosity >= 1 {
                 log!("{} found in AUR", b);

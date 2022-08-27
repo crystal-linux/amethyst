@@ -13,7 +13,8 @@ struct QueriedPackage {
     pub version: String,
 }
 
-pub fn upgrade(options: Options, args: UpgradeArgs) {
+/// Helps the user upgrade installed packages, repo and AUR.
+pub fn upgrade(options: Options, args: UpgradeArgs, cachedir: &str) {
     // Initialise variables
     let verbosity = options.verbosity;
     let noconfirm = options.noconfirm;
@@ -55,7 +56,7 @@ pub fn upgrade(options: Options, args: UpgradeArgs) {
     }
 
     if args.repo && args.aur {
-        let cont = prompt!(default false, "Continue to upgrade AUR packages?");
+        let cont = prompt!(default true, "Continue to upgrade AUR packages?");
         if !cont {
             // If user doesn't want to continue, break
             info!("Exiting");
@@ -106,15 +107,26 @@ pub fn upgrade(options: Options, args: UpgradeArgs) {
         let mut aur_upgrades = vec![];
         for pkg in parsed_non_native {
             // Query AUR
-            let rpc_result = rpcinfo((&*pkg.name).to_string());
+            let rpc_result = rpcinfo(&pkg.name);
 
             if !rpc_result.found {
                 // If package not found, skip
                 continue;
             }
 
+            // Run `vercmp` to compare versions
+            let vercmp_result = std::process::Command::new("vercmp")
+                .arg(&pkg.version)
+                .arg(&rpc_result.package.unwrap().version)
+                .output()
+                .unwrap();
+            let vercmp_result = String::from_utf8(vercmp_result.stdout).unwrap();
+            if verbosity >= 1 {
+                log!("Vercmp returned {:?}", vercmp_result);
+            }
+
             // If versions differ, push to a vector
-            if rpc_result.package.unwrap().version != pkg.version {
+            if vercmp_result.trim() == "-1" {
                 aur_upgrades.push(pkg.name);
             }
         }
@@ -122,16 +134,16 @@ pub fn upgrade(options: Options, args: UpgradeArgs) {
         sp.stop_bold("Finished!");
 
         // If vector isn't empty, prompt to install AUR packages from vector, effectively upgrading
-        if !aur_upgrades.is_empty() {
+        if aur_upgrades.is_empty() {
+            info!("No upgrades available for installed AUR packages");
+        } else {
             let cont = prompt!(default true,
-                "Found AUR packages {} have new versions available, upgrade?",
+                "AUR packages {} have new versions available, upgrade?",
                 aur_upgrades.join(", "),
             );
             if cont {
-                aur_install(aur_upgrades, options);
+                aur_install(aur_upgrades, options, cachedir);
             };
-        } else {
-            info!("No upgrades available for installed AUR packages");
         }
     }
 
