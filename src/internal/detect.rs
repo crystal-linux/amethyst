@@ -30,7 +30,7 @@ pub fn detect() {
     } else {
         sp.stop_bold("It appears that at least one program you have installed / upgraded has installed a .pacnew config file. These are created when you have modified a program's configuration, and a package upgrade could not automatically merge the new file.");
 
-        let choice = prompt!(default false, "Would you like to run pacdiff to deal with this? You can always deal with this later by running `sudo pacdiff`");
+        let choice = prompt!(default false, "Would you like Amethyst to run pacdiff to deal with this? You can always deal with this later by running `sudo pacdiff`");
         if choice {
             let config = config::read();
             if config.base.pacdiff_warn {
