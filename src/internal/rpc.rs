@@ -1,3 +1,4 @@
+use crate::operations::SearchBy;
 use std::sync::Arc;
 
 #[derive(serde::Deserialize, Debug, Clone)]
@@ -75,7 +76,7 @@ pub fn rpcinfo(pkg: &str) -> InfoResults {
 }
 
 /// Return a struct of type [`SearchResults`] from the AUR.
-pub fn rpcsearch(pkg: &str) -> SearchResults {
+pub fn rpcsearch(pkg: &str, by: SearchBy) -> SearchResults {
     // Initialise TLS connector
     let tls_connector = Arc::new(native_tls::TlsConnector::new().unwrap());
 
@@ -87,8 +88,8 @@ pub fn rpcsearch(pkg: &str) -> SearchResults {
     // Send request and parse results into json
     agent
         .get(&format!(
-            "https://aur.archlinux.org/rpc/?v=5&type=search&arg={}",
-            pkg
+            "https://aur.archlinux.org/rpc/?v=5&type=search&by={}&arg={}",
+            by, pkg
         ))
         .call()
         .unwrap()

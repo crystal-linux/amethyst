@@ -2,6 +2,9 @@ use chrono::{Local, TimeZone};
 use colored::Colorize;
 use textwrap::wrap;
 
+use std::fmt::Display;
+use std::str::FromStr;
+
 use crate::internal::commands::ShellCommand;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
@@ -9,10 +12,72 @@ use crate::internal::rpc::rpcsearch;
 use crate::{log, Options};
 
 #[allow(clippy::module_name_repetitions)]
+#[derive(Debug, Clone, Copy)]
+pub enum SearchBy {
+    Name,
+    NameDesc,
+    Maintainer,
+    Depends,
+    MakeDepends,
+    OptDepends,
+    CheckDepends,
+}
+
+impl FromStr for SearchBy {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "name" => Ok(Self::Name),
+            "name-desc" => Ok(Self::NameDesc),
+            "maintainer" => Ok(Self::Maintainer),
+            "depends" => Ok(Self::Depends),
+            "makedepends" => Ok(Self::MakeDepends),
+            "optdepends" => Ok(Self::OptDepends),
+            "checkdepends" => Ok(Self::CheckDepends),
+            _ => Err(format!("Invalid search-by directive \"{}\"", s)),
+        }
+    }
+}
+
+impl Display for SearchBy {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Name => write!(f, "name"),
+            Self::NameDesc => write!(f, "name-desc"),
+            Self::Maintainer => write!(f, "maintainer"),
+            Self::Depends => write!(f, "depends"),
+            Self::MakeDepends => write!(f, "makedepends"),
+            Self::OptDepends => write!(f, "optdepends"),
+            Self::CheckDepends => write!(f, "checkdepends"),
+        }
+    }
+}
+
+impl Default for SearchBy {
+    fn default() -> Self {
+        Self::NameDesc
+    }
+}
+
+impl SearchBy {
+    pub fn variants() -> Vec<&'static str> {
+        vec![
+            "name",
+            "name-desc",
+            "maintainer",
+            "depends",
+            "makedepends",
+            "optdepends",
+            "checkdepends",
+        ]
+    }
+}
+
+#[allow(clippy::module_name_repetitions)]
 /// Searches for packages from the AUR and returns wrapped results
-pub fn aur_search(query: &str, options: Options) -> String {
+pub fn aur_search(query: &str, options: Options, by: SearchBy) -> String {
     // Query AUR for package info
-    let res = rpcsearch(query);
+    let res = rpcsearch(query, by);
 
     // Get verbosity
     let verbosity = options.verbosity;

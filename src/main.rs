@@ -214,7 +214,7 @@ fn cmd_search(args: &SearchArgs, options: Options) {
         let asp = spinner!("Searching AUR for {}", query_string);
 
         // Search AUR
-        let ret = operations::aur_search(&query_string, options);
+        let ret = operations::aur_search(&query_string, options, args.by.unwrap_or_default());
         asp.stop_bold("AUR search complete");
 
         ret

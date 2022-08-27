@@ -1,5 +1,6 @@
 #![allow(clippy::module_name_repetitions)]
 
+use crate::operations::SearchBy;
 use clap::{Parser, Subcommand, ValueHint};
 
 #[derive(Debug, Clone, Parser)]
@@ -105,6 +106,10 @@ pub struct SearchArgs {
     /// The string the package must match in the search
     #[clap(required = true)]
     pub search: Vec<String>,
+
+    /// Sets the search-by directive for searching the AUR only
+    #[clap(long, short, possible_values = SearchBy::variants())]
+    pub by: Option<SearchBy>,
 }
 
 #[derive(Default, Debug, Clone, Parser)]
