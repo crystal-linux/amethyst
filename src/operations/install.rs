@@ -1,5 +1,5 @@
+use crate::builder::pacman::PacmanInstallBuilder;
 use crate::internal::exit_code::AppExitCode;
-use crate::wrapper::pacman::{PacmanInstallArgs, PacmanWrapper};
 use crate::{crash, info, log, Options};
 
 pub async fn install(packages: Vec<String>, options: Options) {
@@ -11,10 +11,11 @@ pub async fn install(packages: Vec<String>, options: Options) {
             log!("Installing from repos: {:?}", &packages);
         }
 
-        let result = PacmanWrapper::install(
-            PacmanInstallArgs::from_options(options).packages(packages.clone()),
-        )
-        .await;
+        let result = PacmanInstallBuilder::from_options(options)
+            .packages(packages.clone())
+            .install()
+            .await;
+
         if result.is_err() {
             crash!(
                 AppExitCode::PacmanError,

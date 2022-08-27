@@ -15,9 +15,9 @@ use tracing_subscriber::EnvFilter;
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 mod args;
+mod builder;
 mod internal;
 mod operations;
-mod wrapper;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() {

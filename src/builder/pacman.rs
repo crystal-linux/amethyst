@@ -1,31 +1,13 @@
 use crate::internal::{commands::ShellCommand, error::AppResult, structs::Options};
 
-pub struct PacmanWrapper;
-
-impl PacmanWrapper {
-    pub async fn install(args: PacmanInstallArgs) -> AppResult<()> {
-        let mut command = ShellCommand::pacman().elevated().arg("-S").arg("--needed");
-
-        if args.no_confirm {
-            command = command.arg("--noconfirm")
-        }
-
-        if args.as_deps {
-            command = command.arg("--asdeps")
-        }
-
-        command.args(args.packages).wait_success().await
-    }
-}
-
 #[derive(Debug, Default)]
-pub struct PacmanInstallArgs {
+pub struct PacmanInstallBuilder {
     packages: Vec<String>,
     as_deps: bool,
     no_confirm: bool,
 }
 
-impl PacmanInstallArgs {
+impl PacmanInstallBuilder {
     pub fn from_options(options: Options) -> Self {
         Self::default()
             .as_deps(options.asdeps)
@@ -49,5 +31,20 @@ impl PacmanInstallArgs {
         self.as_deps = as_deps;
 
         self
+    }
+
+    #[tracing::instrument(level = "debug")]
+    pub async fn install(self) -> AppResult<()> {
+        let mut command = ShellCommand::pacman().elevated().arg("-S").arg("--needed");
+
+        if self.no_confirm {
+            command = command.arg("--noconfirm")
+        }
+
+        if self.as_deps {
+            command = command.arg("--asdeps")
+        }
+
+        command.args(self.packages).wait_success().await
     }
 }
