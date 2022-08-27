@@ -3,8 +3,6 @@
 use serde::Deserialize;
 use std::{env, fs, path::PathBuf};
 
-use crate::{crash, AppExitCode};
-
 #[derive(Debug, Deserialize)]
 pub struct Config {
     pub base: ConfigBase,
