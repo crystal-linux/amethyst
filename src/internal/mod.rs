@@ -11,6 +11,7 @@ pub mod error;
 pub mod exit_code;
 pub mod fs_utils;
 mod initialise;
+pub mod resolve;
 pub mod rpc;
 mod sort;
 pub mod structs;

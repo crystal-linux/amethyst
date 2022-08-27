@@ -1,17 +1,9 @@
-use crate::internal::commands::ShellCommand;
-use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
+use crate::wrapper::pacman::{PacmanInstallArgs, PacmanWrapper};
 use crate::{crash, info, log, Options};
 
 pub async fn install(packages: Vec<String>, options: Options) {
     info!("Installing packages {} from repos", &packages.join(", "));
-    let mut opers = vec!["-S", "--needed"];
-    if options.noconfirm {
-        opers.push("--noconfirm");
-    }
-    if options.asdeps {
-        opers.push("--asdeps");
-    }
     let verbosity = options.verbosity;
 
     if !packages.is_empty() {
@@ -19,14 +11,11 @@ pub async fn install(packages: Vec<String>, options: Options) {
             log!("Installing from repos: {:?}", &packages);
         }
 
-        let status = ShellCommand::pacman()
-            .elevated()
-            .args(opers)
-            .args(&packages)
-            .wait()
-            .await
-            .silent_unwrap(AppExitCode::PacmanError);
-        if !status.success() {
+        let result = PacmanWrapper::install(
+            PacmanInstallArgs::from_options(options).packages(packages.clone()),
+        )
+        .await;
+        if result.is_err() {
             crash!(
                 AppExitCode::PacmanError,
                 "An error occured while installing packages: {}, aborting",

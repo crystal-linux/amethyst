@@ -7,9 +7,9 @@ use crate::args::{InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs};
 use crate::internal::detect;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::{init, sort, start_sudoloop, structs::Options};
+use std::str::FromStr;
 use tracing_subscriber::fmt::format::FmtSpan;
 use tracing_subscriber::EnvFilter;
-use std::str::FromStr;
 
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
@@ -17,6 +17,7 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 mod args;
 mod internal;
 mod operations;
+mod wrapper;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() {
@@ -64,8 +65,7 @@ async fn main() {
 /// Can be used for debug purposes _or_ verbose output
 fn init_logger() {
     const DEFAULT_ENV_FILTER: &str = "warn";
-    let filter_string =
-        std::env::var("AME_LOG").unwrap_or_else(|_| DEFAULT_ENV_FILTER.to_string());
+    let filter_string = std::env::var("AME_LOG").unwrap_or_else(|_| DEFAULT_ENV_FILTER.to_string());
     let env_filter =
         EnvFilter::from_str(&*filter_string).expect("failed to parse env filter string");
     tracing_subscriber::fmt::SubscriberBuilder::default()
