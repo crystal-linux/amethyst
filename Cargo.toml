@@ -36,3 +36,4 @@ textwrap = { version = "0.15.0", features = [ "terminal_size", "smawk" ] }
 chrono = { version = "0.4.22", default-features = false, features = [ "clock", "std", "wasmbind" ] }
 toml = { version = "0.5.9", default-features = false }
 crossterm = { version = "0.25.0", default-features = false }
+strsim = { version = "0.10.0", default-features = false }

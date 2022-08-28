@@ -104,7 +104,7 @@ pub struct SearchArgs {
 
     /// The string the package must match in the search
     #[clap(required = true)]
-    pub search: Vec<String>,
+    pub search: String,
 }
 
 #[derive(Default, Debug, Clone, Parser)]

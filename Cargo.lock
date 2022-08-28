@@ -18,6 +18,7 @@ dependencies = [
  "rm_rf",
  "serde",
  "spinoff",
+ "strsim",
  "textwrap",
  "toml",
  "ureq",
