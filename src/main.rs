@@ -126,10 +126,11 @@ async fn cmd_remove(args: RemoveArgs, options: Options) {
 
 #[tracing::instrument(level = "trace")]
 async fn cmd_search(args: SearchArgs, options: Options) {
-    let query_string = args.search.join(" ");
+    let query_string = args.search;
+
     if args.aur {
         info!("Searching AUR for {}", &query_string);
-        operations::aur_search(&query_string, options).await;
+        operations::aur_search(&query_string, args.by, options).await;
     }
     if args.repo {
         info!("Searching repos for {}", &query_string);
@@ -139,7 +140,7 @@ async fn cmd_search(args: SearchArgs, options: Options) {
     if !args.aur && !args.repo {
         info!("Searching AUR and repos for {}", &query_string);
         operations::search(&query_string, options).await;
-        operations::aur_search(&query_string, options).await;
+        operations::aur_search(&query_string, args.by, options).await;
     }
 }
 

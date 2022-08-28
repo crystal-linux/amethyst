@@ -1,7 +1,7 @@
 pub use aur_install::*;
 pub use clean::*;
 pub use install::*;
-pub use search::{aur_search, repo_search as search};
+pub use search::{aur_search, repo_search as search, SearchBy};
 pub use uninstall::*;
 pub use upgrade::*;
 

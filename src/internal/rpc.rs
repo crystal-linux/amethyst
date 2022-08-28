@@ -1,4 +1,4 @@
-use aur_rpc::{PackageInfo, PackageMetadata};
+use aur_rpc::{PackageInfo, PackageMetadata, SearchField};
 
 use super::error::AppResult;
 pub const URL: &str = "https://aur.archlinux.org/";
@@ -9,8 +9,15 @@ pub async fn rpcinfo(pkg: &str) -> AppResult<Option<PackageInfo>> {
     Ok(packages.into_iter().next())
 }
 
-pub async fn rpcsearch(pkg: String) -> AppResult<Vec<PackageMetadata>> {
-    let search_results = aur_rpc::search(pkg).await?;
+pub async fn rpcsearch(
+    query: String,
+    by_field: Option<SearchField>,
+) -> AppResult<Vec<PackageMetadata>> {
+    let search_results = if let Some(field) = by_field {
+        aur_rpc::search_by(field, query).await?
+    } else {
+        aur_rpc::search(query).await?
+    };
 
     Ok(search_results)
 }

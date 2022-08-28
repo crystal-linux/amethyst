@@ -1,5 +1,6 @@
 #![allow(clippy::module_name_repetitions)]
 
+use crate::operations::SearchBy;
 use clap::{Parser, Subcommand, ValueHint};
 
 #[derive(Debug, Clone, Parser)]
@@ -104,7 +105,11 @@ pub struct SearchArgs {
 
     /// The string the package must match in the search
     #[clap(required = true)]
-    pub search: Vec<String>,
+    pub search: String,
+
+    /// Searches by a specific field
+    #[clap(long, short)]
+    pub by: Option<SearchBy>,
 }
 
 #[derive(Default, Debug, Clone, Parser)]
