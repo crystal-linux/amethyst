@@ -1,13 +1,10 @@
 use regex::Regex;
 
-use crate::{log, Options};
-
 /// Strips packages from versioning and other extraneous information.
-pub fn clean(a: &[String], options: Options) -> Vec<String> {
+pub fn clean(a: &[String]) -> Vec<String> {
     // Strip versioning from package names
     let r = Regex::new(r"(\S+)((?:>=|<=|>|<|=\W)\S+$)").unwrap();
     let mut cleaned: Vec<String> = vec![];
-    let verbosity = options.verbosity;
 
     // Push cleaned package names to vector
     for b in a {
@@ -19,9 +16,7 @@ pub fn clean(a: &[String], options: Options) -> Vec<String> {
         }
     }
 
-    if verbosity >= 1 {
-        log!("Cleaned: {:?}\nInto: {:?}", a, cleaned);
-    }
+    tracing::debug!("Cleaned: {:?}\nInto: {:?}", a, cleaned);
 
     cleaned
 }

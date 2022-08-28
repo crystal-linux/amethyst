@@ -39,12 +39,15 @@ futures = "0.3.23"
 tracing = "0.1.36"
 tracing-subscriber = { version = "0.3.15", features = ["env-filter"] }
 textwrap = "0.15.0"
-spinoff = "0.5.3"
 crossterm = "0.25.0"
 toml = "0.5.9"
 clap_complete = "3.2.4"
 color-eyre = { version = "0.6.2", features = ["issue-url", "url"] }
+indicatif = { version = "0.17.0", features = ["tokio"] }
+lazy_static = "1.4.0"
+parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
+dialoguer = "0.10.2"
 
 [dependencies.tokio]
 version = "1.20.1"
-features = ["rt", "io-std", "io-util", "process", "time", "macros", "tracing", "fs"]
+features = ["rt", "rt-multi-thread", "io-std", "io-util", "process", "time", "macros", "tracing", "fs"]

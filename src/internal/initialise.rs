@@ -2,19 +2,16 @@ use std::env;
 use std::path::Path;
 use std::process::Command;
 
-use crate::{crash, internal::exit_code::AppExitCode, log, Options};
+use crate::{crash, internal::exit_code::AppExitCode};
 
-pub fn init(options: Options) {
-    let verbosity = options.verbosity;
+pub fn init() {
     let homedir = env::var("HOME").unwrap();
 
     if !Path::new(&format!("{}/.local/share/ame", homedir)).exists() {
         let r = std::fs::create_dir_all(format!("{}/.local/share/ame", homedir));
         match r {
             Ok(_) => {
-                if verbosity >= 1 {
-                    log!("Created path: {}/.local/share/ame", homedir);
-                }
+                tracing::debug!("Created path: {}/.local/share/ame", homedir);
             }
             Err(e) => {
                 crash!(
@@ -31,9 +28,7 @@ pub fn init(options: Options) {
         let r = std::fs::create_dir_all(format!("{}/.cache/ame", homedir));
         match r {
             Ok(_) => {
-                if verbosity >= 1 {
-                    log!("Created path: {}/.cache/ame", homedir);
-                }
+                tracing::debug!("Created path: {}/.cache/ame", homedir);
             }
             Err(e) => {
                 crash!(
@@ -48,9 +43,7 @@ pub fn init(options: Options) {
         let r = std::fs::remove_dir_all(format!("{}/.cache/ame", homedir));
         match r {
             Ok(_) => {
-                if verbosity >= 1 {
-                    log!("Removing cache: {}/.cache/ame", homedir);
-                }
+                tracing::debug!("Removing cache: {}/.cache/ame", homedir);
             }
             Err(e) => {
                 crash!(
@@ -64,9 +57,7 @@ pub fn init(options: Options) {
         let r2 = std::fs::create_dir_all(format!("{}/.cache/ame", homedir));
         match r2 {
             Ok(_) => {
-                if verbosity >= 1 {
-                    log!("Created path: {}/.cache/ame", homedir);
-                }
+                tracing::debug!("Created path: {}/.cache/ame", homedir);
             }
             Err(e2) => {
                 crash!(
@@ -86,9 +77,7 @@ pub fn init(options: Options) {
         .status();
     match r {
         Ok(_) => {
-            if verbosity >= 1 {
-                log!("Set correct permissions for path: {}/.cache/ame", homedir);
-            }
+            tracing::debug!("Set correct permissions for path: {}/.cache/ame", homedir);
         }
         Err(e) => {
             crash!(
@@ -106,12 +95,10 @@ pub fn init(options: Options) {
         .status();
     match r {
         Ok(_) => {
-            if verbosity >= 1 {
-                log!(
-                    "Set correct permissions for path: {}/.local/share/ame",
-                    homedir
-                );
-            }
+            tracing::debug!(
+                "Set correct permissions for path: {}/.local/share/ame",
+                homedir
+            );
         }
         Err(e) => {
             crash!(

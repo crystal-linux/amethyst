@@ -2,6 +2,8 @@ use std::time::Duration;
 
 use crate::ShellCommand;
 
+use super::error::AppResult;
+
 /// Loop sudo so it doesn't time out
 #[tracing::instrument(level = "trace")]
 pub async fn start_sudoloop() {
@@ -16,5 +18,10 @@ pub async fn start_sudoloop() {
 
 #[tracing::instrument(level = "trace")]
 async fn prompt_sudo() {
-    while ShellCommand::sudo().arg("-v").wait_success().await.is_err() {}
+    while prompt_sudo_single().await.is_err() {}
+}
+
+#[tracing::instrument(level = "trace")]
+pub async fn prompt_sudo_single() -> AppResult<()> {
+    ShellCommand::sudo().arg("-v").wait_success().await
 }

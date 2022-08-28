@@ -9,7 +9,7 @@ use crate::internal::commands::ShellCommand;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcinfo;
-use crate::{crash, info, internal::fs_utils::rmdir_recursive, log, prompt, Options};
+use crate::{crash, internal::fs_utils::rmdir_recursive, prompt, Options};
 
 /// Installs a given list of packages from the aur
 #[tracing::instrument(level = "trace")]
@@ -17,14 +17,11 @@ use crate::{crash, info, internal::fs_utils::rmdir_recursive, log, prompt, Optio
 pub async fn aur_install(packages: Vec<String>, options: Options) {
     let url = crate::internal::rpc::URL;
     let cachedir = format!("{}/.cache/ame/", env::var("HOME").unwrap());
-    let verbosity = options.verbosity;
     let noconfirm = options.noconfirm;
 
-    if verbosity >= 1 {
-        log!("Installing from AUR: {:?}", &packages);
-    }
+    tracing::debug!("Installing from AUR: {:?}", &packages);
 
-    info!("Installing packages {} from the AUR", packages.join(", "));
+    tracing::info!("Installing packages {} from the AUR", packages.join(", "));
 
     for package_name in packages {
         let rpcres = rpcinfo(&package_name)
@@ -38,11 +35,9 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
         let package = rpcres.unwrap();
         let pkg_name = package.metadata.name;
 
-        if verbosity >= 1 {
-            log!("Cloning {} into cachedir", pkg_name);
-        }
+        tracing::debug!("Cloning {} into cachedir", pkg_name);
 
-        info!("Cloning package source");
+        tracing::info!("Cloning package source");
 
         set_current_dir(Path::new(&cachedir)).unwrap();
         ShellCommand::git()
@@ -52,36 +47,31 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
             .await
             .silent_unwrap(AppExitCode::GitError);
 
-        if verbosity >= 1 {
-            log!(
-                "Cloned {} into cachedir, moving on to resolving dependencies",
-                pkg_name
-            );
-            log!(
-                "Raw dependencies for package {} are:\n{:?}",
-                pkg_name,
-                package.depends,
-            );
-            log!(
-                "Raw makedepends for package {} are:\n{:?}",
-                pkg_name,
-                package.make_depends.join(", "),
-            );
-        }
+        tracing::debug!(
+            "Cloned {} into cachedir, moving on to resolving dependencies",
+            pkg_name
+        );
+        tracing::debug!(
+            "Raw dependencies for package {} are:\n{:?}",
+            pkg_name,
+            package.depends,
+        );
+        tracing::debug!(
+            "Raw makedepends for package {} are:\n{:?}",
+            pkg_name,
+            package.make_depends.join(", "),
+        );
 
         // dep sorting
-        log!("Sorting dependencies");
+        tracing::debug!("Sorting dependencies");
         let sorted = crate::internal::sort(&package.depends, options).await;
-        log!("Sorting make dependencies");
+        tracing::debug!("Sorting make dependencies");
         let md_sorted = crate::internal::sort(&package.make_depends, options).await;
 
-        if verbosity >= 1 {
-            log!("Sorted dependencies for {} are:\n{:?}", pkg_name, &sorted);
-            log!("Sorted makedepends for {} are:\n{:?}", pkg_name, &md_sorted);
-        }
+        tracing::debug!("Sorted dependencies for {} are:\n{:?}", pkg_name, &sorted);
+        tracing::debug!("Sorted makedepends for {} are:\n{:?}", pkg_name, &md_sorted);
 
         let newopts = Options {
-            verbosity,
             noconfirm,
             asdeps: true,
         };
@@ -96,7 +86,7 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
         }
 
         if !noconfirm {
-            let p1 = prompt!(default false,
+            let p1 = prompt!(default no,
                 "Would you like to review {}'s PKGBUILD (and any .install files if present)?",
                 pkg_name,
             );
@@ -126,7 +116,7 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
                         .silent_unwrap(AppExitCode::Other);
                 }
 
-                let p2 = prompt!(default true, "Would you still like to install {}?", pkg_name);
+                let p2 = prompt!(default yes, "Would you still like to install {}?", pkg_name);
                 if !p2 {
                     fs::remove_dir_all(format!("{}/{}", cachedir, pkg_name))
                         .await
@@ -137,7 +127,7 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
         }
 
         // dep installing
-        info!("Moving on to install dependencies");
+        tracing::info!("Moving on to install dependencies");
 
         if !sorted.repo.is_empty() {
             crate::operations::install(sorted.repo, newopts).await;
@@ -157,7 +147,7 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
         }
 
         // package building and installing
-        info!("Building time!");
+        tracing::info!("Building time!");
         set_current_dir(format!("{}/{}", cachedir, pkg_name)).unwrap();
         let status = ShellCommand::makepkg()
             .args(makepkg_args)

@@ -5,7 +5,7 @@ use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcinfo;
 use crate::operations::aur_install::aur_install;
-use crate::{info, log, prompt, warn, Options};
+use crate::{prompt, Options};
 
 /// Upgrades all installed packages
 #[tracing::instrument(level = "trace")]
@@ -16,11 +16,14 @@ pub async fn upgrade(args: UpgradeArgs, options: Options) {
     if args.aur {
         upgrade_aur(options).await;
     }
+    if !args.aur && !args.repo {
+        upgrade_repo(options).await;
+        upgrade_aur(options).await;
+    }
 }
 
 #[tracing::instrument(level = "trace")]
 async fn upgrade_repo(options: Options) {
-    let verbosity = options.verbosity;
     let noconfirm = options.noconfirm;
 
     let mut pacman_args = vec!["-Syu"];
@@ -28,9 +31,7 @@ async fn upgrade_repo(options: Options) {
         pacman_args.push("--noconfirm");
     }
 
-    if verbosity >= 1 {
-        log!("Upgrading repo packages");
-    }
+    tracing::debug!("Upgrading repo packages");
 
     let pacman_result = ShellCommand::pacman()
         .elevated()
@@ -40,13 +41,13 @@ async fn upgrade_repo(options: Options) {
         .silent_unwrap(AppExitCode::PacmanError);
 
     if pacman_result.success() {
-        info!("Successfully upgraded repo packages");
+        tracing::info!("Successfully upgraded repo packages");
     } else {
-        let continue_upgrading = prompt!(default false,
+        let continue_upgrading = prompt!(default no,
             "Failed to upgrade repo packages, continue to upgrading AUR packages?",
         );
         if !continue_upgrading {
-            info!("Exiting");
+            tracing::info!("Exiting");
             std::process::exit(AppExitCode::PacmanError as i32);
         }
     }
@@ -54,11 +55,7 @@ async fn upgrade_repo(options: Options) {
 
 #[tracing::instrument(level = "trace")]
 async fn upgrade_aur(options: Options) {
-    let verbosity = options.verbosity;
-
-    if verbosity >= 1 {
-        log!("Upgrading AUR packages");
-    }
+    tracing::debug!("Upgrading AUR packages");
 
     let non_native_pkgs = PacmanQueryBuilder::foreign()
         .color(PacmanColor::Never)
@@ -84,13 +81,13 @@ async fn upgrade_aur(options: Options) {
                 aur_upgrades.push(pkg.name);
             }
         } else {
-            warn!("Could not find the remote package for {}", pkg.name);
+            tracing::warn!("Could not find the remote package for {}", pkg.name);
         }
     }
 
     if !aur_upgrades.is_empty() {
         aur_install(aur_upgrades, options).await;
     } else {
-        info!("No upgrades available for installed AUR packages");
+        tracing::info!("No upgrades available for installed AUR packages");
     }
 }

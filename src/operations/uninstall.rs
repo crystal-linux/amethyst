@@ -5,7 +5,7 @@ use tokio::fs;
 use crate::internal::commands::ShellCommand;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
-use crate::{log, Options};
+use crate::Options;
 
 #[tracing::instrument(level = "trace")]
 pub async fn uninstall(packages: Vec<String>, options: Options) {
@@ -15,10 +15,7 @@ pub async fn uninstall(packages: Vec<String>, options: Options) {
     if options.noconfirm {
         pacman_args.push("--noconfirm");
     }
-    let verbosity = options.verbosity;
-    if verbosity >= 1 {
-        log!("Uninstalling: {:?}", &packages);
-    }
+    tracing::debug!("Uninstalling: {:?}", &packages);
 
     ShellCommand::pacman()
         .elevated()
@@ -27,9 +24,7 @@ pub async fn uninstall(packages: Vec<String>, options: Options) {
         .await
         .silent_unwrap(AppExitCode::PacmanError);
 
-    if verbosity >= 1 {
-        log!("Uninstalling packages: {:?} exited with code 0", &packages);
-    }
+    tracing::debug!("Uninstalling packages: {:?} exited with code 0", &packages);
 
     for package in packages {
         if Path::new(&format!(
@@ -39,9 +34,7 @@ pub async fn uninstall(packages: Vec<String>, options: Options) {
         ))
         .exists()
         {
-            if verbosity >= 1 {
-                log!("Old cache directory found, deleting");
-            }
+            tracing::debug!("Old cache directory found, deleting");
             fs::remove_dir_all(Path::new(&format!(
                 "{}/.cache/ame/{}",
                 env::var("HOME").unwrap(),

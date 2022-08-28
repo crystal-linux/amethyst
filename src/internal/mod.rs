@@ -45,11 +45,6 @@ pub fn uwu_enabled() -> bool {
     config.extra.uwu.unwrap_or(false)
 }
 
-pub fn uwu_debug_enabled() -> bool {
-    let config = config::read();
-    config.extra.uwu_debug.unwrap_or(false)
-}
-
 /// Checks if we're running in a tty. If we do we can assume that
 /// the output can safely be colorized.
 pub fn is_tty() -> bool {

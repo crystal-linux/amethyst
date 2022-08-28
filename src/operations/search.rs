@@ -4,12 +4,11 @@ use crate::internal::commands::ShellCommand;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcsearch;
-use crate::{log, Options};
+use crate::Options;
 use aur_rpc::SearchField;
 
 #[tracing::instrument(level = "trace")]
 pub async fn aur_search(query: &str, by_field: Option<SearchBy>, options: Options) {
-    let verbosity = options.verbosity;
     let packages = rpcsearch(query.to_string(), by_field.map(SearchBy::into))
         .await
         .silent_unwrap(AppExitCode::RpcError);
@@ -22,14 +21,11 @@ pub async fn aur_search(query: &str, by_field: Option<SearchBy>, options: Option
         )
     }
 
-    if verbosity >= 1 {
-        log!("Found {total_results} resuls for \"{query}\" in AUR",);
-    }
+    tracing::debug!("Found {total_results} resuls for \"{query}\" in AUR",);
 }
 
 #[tracing::instrument(level = "trace")]
 pub async fn repo_search(query: &str, options: Options) {
-    let verbosity = options.verbosity;
     let output = ShellCommand::pacman()
         .arg("-Ss")
         .arg(query)
@@ -38,13 +34,11 @@ pub async fn repo_search(query: &str, options: Options) {
         .silent_unwrap(AppExitCode::PacmanError)
         .stdout;
 
-    if verbosity >= 1 {
-        log!(
-            "Found {} results for \"{}\" in repos",
-            &output.split('\n').count() / 2,
-            &query
-        );
-    }
+    tracing::debug!(
+        "Found {} results for \"{}\" in repos",
+        &output.split('\n').count() / 2,
+        &query
+    );
 
     println!("{}", output)
 }

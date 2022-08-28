@@ -1,18 +1,15 @@
 use tokio::process::Command;
 
 use crate::crash;
-use crate::info;
 use crate::internal::commands::ShellCommand;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
-use crate::log;
 use crate::prompt;
 use crate::Options;
 
 /// Removes orphaned packages and cache
 #[tracing::instrument(level = "trace")]
 pub async fn clean(options: Options) {
-    let verbosity = options.verbosity;
     let noconfirm = options.noconfirm;
 
     // Check for orphaned packages
@@ -24,17 +21,17 @@ pub async fn clean(options: Options) {
 
     if orphaned_packages.stdout.as_str().is_empty() {
         // If no orphaned packages found, do nothing
-        info!("No orphaned packages found");
+        tracing::info!("No orphaned packages found");
     } else {
         // Prompt users whether to remove orphaned packages
-        info!(
+        tracing::info!(
             "Removing orphans would uninstall the following packages: \n{}",
             &orphaned_packages.stdout
         );
-        let cont = prompt!(default false, "Continue?");
+        let cont = prompt!(default no, "Continue?");
         if !cont {
             // If user doesn't want to continue, break
-            info!("Exiting");
+            tracing::info!("Exiting");
             std::process::exit(AppExitCode::PacmanError as i32);
         }
 
@@ -52,9 +49,7 @@ pub async fn clean(options: Options) {
             }
         }
 
-        if verbosity >= 1 {
-            log!("Removing orphans: {:?}", orphaned_packages_vec);
-        }
+        tracing::debug!("Removing orphans: {:?}", orphaned_packages_vec);
 
         // Remove orphaned packages
         let pacman_result = ShellCommand::pacman()
@@ -66,7 +61,7 @@ pub async fn clean(options: Options) {
 
         if pacman_result.success() {
             // If pacman succeeded, notify user
-            info!("Successfully removed orphans");
+            tracing::info!("Successfully removed orphans");
         } else {
             // If pacman failed, crash
             crash!(AppExitCode::PacmanError, "Failed to remove orphans",);
@@ -74,7 +69,7 @@ pub async fn clean(options: Options) {
     }
 
     // Prompt the user whether to clear the Amethyst cache
-    let clear_ame_cache = prompt!(default false, "Clear Amethyst's internal PKGBUILD cache?");
+    let clear_ame_cache = prompt!(default no, "Clear Amethyst's internal PKGBUILD cache?");
     if clear_ame_cache {
         // Remove ~/.cache/ame
         Command::new("rm")
@@ -91,7 +86,7 @@ pub async fn clean(options: Options) {
     let clear_pacman_cache = if noconfirm {
         true
     } else {
-        prompt!(default false, "Also clear pacman's package cache?")
+        prompt!(default no, "Also clear pacman's package cache?")
     };
 
     if clear_pacman_cache {
@@ -107,9 +102,7 @@ pub async fn clean(options: Options) {
             paccache_args.push("--noconfirm");
         }
 
-        if verbosity >= 1 {
-            log!("Clearing using `paccache -r`");
-        }
+        tracing::debug!("Clearing using `paccache -r`");
 
         // Clear pacman's cache (keeping latest 3 versions of installed packages)
         Command::new("sudo")
@@ -127,9 +120,7 @@ pub async fn clean(options: Options) {
             .await
             .unwrap();
 
-        if verbosity >= 1 {
-            log!("Clearing using `pacman -Sc`");
-        }
+        tracing::debug!("Clearing using `pacman -Sc`");
 
         // Clear pacman's cache (keeping only installed packages)
         let pacman_result = ShellCommand::pacman()
@@ -141,7 +132,7 @@ pub async fn clean(options: Options) {
 
         if pacman_result.success() {
             // If pacman succeeded, notify user
-            info!("Successfully cleared package cache");
+            tracing::info!("Successfully cleared package cache");
         } else {
             // If pacman failed, crash
             crash!(AppExitCode::PacmanError, "Failed to clear package cache",);

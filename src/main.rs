@@ -10,34 +10,32 @@ use crate::internal::exit_code::AppExitCode;
 use crate::internal::{init, sort, start_sudoloop, structs::Options};
 use clap_complete::{Generator, Shell};
 use std::str::FromStr;
-use tracing_subscriber::fmt::format::FmtSpan;
-use tracing_subscriber::EnvFilter;
 
 mod args;
 mod builder;
 mod internal;
+mod logging;
 mod operations;
+use logging::init_logger;
 
-#[tokio::main(flavor = "current_thread")]
+#[tokio::main]
 async fn main() {
     color_eyre::install().unwrap();
     if unsafe { libc::geteuid() } == 0 {
         crash!( AppExitCode::RunAsRoot, "Running amethyst as root is disallowed as it can lead to system breakage. Instead, amethyst will prompt you when it needs superuser permissions");
     }
-    init_logger();
 
     let args: Args = Args::parse();
+    init_logger(args.verbose.into());
 
-    let verbosity = args.verbose;
     let noconfirm = args.no_confirm;
 
     let options = Options {
-        verbosity,
         noconfirm,
         asdeps: false,
     };
 
-    init(options);
+    init();
 
     if args.sudoloop {
         start_sudoloop().await;
@@ -49,11 +47,11 @@ async fn main() {
         Operation::Search(search_args) => cmd_search(search_args, options).await,
         Operation::Query(query_args) => cmd_query(query_args).await,
         Operation::Upgrade(upgrade_args) => {
-            info!("Performing system upgrade");
+            tracing::info!("Performing system upgrade");
             operations::upgrade(upgrade_args, options).await;
         }
         Operation::Clean => {
-            info!("Removing orphaned packages");
+            tracing::info!("Removing orphaned packages");
             operations::clean(options).await;
         }
         Operation::Info(info_args) => cmd_info(info_args).await,
@@ -62,21 +60,6 @@ async fn main() {
     }
 
     detect().await;
-}
-
-/// Initializes the tracing logger
-/// Can be used for debug purposes _or_ verbose output
-fn init_logger() {
-    const DEFAULT_ENV_FILTER: &str = "warn";
-    let filter_string = std::env::var("AME_LOG").unwrap_or_else(|_| DEFAULT_ENV_FILTER.to_string());
-    let env_filter =
-        EnvFilter::from_str(&*filter_string).expect("failed to parse env filter string");
-    tracing_subscriber::fmt::SubscriberBuilder::default()
-        .with_env_filter(env_filter)
-        .with_writer(std::io::stdout)
-        .with_span_events(FmtSpan::NEW | FmtSpan::CLOSE)
-        .compact()
-        .init();
 }
 
 #[tracing::instrument(level = "trace")]
@@ -113,14 +96,14 @@ async fn cmd_install(args: InstallArgs, options: Options) {
             .split_whitespace()
             .collect::<Vec<&str>>()
             .join(", ");
-        info!("You have .pacnew files in /etc ({pacnew_files}) that you haven't removed or acted upon, it is recommended you do that now" );
+        tracing::info!("You have .pacnew files in /etc ({pacnew_files}) that you haven't removed or acted upon, it is recommended you do that now" );
     }
 }
 
 #[tracing::instrument(level = "trace")]
 async fn cmd_remove(args: RemoveArgs, options: Options) {
     let packages = args.packages;
-    info!("Uninstalling packages: {}", &packages.join(", "));
+    tracing::info!("Uninstalling packages: {}", &packages.join(", "));
     operations::uninstall(packages, options).await;
 }
 
@@ -129,16 +112,16 @@ async fn cmd_search(args: SearchArgs, options: Options) {
     let query_string = args.search;
 
     if args.aur {
-        info!("Searching AUR for {}", &query_string);
+        tracing::info!("Searching AUR for {}", &query_string);
         operations::aur_search(&query_string, args.by, options).await;
     }
     if args.repo {
-        info!("Searching repos for {}", &query_string);
+        tracing::info!("Searching repos for {}", &query_string);
         operations::search(&query_string, options).await;
     }
 
     if !args.aur && !args.repo {
-        info!("Searching AUR and repos for {}", &query_string);
+        tracing::info!("Searching AUR and repos for {}", &query_string);
         operations::search(&query_string, options).await;
         operations::aur_search(&query_string, args.by, options).await;
     }

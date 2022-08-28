@@ -1,7 +1,7 @@
 use std::process::{Command, Stdio};
 
 use crate::internal::{clean, rpc, structs};
-use crate::{log, Options};
+use crate::Options;
 
 use super::error::SilentUnwrap;
 use super::exit_code::AppExitCode;
@@ -11,13 +11,10 @@ pub async fn sort(input: &[String], options: Options) -> structs::Sorted {
     let mut repo_packages: Vec<String> = vec![];
     let mut aur_packages: Vec<String> = vec![];
     let mut missing_packages: Vec<String> = vec![];
-    let verbosity = options.verbosity;
 
-    let packages = clean(input, options);
+    let packages = clean(input);
 
-    if verbosity >= 1 {
-        log!("Sorting: {:?}", packages.join(" "));
-    }
+    tracing::debug!("Sorting: {:?}", packages.join(" "));
 
     for package in packages {
         let rs = Command::new("pacman")
@@ -28,23 +25,17 @@ pub async fn sort(input: &[String], options: Options) -> structs::Sorted {
             .expect("Something has gone wrong");
 
         if let Some(0) = rs.code() {
-            if verbosity >= 1 {
-                log!("{} found in repos", package);
-            }
+            tracing::debug!("{} found in repos", package);
             repo_packages.push(package.to_string());
         } else if rpc::rpcinfo(&package)
             .await
             .silent_unwrap(AppExitCode::RpcError)
             .is_some()
         {
-            if verbosity >= 1 {
-                log!("{} found in AUR", package);
-            }
+            tracing::debug!("{} found in AUR", package);
             aur_packages.push(package.to_string());
         } else {
-            if verbosity >= 1 {
-                log!("{} not found", package);
-            }
+            tracing::debug!("{} not found", package);
             missing_packages.push(package.to_string());
         }
     }

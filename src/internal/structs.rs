@@ -18,7 +18,6 @@ impl Sorted {
 #[derive(Clone, Debug, Copy)]
 /// Options to be passed down to internal functions
 pub struct Options {
-    pub verbosity: usize,
     pub noconfirm: bool,
     pub asdeps: bool,
 }
