@@ -2,24 +2,16 @@ use async_recursion::async_recursion;
 use aur_rpc::PackageInfo;
 use crossterm::style::Stylize;
 use futures::future;
-use indicatif::ProgressBar;
-use std::env;
-use std::env::set_current_dir;
-use std::path::{Path, PathBuf};
-use std::process::Command;
-use std::sync::Arc;
-use std::time::Duration;
-use tokio::fs;
+use std::path::PathBuf;
 
 use crate::builder::git::{GitCloneBuilder, GitPullBuilder};
-use crate::internal::commands::ShellCommand;
+use crate::builder::pacman::PacmanInstallBuilder;
 use crate::internal::dependencies::DependencyInformation;
 use crate::internal::error::{AppError, AppResult, SilentUnwrap};
 use crate::internal::exit_code::AppExitCode;
-use crate::internal::rpc::{self, rpcinfo};
 use crate::internal::utils::get_cache_dir;
 use crate::logging::get_logger;
-use crate::{crash, internal::fs_utils::rmdir_recursive, prompt, Options};
+use crate::{crash, Options};
 
 /// Installs a given list of packages from the aur
 #[tracing::instrument(level = "trace")]
@@ -40,7 +32,6 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
         .silent_unwrap(AppExitCode::RpcError);
 
     tracing::debug!("package info = {package_info:?}");
-    tokio::time::sleep(Duration::from_secs(1)).await;
 
     if package_info.len() != packages.len() {
         let mut not_found = packages.clone();
@@ -61,7 +52,10 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
     future::try_join_all(package_info.iter().map(download_aur_source))
         .await
         .unwrap();
-    tokio::time::sleep(Duration::from_secs(1)).await;
+
+    get_logger().reset_output_type();
+    tracing::info!("All sources are ready.");
+    get_logger().new_multi_progress();
 
     let dependencies = future::try_join_all(package_info.iter().map(|pkg| async {
         get_logger()
@@ -71,21 +65,29 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
     }))
     .await
     .silent_unwrap(AppExitCode::RpcError);
-    tokio::time::sleep(Duration::from_secs(1)).await;
 
     let aur_build_dependencies: Vec<PackageInfo> = dependencies
         .iter()
         .flat_map(|d| d.make_depends.aur.clone())
         .collect();
 
-    let aur_dependencies: Vec<PackageInfo> = dependencies
+    let repo_build_dependencies: Vec<String> = dependencies
         .iter()
-        .flat_map(|d| d.depends.aur.clone())
+        .flat_map(|d| d.make_depends.repo.clone())
         .collect();
 
     get_logger().reset_output_type();
+
+    tracing::info!("Installing repo build dependencies");
+    PacmanInstallBuilder::default()
+        .as_deps(true)
+        .packages(repo_build_dependencies)
+        .install()
+        .await
+        .silent_unwrap(AppExitCode::PacmanError);
+
     tracing::info!(
-        "Installing {} build dependencies",
+        "Installing {} build dependencies from the aur",
         aur_build_dependencies.len()
     );
     get_logger().new_multi_progress();
@@ -103,14 +105,12 @@ async fn download_aur_source(info: &PackageInfo) -> AppResult<PathBuf> {
 
     let cache_dir = get_cache_dir();
     let pkg_dir = cache_dir.join(&pkg_name);
-    tokio::time::sleep(Duration::from_secs(1)).await;
 
     if pkg_dir.exists() {
         pb.set_message(format!("{pkg_name}: Pulling latest changes {pkg_name}"));
         GitPullBuilder::default().directory(&pkg_dir).pull().await?;
-        tokio::time::sleep(Duration::from_secs(1)).await;
     } else {
-        let aur_url = rpc::URL;
+        let aur_url = crate::internal::rpc::URL;
         let repository_url = format!("{aur_url}/{pkg_name}");
         pb.set_message(format!("{pkg_name}: Cloning aur repository"));
 
@@ -119,11 +119,9 @@ async fn download_aur_source(info: &PackageInfo) -> AppResult<PathBuf> {
             .directory(&pkg_dir)
             .clone()
             .await?;
-        tokio::time::sleep(Duration::from_secs(1)).await;
 
         pb.set_message(format!("{pkg_name}: Downloading and extracting files"));
     }
-    tokio::time::sleep(Duration::from_secs(1)).await;
     pb.finish_with_message(format!("{pkg_name} is ready to build"));
 
     Ok(pkg_dir)
