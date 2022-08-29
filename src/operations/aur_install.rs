@@ -1,173 +1,130 @@
 use async_recursion::async_recursion;
+use aur_rpc::PackageInfo;
+use crossterm::style::Stylize;
+use futures::future;
+use indicatif::ProgressBar;
 use std::env;
 use std::env::set_current_dir;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::sync::Arc;
+use std::time::Duration;
 use tokio::fs;
 
+use crate::builder::git::{GitCloneBuilder, GitPullBuilder};
 use crate::internal::commands::ShellCommand;
-use crate::internal::error::SilentUnwrap;
+use crate::internal::dependencies::DependencyInformation;
+use crate::internal::error::{AppError, AppResult, SilentUnwrap};
 use crate::internal::exit_code::AppExitCode;
-use crate::internal::rpc::rpcinfo;
+use crate::internal::rpc::{self, rpcinfo};
+use crate::internal::utils::get_cache_dir;
+use crate::logging::get_logger;
 use crate::{crash, internal::fs_utils::rmdir_recursive, prompt, Options};
 
 /// Installs a given list of packages from the aur
 #[tracing::instrument(level = "trace")]
 #[async_recursion]
 pub async fn aur_install(packages: Vec<String>, options: Options) {
-    let url = crate::internal::rpc::URL;
-    let cachedir = format!("{}/.cache/ame/", env::var("HOME").unwrap());
     let noconfirm = options.noconfirm;
 
     tracing::debug!("Installing from AUR: {:?}", &packages);
 
     tracing::info!("Installing packages {} from the AUR", packages.join(", "));
 
-    for package_name in packages {
-        let rpcres = rpcinfo(&package_name)
-            .await
-            .silent_unwrap(AppExitCode::RpcError);
+    let pb = get_logger().new_progress_spinner();
+    pb.set_message("Fetching package information");
 
-        if rpcres.is_none() {
-            break;
-        }
+    let package_info = aur_rpc::info(&packages)
+        .await
+        .map_err(AppError::from)
+        .silent_unwrap(AppExitCode::RpcError);
 
-        let package = rpcres.unwrap();
-        let pkg_name = package.metadata.name;
+    tracing::debug!("package info = {package_info:?}");
+    tokio::time::sleep(Duration::from_secs(1)).await;
 
-        tracing::debug!("Cloning {} into cachedir", pkg_name);
-
-        tracing::info!("Cloning package source");
-
-        set_current_dir(Path::new(&cachedir)).unwrap();
-        ShellCommand::git()
-            .arg("clone")
-            .arg(format!("{}/{}", url, pkg_name))
-            .wait()
-            .await
-            .silent_unwrap(AppExitCode::GitError);
-
-        tracing::debug!(
-            "Cloned {} into cachedir, moving on to resolving dependencies",
-            pkg_name
+    if package_info.len() != packages.len() {
+        let mut not_found = packages.clone();
+        package_info
+            .iter()
+            .for_each(|pkg| not_found.retain(|p| pkg.metadata.name != *p));
+        crash!(
+            AppExitCode::MissingDeps,
+            "Could not find the package: {}",
+            not_found.join(",").italic(),
         );
-        tracing::debug!(
-            "Raw dependencies for package {} are:\n{:?}",
-            pkg_name,
-            package.depends,
-        );
-        tracing::debug!(
-            "Raw makedepends for package {} are:\n{:?}",
-            pkg_name,
-            package.make_depends.join(", "),
-        );
-
-        // dep sorting
-        tracing::debug!("Sorting dependencies");
-        let sorted = crate::internal::sort(&package.depends, options).await;
-        tracing::debug!("Sorting make dependencies");
-        let md_sorted = crate::internal::sort(&package.make_depends, options).await;
-
-        tracing::debug!("Sorted dependencies for {} are:\n{:?}", pkg_name, &sorted);
-        tracing::debug!("Sorted makedepends for {} are:\n{:?}", pkg_name, &md_sorted);
-
-        let newopts = Options {
-            noconfirm,
-            asdeps: true,
-        };
-
-        if !sorted.nf.is_empty() || !md_sorted.nf.is_empty() {
-            crash!(
-                AppExitCode::MissingDeps,
-                "Could not find dependencies {} for package {}, aborting",
-                sorted.nf.join(", "),
-                pkg_name,
-            );
-        }
-
-        if !noconfirm {
-            let p1 = prompt!(default no,
-                "Would you like to review {}'s PKGBUILD (and any .install files if present)?",
-                pkg_name,
-            );
-            let editor: &str = &env::var("PAGER").unwrap_or_else(|_| "less".parse().unwrap());
-
-            if p1 {
-                Command::new(editor)
-                    .arg(format!("{}/PKGBUILD", pkg_name))
-                    .spawn()
-                    .unwrap()
-                    .wait()
-                    .unwrap();
-
-                let status = ShellCommand::bash()
-                    .arg("-c")
-                    .arg(format!("ls {}/*.install &> /dev/null", pkg_name))
-                    .wait()
-                    .await
-                    .silent_unwrap(AppExitCode::Other);
-
-                if status.success() {
-                    ShellCommand::bash()
-                        .arg("-c")
-                        .arg(format!("{} {}/*.install", editor, pkg_name))
-                        .wait()
-                        .await
-                        .silent_unwrap(AppExitCode::Other);
-                }
-
-                let p2 = prompt!(default yes, "Would you still like to install {}?", pkg_name);
-                if !p2 {
-                    fs::remove_dir_all(format!("{}/{}", cachedir, pkg_name))
-                        .await
-                        .unwrap();
-                    crash!(AppExitCode::UserCancellation, "Not proceeding");
-                }
-            }
-        }
-
-        // dep installing
-        tracing::info!("Moving on to install dependencies");
-
-        if !sorted.repo.is_empty() {
-            crate::operations::install(sorted.repo, newopts).await;
-            crate::operations::install(md_sorted.repo, newopts).await;
-        }
-        if !sorted.aur.is_empty() {
-            crate::operations::aur_install(sorted.aur, newopts).await;
-            crate::operations::aur_install(md_sorted.aur, newopts).await;
-        }
-
-        let mut makepkg_args = vec!["-rsci", "--skippgp"];
-        if options.asdeps {
-            makepkg_args.push("--asdeps")
-        }
-        if options.noconfirm {
-            makepkg_args.push("--noconfirm")
-        }
-
-        // package building and installing
-        tracing::info!("Building time!");
-        set_current_dir(format!("{}/{}", cachedir, pkg_name)).unwrap();
-        let status = ShellCommand::makepkg()
-            .args(makepkg_args)
-            .wait()
-            .await
-            .silent_unwrap(AppExitCode::MakePkgError);
-
-        if !status.success() {
-            fs::remove_dir_all(format!("{}/{}", cachedir, pkg_name))
-                .await
-                .unwrap();
-            crash!(
-                AppExitCode::PacmanError,
-                "Error encountered while installing {}, aborting",
-                pkg_name,
-            );
-        }
-
-        set_current_dir(&cachedir).unwrap();
-        let package_cache = PathBuf::from(format!("{cachedir}/{pkg_name}"));
-        rmdir_recursive(&package_cache).await.unwrap()
     }
+
+    pb.finish_with_message("Found all packages in the aur");
+
+    get_logger().new_multi_progress();
+
+    future::try_join_all(package_info.iter().map(download_aur_source))
+        .await
+        .unwrap();
+    tokio::time::sleep(Duration::from_secs(1)).await;
+
+    let dependencies = future::try_join_all(package_info.iter().map(|pkg| async {
+        get_logger()
+            .new_progress_spinner()
+            .set_message(format!("{}: Fetching dependencies", pkg.metadata.name));
+        DependencyInformation::for_package(pkg).await
+    }))
+    .await
+    .silent_unwrap(AppExitCode::RpcError);
+    tokio::time::sleep(Duration::from_secs(1)).await;
+
+    let aur_build_dependencies: Vec<PackageInfo> = dependencies
+        .iter()
+        .flat_map(|d| d.make_depends.aur.clone())
+        .collect();
+
+    let aur_dependencies: Vec<PackageInfo> = dependencies
+        .iter()
+        .flat_map(|d| d.depends.aur.clone())
+        .collect();
+
+    get_logger().reset_output_type();
+    tracing::info!(
+        "Installing {} build dependencies",
+        aur_build_dependencies.len()
+    );
+    get_logger().new_multi_progress();
+
+    future::try_join_all(aur_build_dependencies.iter().map(download_aur_source))
+        .await
+        .unwrap();
+}
+
+#[tracing::instrument(level = "trace", skip_all)]
+async fn download_aur_source(info: &PackageInfo) -> AppResult<PathBuf> {
+    let pb = get_logger().new_progress_spinner();
+    let pkg_name = &info.metadata.name;
+    pb.set_message(format!("{pkg_name}: Downloading sources"));
+
+    let cache_dir = get_cache_dir();
+    let pkg_dir = cache_dir.join(&pkg_name);
+    tokio::time::sleep(Duration::from_secs(1)).await;
+
+    if pkg_dir.exists() {
+        pb.set_message(format!("{pkg_name}: Pulling latest changes {pkg_name}"));
+        GitPullBuilder::default().directory(&pkg_dir).pull().await?;
+        tokio::time::sleep(Duration::from_secs(1)).await;
+    } else {
+        let aur_url = rpc::URL;
+        let repository_url = format!("{aur_url}/{pkg_name}");
+        pb.set_message(format!("{pkg_name}: Cloning aur repository"));
+
+        GitCloneBuilder::default()
+            .url(repository_url)
+            .directory(&pkg_dir)
+            .clone()
+            .await?;
+        tokio::time::sleep(Duration::from_secs(1)).await;
+
+        pb.set_message(format!("{pkg_name}: Downloading and extracting files"));
+    }
+    tokio::time::sleep(Duration::from_secs(1)).await;
+    pb.finish_with_message(format!("{pkg_name} is ready to build"));
+
+    Ok(pkg_dir)
 }

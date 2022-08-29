@@ -160,3 +160,30 @@ pub struct BasicPackageInfo {
     pub name: String,
     pub version: String,
 }
+
+#[derive(Default)]
+pub struct PacmanSearchBuilder {
+    query: String,
+}
+
+impl PacmanSearchBuilder {
+    pub fn query<S: AsRef<str>>(mut self, query: S) -> Self {
+        if !self.query.is_empty() {
+            self.query.push(' ');
+        }
+        self.query.push_str(query.as_ref());
+
+        self
+    }
+
+    /// Searches and returns if the execution result was ok
+    pub async fn search(self) -> AppResult<bool> {
+        let result = self.build_command().wait_with_output().await?;
+
+        Ok(result.status.success())
+    }
+
+    fn build_command(self) -> ShellCommand {
+        ShellCommand::pacman().arg("-Ss").arg(self.query)
+    }
+}

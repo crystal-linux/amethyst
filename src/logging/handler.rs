@@ -114,30 +114,50 @@ impl LogHandler {
         (*self.level.write()) = level;
     }
 
+    #[tracing::instrument(level = "trace", skip_all)]
     pub fn reset_output_type(&self) {
         self.set_output_type(OutputType::Stdout);
     }
 
     /// Creates a new progress spinner and registers it on the log handler
+    #[tracing::instrument(level = "trace", skip_all)]
     pub fn new_progress_spinner(&self) -> Arc<ProgressBar> {
-        let progress_bar = ProgressBar::new_spinner().with_message("Scanning for pacnew files");
-        progress_bar.enable_steady_tick(Duration::from_millis(250));
-        let pb = Arc::new(progress_bar);
-        self.set_progress_bar(pb.clone());
+        let pb = ProgressBar::new_spinner();
+        pb.enable_steady_tick(Duration::from_millis(250));
 
-        pb
+        let mut output_type = self.output_type.write();
+
+        if let OutputType::MultiProgress(mp) = &*output_type {
+            Arc::new(mp.add(pb.clone()))
+        } else {
+            let pb = Arc::new(pb);
+            *output_type = OutputType::Progress(pb.clone());
+
+            pb
+        }
+    }
+
+    #[tracing::instrument(level = "trace", skip_all)]
+    pub fn new_multi_progress(&self) -> Arc<MultiProgress> {
+        let mp = Arc::new(MultiProgress::new());
+        self.set_output_type(OutputType::MultiProgress(mp.clone()));
+
+        mp
     }
 
     /// Registeres a progress bar on the log handler
-    pub fn set_progress_bar(&self, pb: Arc<ProgressBar>) {
+    #[tracing::instrument(level = "trace", skip_all)]
+    fn set_progress_bar(&self, pb: Arc<ProgressBar>) {
         self.set_output_type(OutputType::Progress(pb))
     }
 
     /// Sets the output type of the log handler to either stdout/stderr or a progress bar
+    #[tracing::instrument(level = "trace", skip_all)]
     pub fn set_output_type(&self, output: OutputType) {
         (*self.output_type.write()) = output;
     }
 
+    #[tracing::instrument(level = "trace", skip_all)]
     pub fn set_uwu_enabled(&self, enabled: bool) {
         self.uwu_enabled
             .store(enabled, std::sync::atomic::Ordering::Relaxed);

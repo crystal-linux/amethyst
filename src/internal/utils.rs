@@ -1,8 +1,13 @@
+use std::fs;
+use std::path::Path;
 use std::process::exit;
+
+use directories::ProjectDirs;
 
 use crate::internal::exit_code::AppExitCode;
 use crate::logging::get_logger;
 use crate::logging::handler::PromptDefault;
+use lazy_static::lazy_static;
 
 #[macro_export]
 /// Macro for printing a message and destructively exiting
@@ -35,4 +40,22 @@ pub fn log_and_crash(msg: String, exit_code: AppExitCode) -> ! {
 /// Prompts the user for a yes/no answer.
 pub fn prompt_yn(question: String, prompt_default: PromptDefault) -> bool {
     get_logger().prompt(question, prompt_default)
+}
+
+pub fn get_cache_dir() -> &'static Path {
+    let cache_dir = get_directories().cache_dir();
+
+    if !cache_dir.exists() {
+        fs::create_dir_all(cache_dir).unwrap();
+    }
+
+    cache_dir
+}
+
+fn get_directories() -> &'static ProjectDirs {
+    lazy_static! {
+        static ref DIRECTORIES: ProjectDirs = ProjectDirs::from("com", "crystal", "ame").unwrap();
+    }
+
+    &*DIRECTORIES
 }

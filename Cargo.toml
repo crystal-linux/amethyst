@@ -45,6 +45,8 @@ indicatif = { version = "0.17.0", features = ["tokio"] }
 lazy_static = "1.4.0"
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
 dialoguer = "0.10.2"
+lazy-regex = "2.3.0"
+directories = "4.0.1"
 
 [dependencies.tokio]
 version = "1.20.1"
