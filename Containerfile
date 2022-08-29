@@ -11,7 +11,6 @@ RUN cargo new amethyst
 WORKDIR /usr/src/amethyst
 COPY Cargo.toml Cargo.lock ./
 RUN mkdir target
-COPY target/debug/build ./target/debug/build
 RUN cargo fetch
 COPY src ./src
 RUN cargo build --frozen
