@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/crystal-linux/amethyst/">
-    <img src="https://getcryst.al/assets/img/crystal-logo-minimal.png" alt="Logo" width="150" height="150">
+    <img src="./logo.svg" alt="Logo" width="150" height="150">
   </a>
 </p>
 
