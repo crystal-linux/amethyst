@@ -6,7 +6,7 @@ use std::{
 use futures::future;
 use tokio::fs;
 
-#[tracing::instrument(level = "debug")]
+#[tracing::instrument(level = "trace")]
 pub async fn rmdir_recursive(path: &Path) -> std::io::Result<()> {
     let mut files: Vec<PathBuf> = Vec::new();
     let mut folders: Vec<PathBuf> = Vec::new();
