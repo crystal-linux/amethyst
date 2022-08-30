@@ -1,4 +1,5 @@
 use std::ffi::{OsStr, OsString};
+use std::path::{Path, PathBuf};
 use std::process::{ExitStatus, Stdio};
 use tokio::process::{Child, Command};
 
@@ -17,6 +18,7 @@ pub struct ShellCommand {
     command: String,
     args: Vec<OsString>,
     elevated: bool,
+    working_dir: Option<PathBuf>,
 }
 
 impl ShellCommand {
@@ -55,6 +57,7 @@ impl ShellCommand {
             command: command.to_string(),
             args: Vec::new(),
             elevated: false,
+            working_dir: None,
         }
     }
 
@@ -73,6 +76,12 @@ impl ShellCommand {
                 .map(|a: S| a.as_ref().to_os_string())
                 .collect(),
         );
+
+        self
+    }
+
+    pub fn working_dir<D: AsRef<Path>>(mut self, dir: D) -> Self {
+        self.working_dir = Some(dir.as_ref().into());
 
         self
     }
@@ -117,25 +126,30 @@ impl ShellCommand {
     }
 
     fn spawn(self, piped: bool) -> AppResult<Child> {
+        tracing::debug!("Running {} {:?}", self.command, self.args);
+
         let (stdout, stderr) = if piped {
             (Stdio::piped(), Stdio::piped())
         } else {
             (Stdio::inherit(), Stdio::inherit())
         };
-        let child = if self.elevated {
-            Command::new("sudo")
-                .arg(self.command)
-                .args(self.args)
-                .stdout(stdout)
-                .stderr(stderr)
-                .spawn()?
+        let mut command = if self.elevated {
+            let mut cmd = Command::new("sudo");
+            cmd.arg(self.command);
+
+            cmd
         } else {
             Command::new(self.command)
-                .args(self.args)
-                .stdout(stdout)
-                .stderr(stderr)
-                .spawn()?
         };
+        if let Some(dir) = self.working_dir {
+            command.current_dir(dir);
+        }
+
+        let child = command
+            .args(self.args)
+            .stdout(stdout)
+            .stderr(stderr)
+            .spawn()?;
 
         Ok(child)
     }

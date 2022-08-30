@@ -14,6 +14,7 @@ pub enum AppError {
     Other(String),
     Rpc(aur_rpc::error::RPCError),
     NonZeroExit,
+    BuildStepViolation,
 }
 
 impl Display for AppError {
@@ -23,6 +24,7 @@ impl Display for AppError {
             AppError::Rpc(e) => Display::fmt(e, f),
             AppError::Other(s) => Display::fmt(s, f),
             AppError::NonZeroExit => Display::fmt("exited with non zero code", f),
+            AppError::BuildStepViolation => Display::fmt("AUR build violated build steps", f),
         }
     }
 }

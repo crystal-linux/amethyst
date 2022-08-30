@@ -1,8 +1,11 @@
+use std::path::{Path, PathBuf};
+
 use crate::internal::{commands::ShellCommand, error::AppResult, structs::Options};
 
 #[derive(Debug, Default)]
 pub struct PacmanInstallBuilder {
     packages: Vec<String>,
+    files: Vec<PathBuf>,
     as_deps: bool,
     no_confirm: bool,
 }
@@ -17,6 +20,13 @@ impl PacmanInstallBuilder {
     pub fn packages<I: IntoIterator<Item = String>>(mut self, packages: I) -> Self {
         let mut packages = packages.into_iter().collect();
         self.packages.append(&mut packages);
+
+        self
+    }
+
+    pub fn files<I: IntoIterator<Item = T>, T: AsRef<Path>>(mut self, files: I) -> Self {
+        let mut files = files.into_iter().map(|f| f.as_ref().into()).collect();
+        self.files.append(&mut files);
 
         self
     }
@@ -36,7 +46,13 @@ impl PacmanInstallBuilder {
 
     #[tracing::instrument(level = "debug")]
     pub async fn install(self) -> AppResult<()> {
-        let mut command = ShellCommand::pacman().elevated().arg("-S").arg("--needed");
+        let mut command = ShellCommand::pacman().elevated();
+
+        if !self.packages.is_empty() {
+            command = command.arg("-S");
+        } else if !self.files.is_empty() {
+            command = command.arg("-U");
+        }
 
         if self.no_confirm {
             command = command.arg("--noconfirm")
@@ -46,7 +62,12 @@ impl PacmanInstallBuilder {
             command = command.arg("--asdeps")
         }
 
-        command.args(self.packages).wait_success().await
+        command
+            .arg("--needed")
+            .args(self.packages)
+            .args(self.files)
+            .wait_success()
+            .await
     }
 }
 
