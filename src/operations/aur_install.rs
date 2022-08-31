@@ -323,22 +323,17 @@ async fn build_package(
         move |s| format!("{}: {s}", pkg_name.clone().bold())
     });
 
-    loop {
-        if let Some(exit_code) = child.try_wait()? {
-            h1.abort();
-            h2.abort();
+    let exit_status = child.wait().await?;
+    h1.abort();
+    h2.abort();
 
-            if !exit_code.success() {
-                pb.set_message(format!(
-                    "{}: {}",
-                    "Build failed!".red(),
-                    pkg_name.clone().bold()
-                ));
-                return Err(AppError::from("Failed to build package"));
-            } else {
-                break;
-            }
-        }
+    if !exit_status.success() {
+        pb.set_message(format!(
+            "{}: {}",
+            "Build failed!".red(),
+            pkg_name.clone().bold()
+        ));
+        return Err(AppError::from("Failed to build package"));
     }
 
     let packages = MakePkgBuilder::package_list(build_path).await?;
