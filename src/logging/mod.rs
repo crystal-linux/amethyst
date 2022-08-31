@@ -12,6 +12,7 @@ use crate::internal::uwu_enabled;
 
 use self::handler::LogHandler;
 pub mod handler;
+pub mod output;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Verbosity {

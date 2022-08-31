@@ -125,7 +125,7 @@ impl ShellCommand {
         })
     }
 
-    fn spawn(self, piped: bool) -> AppResult<Child> {
+    pub fn spawn(self, piped: bool) -> AppResult<Child> {
         tracing::debug!("Running {} {:?}", self.command, self.args);
 
         let (stdout, stderr) = if piped {

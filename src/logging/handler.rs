@@ -1,11 +1,12 @@
 use colored::Colorize;
 use indicatif::{MultiProgress, ProgressBar};
 use std::{
+    fmt::Display,
     sync::{atomic::AtomicBool, Arc},
     time::Duration,
 };
 
-use crate::uwu;
+use crate::{internal::utils::wrap_text, uwu};
 use dialoguer::Confirm;
 
 use super::Verbosity;
@@ -110,6 +111,22 @@ impl LogHandler {
         confirm.interact().unwrap()
     }
 
+    pub fn print_list<I: IntoIterator<Item = T>, T: Display>(&self, list: I, separator: &str) {
+        let lines = list
+            .into_iter()
+            .map(|l| self.preformat_msg(l.to_string()))
+            .fold(String::new(), |acc, line| {
+                format!("{}{}{}", acc, separator, line)
+            });
+
+        let lines = wrap_text(lines).join("\n");
+        self.log(lines)
+    }
+
+    pub fn print_newline(&self) {
+        self.log(String::from("\n"))
+    }
+
     pub fn set_verbosity(&self, level: Verbosity) {
         (*self.level.write()) = level;
     }
@@ -169,10 +186,8 @@ impl LogHandler {
 
     fn preformat_msg(&self, msg: String) -> String {
         let msg = self.apply_uwu(msg);
-        let opts = textwrap::Options::new(crossterm::terminal::size().unwrap().0 as usize - 2)
-            .subsequent_indent("  ");
 
-        textwrap::wrap(&msg, opts).join("\n")
+        wrap_text(msg).join("\n")
     }
 
     fn apply_uwu(&self, msg: String) -> String {

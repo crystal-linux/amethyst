@@ -12,6 +12,7 @@ dependencies = [
  "clap_complete",
  "color-eyre",
  "colored",
+ "console",
  "crossterm",
  "dialoguer",
  "directories",

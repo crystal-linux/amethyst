@@ -1,6 +1,8 @@
 use std::fmt::Debug;
 use std::path::{Path, PathBuf};
 
+use tokio::process::Child;
+
 use crate::internal::{
     commands::ShellCommand,
     error::{AppError, AppResult},
@@ -73,9 +75,23 @@ impl MakePkgBuilder {
         self
     }
 
+    pub async fn run(self) -> AppResult<()> {
+        let output = self.build().wait_with_output().await?;
+
+        if output.status.success() {
+            Ok(())
+        } else {
+            Err(AppError::Other(output.stderr))
+        }
+    }
+
+    pub fn spawn(self) -> AppResult<Child> {
+        self.build().spawn(true)
+    }
+
     /// Executes the makepkg command
     #[tracing::instrument(level = "trace")]
-    pub async fn run(self) -> AppResult<()> {
+    fn build(self) -> ShellCommand {
         let mut command = ShellCommand::makepkg().working_dir(self.directory);
 
         if self.clean {
@@ -106,13 +122,7 @@ impl MakePkgBuilder {
             command = command.arg("--noprepare")
         }
 
-        let output = command.wait_with_output().await?;
-
-        if output.status.success() {
-            Ok(())
-        } else {
-            Err(AppError::Other(output.stderr))
-        }
+        command
     }
 
     #[tracing::instrument(level = "trace")]

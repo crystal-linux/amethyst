@@ -3,6 +3,7 @@ use std::path::Path;
 use std::process::exit;
 
 use directories::ProjectDirs;
+use textwrap::wrap;
 
 use crate::internal::exit_code::AppExitCode;
 use crate::logging::get_logger;
@@ -15,6 +16,17 @@ macro_rules! crash {
     ($exit_code:expr, $($arg:tt)+) => {
         $crate::internal::utils::log_and_crash(format!($($arg)+), $exit_code)
     }
+}
+
+#[macro_export]
+/// Cancelles the process
+macro_rules! cancelled {
+    () => {
+        crash!(
+            $crate::internal::exit_code::AppExitCode::UserCancellation,
+            "Installation cancelled"
+        )
+    };
 }
 
 #[macro_export]
@@ -58,4 +70,16 @@ fn get_directories() -> &'static ProjectDirs {
     }
 
     &*DIRECTORIES
+}
+
+pub fn wrap_text<S: AsRef<str>>(s: S) -> Vec<String> {
+    wrap(s.as_ref(), get_wrap_options())
+        .into_iter()
+        .map(String::from)
+        .collect()
+}
+
+fn get_wrap_options() -> textwrap::Options<'static> {
+    textwrap::Options::new(crossterm::terminal::size().unwrap().0 as usize - 2)
+        .subsequent_indent("  ")
 }
