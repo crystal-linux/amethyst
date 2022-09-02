@@ -4,9 +4,9 @@ pub fn clean(a: &[String]) -> Vec<String> {
     let cleaned = a
         .iter()
         .map(|name| {
-            name.split_once("=")
+            name.split_once('=')
                 .map(|n| n.0.to_string())
-                .unwrap_or(name.to_string())
+                .unwrap_or_else(|| name.to_string())
         })
         .collect();
 

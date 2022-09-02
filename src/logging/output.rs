@@ -6,7 +6,7 @@ use crate::internal::dependencies::DependencyInformation;
 
 use super::get_logger;
 
-pub fn print_dependency_list(dependencies: &Vec<DependencyInformation>) -> bool {
+pub fn print_dependency_list(dependencies: &[DependencyInformation]) -> bool {
     let (deps_repo, makedeps_repo, deps_aur, makedeps_aur) = dependencies
         .iter()
         .map(|d| {
@@ -60,7 +60,7 @@ pub fn print_dependency_list(dependencies: &Vec<DependencyInformation>) -> bool 
     empty
 }
 
-pub fn print_aur_package_list(packages: &Vec<PackageInfo>) {
+pub fn print_aur_package_list(packages: &[PackageInfo]) {
     get_logger().print_list(
         packages.iter().map(|pkg| {
             format!(

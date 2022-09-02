@@ -55,6 +55,7 @@ impl MakePkgBuilder {
     }
 
     /// Mark packages as non-explicitly installed
+    #[allow(clippy::wrong_self_convention)]
     pub fn as_deps(mut self, as_deps: bool) -> Self {
         self.as_deps = as_deps;
 

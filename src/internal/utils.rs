@@ -10,6 +10,8 @@ use crate::logging::get_logger;
 use crate::logging::handler::PromptDefault;
 use lazy_static::lazy_static;
 
+use super::error::{AppError, SilentUnwrap};
+
 #[macro_export]
 /// Macro for printing a message and destructively exiting
 macro_rules! crash {
@@ -55,13 +57,11 @@ pub fn prompt_yn(question: String, prompt_default: PromptDefault) -> bool {
 }
 
 pub fn get_cache_dir() -> &'static Path {
-    let cache_dir = get_directories().cache_dir();
-
-    if !cache_dir.exists() {
-        fs::create_dir_all(cache_dir).unwrap();
+    lazy_static! {
+        static ref CACHE_DIR: &'static Path = create_if_not_exist(get_directories().cache_dir());
     }
 
-    cache_dir
+    *CACHE_DIR
 }
 
 fn get_directories() -> &'static ProjectDirs {
@@ -70,6 +70,16 @@ fn get_directories() -> &'static ProjectDirs {
     }
 
     &*DIRECTORIES
+}
+
+fn create_if_not_exist(dir: &Path) -> &Path {
+    if !dir.exists() {
+        fs::create_dir_all(dir)
+            .map_err(AppError::from)
+            .silent_unwrap(AppExitCode::FailedCreatingPaths)
+    }
+
+    dir
 }
 
 pub fn wrap_text<S: AsRef<str>>(s: S) -> Vec<String> {

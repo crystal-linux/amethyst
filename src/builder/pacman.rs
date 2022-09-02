@@ -81,6 +81,7 @@ pub struct PacmanQueryBuilder {
 #[derive(Debug)]
 enum PacmanQueryType {
     Foreign,
+    All,
     Info,
 }
 
@@ -106,7 +107,11 @@ impl PacmanQueryBuilder {
             packages: Vec::new(),
         }
     }
-    /// Query for foreign packages
+
+    pub fn all() -> Self {
+        Self::new(PacmanQueryType::All)
+    }
+
     pub fn foreign() -> Self {
         Self::new(PacmanQueryType::Foreign)
     }
@@ -135,12 +140,12 @@ impl PacmanQueryBuilder {
         self
     }
 
-    #[tracing::instrument(level = "debug")]
+    #[tracing::instrument(level = "trace")]
     pub async fn query(self) -> AppResult<()> {
         self.build_command().wait_success().await
     }
 
-    #[tracing::instrument(level = "debug")]
+    #[tracing::instrument(level = "trace")]
     pub async fn query_with_output(self) -> AppResult<Vec<BasicPackageInfo>> {
         let output = self.build_command().wait_with_output().await?;
         let packages = output
@@ -153,6 +158,7 @@ impl PacmanQueryBuilder {
                 version: version.to_string(),
             })
             .collect();
+        tracing::debug!("Query result: {packages:?}");
 
         Ok(packages)
     }
@@ -163,6 +169,7 @@ impl PacmanQueryBuilder {
         command = match self.query_type {
             PacmanQueryType::Foreign => command.arg("-m"),
             PacmanQueryType::Info => command.arg("-i"),
+            PacmanQueryType::All => command,
         };
 
         command = command.arg("--color");

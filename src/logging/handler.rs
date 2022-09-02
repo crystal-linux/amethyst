@@ -145,7 +145,7 @@ impl LogHandler {
         let mut output_type = self.output_type.write();
 
         if let OutputType::MultiProgress(mp) = &*output_type {
-            Arc::new(mp.add(pb.clone()))
+            Arc::new(mp.add(pb))
         } else {
             let pb = Arc::new(pb);
             *output_type = OutputType::Progress(pb.clone());

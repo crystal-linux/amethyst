@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use aur_rpc::PackageInfo;
 use futures::future;
 
-use crate::builder::pacman::PacmanSearchBuilder;
+use crate::builder::pacman::{PacmanQueryBuilder, PacmanSearchBuilder};
 
 use super::error::AppResult;
 use lazy_regex::regex;
@@ -71,8 +71,10 @@ impl DependencyInformation {
         let mut packages_to_resolve: HashSet<String> = package
             .make_depends
             .iter()
-            .filter_map(Self::map_dep_to_name)
+            .filter_map(|d| Self::map_dep_to_name(d))
             .collect();
+
+        Self::filter_fulfilled_dependencies(&mut packages_to_resolve).await?;
         let mut already_searched = HashSet::new();
         let mut dependencies = DependencyCollection::default();
 
@@ -91,6 +93,7 @@ impl DependencyInformation {
                 .append(&mut not_found.into_iter().collect());
 
             packages_to_resolve = Self::get_filtered_make_depends(&aur_packages, &already_searched);
+            Self::filter_fulfilled_dependencies(&mut packages_to_resolve).await?;
             dependencies.aur.append(&mut aur_packages);
         }
 
@@ -103,8 +106,9 @@ impl DependencyInformation {
         let mut packages_to_resolve: HashSet<String> = package
             .depends
             .iter()
-            .filter_map(Self::map_dep_to_name)
+            .filter_map(|d| Self::map_dep_to_name(d))
             .collect();
+        Self::filter_fulfilled_dependencies(&mut packages_to_resolve).await?;
         let mut already_searched = HashSet::new();
         let mut dependencies = DependencyCollection::default();
 
@@ -123,6 +127,7 @@ impl DependencyInformation {
                 .append(&mut not_found.into_iter().collect());
 
             packages_to_resolve = Self::get_filtered_depends(&aur_packages, &already_searched);
+            Self::filter_fulfilled_dependencies(&mut packages_to_resolve).await?;
             dependencies.aur.append(&mut aur_packages);
         }
 
@@ -143,28 +148,46 @@ impl DependencyInformation {
     }
 
     fn get_filtered_make_depends(
-        aur_packages: &Vec<PackageInfo>,
+        aur_packages: &[PackageInfo],
         searched: &HashSet<String>,
     ) -> HashSet<String> {
         aur_packages
             .iter()
-            .flat_map(|p| p.make_depends.iter().filter_map(Self::map_dep_to_name))
+            .flat_map(|p| {
+                p.make_depends
+                    .iter()
+                    .filter_map(|d| Self::map_dep_to_name(d))
+            })
             .filter(|d| !searched.contains(d))
             .collect()
     }
 
     fn get_filtered_depends(
-        aur_packages: &Vec<PackageInfo>,
+        aur_packages: &[PackageInfo],
         searched: &HashSet<String>,
     ) -> HashSet<String> {
         aur_packages
             .iter()
-            .flat_map(|p| p.depends.iter().filter_map(Self::map_dep_to_name))
+            .flat_map(|p| p.depends.iter().filter_map(|d| Self::map_dep_to_name(d)))
             .filter(|d| !searched.contains(d))
             .collect()
     }
 
-    fn map_dep_to_name(dep: &String) -> Option<String> {
+    async fn filter_fulfilled_dependencies(deps: &mut HashSet<String>) -> AppResult<()> {
+        let mut fulfilled = HashSet::new();
+
+        for dep in deps.iter() {
+            if get_dependency_fulfilled(dep.clone()).await? {
+                fulfilled.insert(dep.clone());
+            }
+        }
+
+        deps.retain(|pkg| !fulfilled.contains(pkg));
+
+        Ok(())
+    }
+
+    fn map_dep_to_name(dep: &str) -> Option<String> {
         Dependency::try_from_str(dep).map(|d| d.name)
     }
 
@@ -204,4 +227,15 @@ impl Dependency {
             version,
         })
     }
+}
+
+#[tracing::instrument(level = "trace")]
+async fn get_dependency_fulfilled(name: String) -> AppResult<bool> {
+    let not_found = PacmanQueryBuilder::all()
+        .package(name)
+        .query_with_output()
+        .await?
+        .is_empty();
+
+    Ok(!not_found)
 }

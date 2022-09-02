@@ -1,9 +1,6 @@
 pub use clean::*;
 pub use clean::*;
 pub use detect::*;
-pub use initialise::*;
-pub use initialise::*;
-pub use sort::*;
 pub use sort::*;
 pub use sudoloop::*;
 
@@ -15,7 +12,6 @@ mod detect;
 pub mod error;
 pub mod exit_code;
 pub mod fs_utils;
-mod initialise;
 pub mod rpc;
 mod sort;
 pub mod structs;

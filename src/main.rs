@@ -7,7 +7,7 @@ use internal::error::SilentUnwrap;
 use crate::args::{InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs};
 use crate::internal::detect;
 use crate::internal::exit_code::AppExitCode;
-use crate::internal::{init, sort, start_sudoloop, structs::Options};
+use crate::internal::{sort, start_sudoloop, structs::Options};
 use clap_complete::{Generator, Shell};
 use std::str::FromStr;
 
@@ -34,8 +34,6 @@ async fn main() {
         noconfirm,
         asdeps: false,
     };
-
-    init();
 
     if args.sudoloop {
         start_sudoloop().await;
