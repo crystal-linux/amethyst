@@ -18,8 +18,8 @@ impl PacmanInstallBuilder {
             .no_confirm(options.noconfirm)
     }
 
-    pub fn packages<I: IntoIterator<Item = String>>(mut self, packages: I) -> Self {
-        let mut packages = packages.into_iter().collect();
+    pub fn packages<I: IntoIterator<Item = S>, S: ToString>(mut self, packages: I) -> Self {
+        let mut packages = packages.into_iter().map(|p| p.to_string()).collect();
         self.packages.append(&mut packages);
 
         self
@@ -228,5 +228,40 @@ impl PacmanSearchBuilder {
 
     fn build_command(self) -> ShellCommand {
         ShellCommand::pacman().arg("-Ss").arg(self.query)
+    }
+}
+
+#[derive(Default, Debug, Clone)]
+pub struct PacmanUninstallBuilder {
+    packages: Vec<String>,
+    no_confirm: bool,
+}
+
+impl PacmanUninstallBuilder {
+    pub fn packages<I: IntoIterator<Item = S>, S: ToString>(mut self, packages: I) -> Self {
+        let mut packages = packages.into_iter().map(|p| p.to_string()).collect();
+        self.packages.append(&mut packages);
+
+        self
+    }
+
+    pub fn no_confirm(mut self, no_confirm: bool) -> Self {
+        self.no_confirm = no_confirm;
+
+        self
+    }
+
+    #[tracing::instrument(level = "trace")]
+    pub async fn uninstall(self) -> AppResult<()> {
+        let mut command = ShellCommand::pacman()
+            .elevated()
+            .arg("-R")
+            .args(self.packages);
+
+        if self.no_confirm {
+            command = command.arg("--noconfirm");
+        }
+
+        command.wait_success().await
     }
 }

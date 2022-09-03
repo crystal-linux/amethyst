@@ -205,6 +205,56 @@ impl DependencyInformation {
 
         Ok(repo_deps)
     }
+
+    pub fn make_depends(&self) -> Vec<&str> {
+        let mut make_depends = Vec::new();
+        let mut aur_depends = self
+            .make_depends
+            .aur
+            .iter()
+            .map(|p| p.metadata.name.as_str())
+            .collect::<Vec<_>>();
+        let mut repo_depends = self
+            .make_depends
+            .repo
+            .iter()
+            .map(String::as_str)
+            .collect::<Vec<_>>();
+        make_depends.append(&mut aur_depends);
+        make_depends.append(&mut repo_depends);
+
+        make_depends
+    }
+
+    pub fn all_aur_depends(&self) -> Vec<&PackageInfo> {
+        let mut depends = Vec::new();
+        let mut aur_depends = self.make_depends.aur.iter().collect::<Vec<_>>();
+        let mut aur_make_depends = self.depends.aur.iter().collect::<Vec<_>>();
+        depends.append(&mut aur_depends);
+        depends.append(&mut aur_make_depends);
+
+        depends
+    }
+
+    pub fn all_repo_depends(&self) -> Vec<&str> {
+        let mut depends = Vec::new();
+        let mut repo_depends = self
+            .make_depends
+            .repo
+            .iter()
+            .map(String::as_str)
+            .collect::<Vec<_>>();
+        let mut repo_make_depends = self
+            .depends
+            .repo
+            .iter()
+            .map(String::as_str)
+            .collect::<Vec<_>>();
+        depends.append(&mut repo_depends);
+        depends.append(&mut repo_make_depends);
+
+        depends
+    }
 }
 
 impl Dependency {

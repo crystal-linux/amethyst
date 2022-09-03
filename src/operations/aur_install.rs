@@ -14,7 +14,7 @@ use tokio::task;
 
 use crate::builder::git::{GitCloneBuilder, GitPullBuilder};
 use crate::builder::makepkg::MakePkgBuilder;
-use crate::builder::pacman::PacmanInstallBuilder;
+use crate::builder::pacman::{PacmanInstallBuilder, PacmanUninstallBuilder};
 use crate::builder::pager::PagerBuilder;
 use crate::internal::dependencies::DependencyInformation;
 use crate::internal::error::{AppError, AppResult, SilentUnwrap};
@@ -51,6 +51,12 @@ impl From<PackageInfo> for BuildContext {
             package,
             step: BuildStep::Download,
         }
+    }
+}
+
+impl From<&PackageInfo> for BuildContext {
+    fn from(p: &PackageInfo) -> Self {
+        Self::from(p.to_owned())
     }
 }
 
@@ -104,39 +110,35 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
     pb.finish_with_message("All packages found".green().to_string());
     get_logger().reset_output_type();
 
-    if print_aur_package_list(&package_info).await && !options.noconfirm {
-        if !prompt!(default yes, "Some packages are already installed. Continue anyway?") {
-            cancelled!();
-        }
-    }
-
-    if !options.noconfirm {
-        let to_review = multi_select!(&packages, "Select packages to review");
-        for pkg in to_review.into_iter().filter_map(|i| packages.get(i)) {
-            review_pkgbuild(pkg).await.unwrap();
-        }
-    }
-
-    if !options.noconfirm
-        && !prompt!(default yes, "Do you want to install those packages from the AUR?")
+    if print_aur_package_list(&package_info.iter().collect::<Vec<_>>()).await
+        && !options.noconfirm
+        && !prompt!(default yes, "Some packages are already installed. Continue anyway?")
     {
         cancelled!();
     }
 
-    tracing::info!("Downloading aur packages");
-    get_logger().new_multi_progress();
+    let pb = get_logger().new_progress_spinner();
+    pb.set_message("Fetching package information");
 
-    let dependencies = future::try_join_all(package_info.iter().map(|pkg| async {
-        get_logger().new_progress_spinner().set_message(format!(
-            "{}: Fetching dependencies",
-            pkg.metadata.name.clone().bold()
-        ));
-        DependencyInformation::for_package(pkg).await
-    }))
+    let dependencies = future::try_join_all(
+        package_info
+            .iter()
+            .map(|pkg| async { DependencyInformation::for_package(pkg).await }),
+    )
     .await
     .silent_unwrap(AppExitCode::RpcError);
+    pb.finish_and_clear();
+    get_logger().reset_output_type();
 
     print_dependency_list(&dependencies).await;
+
+    if !options.noconfirm
+        && !prompt!(default yes, "Do you want to install these packages and package dependencies?")
+    {
+        cancelled!();
+    }
+
+    tracing::info!("Downloading sources");
     get_logger().new_multi_progress();
 
     let contexts = future::try_join_all(
@@ -151,24 +153,24 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
     get_logger().reset_output_type();
     tracing::info!("All sources are ready.");
 
-    let aur_dependencies: Vec<PackageInfo> = dependencies
-        .iter()
-        .flat_map(|d| {
-            let mut deps = d.make_depends.aur.clone();
-            deps.append(&mut d.depends.aur.clone());
+    if !options.noconfirm {
+        let to_review = multi_select!(&packages, "Select packages to review");
+        for pkg in to_review.into_iter().filter_map(|i| packages.get(i)) {
+            review_pkgbuild(pkg).await.unwrap();
+        }
+        if !prompt!(default yes, "Do you still want to install those packages?") {
+            cancelled!();
+        }
+    }
 
-            deps
-        })
+    let aur_dependencies: Vec<&PackageInfo> = dependencies
+        .iter()
+        .flat_map(DependencyInformation::all_aur_depends)
         .collect();
 
-    let repo_dependencies: HashSet<String> = dependencies
+    let repo_dependencies: HashSet<&str> = dependencies
         .iter()
-        .flat_map(|d| {
-            let mut repo_deps = d.make_depends.repo.clone();
-            repo_deps.append(&mut d.depends.repo.clone());
-
-            repo_deps
-        })
+        .flat_map(DependencyInformation::all_repo_depends)
         .collect();
 
     if !repo_dependencies.is_empty() {
@@ -208,11 +210,26 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
             .await
             .silent_unwrap(AppExitCode::MakePkgError);
     }
+    let make_depends = dependencies
+        .iter()
+        .flat_map(DependencyInformation::make_depends)
+        .collect::<Vec<_>>();
+    if !make_depends.is_empty()
+        && !options.noconfirm
+        && prompt!(default yes, "Do you want to remove the installed make dependencies?")
+    {
+        PacmanUninstallBuilder::default()
+            .packages(make_depends)
+            .no_confirm(true)
+            .uninstall()
+            .await
+            .silent_unwrap(AppExitCode::PacmanError);
+    }
     tracing::info!("Done!");
 }
 
 #[tracing::instrument(level = "trace")]
-async fn install_aur_deps(deps: Vec<PackageInfo>, no_confirm: bool) -> AppResult<()> {
+async fn install_aur_deps(deps: Vec<&PackageInfo>, no_confirm: bool) -> AppResult<()> {
     get_logger().new_multi_progress();
 
     let dep_contexts = future::try_join_all(
@@ -386,8 +403,8 @@ async fn install_packages(
 }
 
 #[tracing::instrument(level = "trace")]
-fn create_dependency_batches(deps: Vec<PackageInfo>) -> Vec<Vec<PackageInfo>> {
-    let mut deps: HashMap<String, PackageInfo> = deps
+fn create_dependency_batches(deps: Vec<&PackageInfo>) -> Vec<Vec<&PackageInfo>> {
+    let mut deps: HashMap<String, &PackageInfo> = deps
         .into_iter()
         .map(|d| (d.metadata.name.clone(), d))
         .collect();
