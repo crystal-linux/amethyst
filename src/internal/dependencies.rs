@@ -76,6 +76,7 @@ impl DependencyInformation {
 
         Self::filter_fulfilled_dependencies(&mut packages_to_resolve).await?;
         let mut already_searched = HashSet::new();
+        already_searched.insert(package.metadata.name.to_owned());
         let mut dependencies = DependencyCollection::default();
 
         while !packages_to_resolve.is_empty() {
@@ -108,8 +109,10 @@ impl DependencyInformation {
             .iter()
             .filter_map(|d| Self::map_dep_to_name(d))
             .collect();
+
         Self::filter_fulfilled_dependencies(&mut packages_to_resolve).await?;
         let mut already_searched = HashSet::new();
+        already_searched.insert(package.metadata.name.to_owned());
         let mut dependencies = DependencyCollection::default();
 
         while !packages_to_resolve.is_empty() {

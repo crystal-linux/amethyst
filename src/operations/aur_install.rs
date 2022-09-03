@@ -288,6 +288,7 @@ async fn build_and_install(
 async fn download_aur_source(mut ctx: BuildContext) -> AppResult<BuildContext> {
     let pb = get_logger().new_progress_spinner();
     let pkg_name = &ctx.package.metadata.name;
+    let base_pkg = &ctx.package.metadata.package_base;
     pb.set_message(format!("{}: Downloading sources", pkg_name.clone().bold()));
 
     let cache_dir = get_cache_dir();
@@ -301,7 +302,7 @@ async fn download_aur_source(mut ctx: BuildContext) -> AppResult<BuildContext> {
         GitPullBuilder::default().directory(&pkg_dir).pull().await?;
     } else {
         let aur_url = crate::internal::rpc::URL;
-        let repository_url = format!("{aur_url}/{pkg_name}");
+        let repository_url = format!("{aur_url}/{base_pkg}");
         pb.set_message(format!(
             "{}: Cloning aur repository",
             pkg_name.clone().bold()
@@ -409,6 +410,7 @@ fn create_dependency_batches(deps: Vec<&PackageInfo>) -> Vec<Vec<&PackageInfo>> 
         .map(|d| (d.metadata.name.clone(), d))
         .collect();
     let mut batches = Vec::new();
+    let mut relaxed = false;
 
     while !deps.is_empty() {
         let mut current_batch = HashMap::new();
@@ -424,13 +426,21 @@ fn create_dependency_batches(deps: Vec<&PackageInfo>) -> Vec<Vec<&PackageInfo>> 
                 .iter()
                 .any(|d| current_batch.contains_key(d) || deps.contains_key(d));
 
-            if !contains_dep && !contains_make_dep {
+            if (!contains_dep || relaxed) && contains_make_dep {
                 deps.remove(&key);
                 current_batch.insert(key, info);
+                if relaxed {
+                    break;
+                }
             }
         }
 
-        batches.push(current_batch.into_iter().map(|(_, v)| v).collect());
+        if current_batch.is_empty() {
+            relaxed = true;
+        } else {
+            batches.push(current_batch.into_iter().map(|(_, v)| v).collect());
+            relaxed = false;
+        }
     }
 
     batches
