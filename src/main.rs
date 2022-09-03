@@ -1,5 +1,5 @@
 use args::{Args, GenCompArgs, InfoArgs};
-use builder::pacman::PacmanQueryBuilder;
+use builder::pacman::{PacmanColor, PacmanQueryBuilder};
 use clap::Parser;
 use internal::commands::ShellCommand;
 use internal::error::SilentUnwrap;
@@ -127,29 +127,19 @@ async fn cmd_search(args: SearchArgs, options: Options) {
 
 #[tracing::instrument(level = "trace")]
 async fn cmd_query(args: QueryArgs) {
-    if args.aur {
-        ShellCommand::pacman()
-            .arg("-Qm")
-            .wait_success()
+    if args.repo || !args.aur {
+        tracing::info!("Installed Repo Packages: ");
+        PacmanQueryBuilder::native()
+            .color(PacmanColor::Always)
+            .query()
             .await
             .silent_unwrap(AppExitCode::PacmanError);
     }
-    if args.repo {
-        ShellCommand::pacman()
-            .arg("-Qn")
-            .wait_success()
-            .await
-            .silent_unwrap(AppExitCode::PacmanError);
-    }
-    if !args.repo && !args.aur {
-        ShellCommand::pacman()
-            .arg("-Qn")
-            .wait_success()
-            .await
-            .silent_unwrap(AppExitCode::PacmanError);
-        ShellCommand::pacman()
-            .arg("-Qm")
-            .wait_success()
+    if args.aur || !args.repo {
+        tracing::info!("Installed AUR Packages: ");
+        PacmanQueryBuilder::foreign()
+            .color(PacmanColor::Always)
+            .query()
             .await
             .silent_unwrap(AppExitCode::PacmanError);
     }

@@ -83,6 +83,7 @@ enum PacmanQueryType {
     Foreign,
     All,
     Info,
+    Native,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -114,6 +115,10 @@ impl PacmanQueryBuilder {
 
     pub fn foreign() -> Self {
         Self::new(PacmanQueryType::Foreign)
+    }
+
+    pub fn native() -> Self {
+        Self::new(PacmanQueryType::Native)
     }
 
     pub fn info() -> Self {
@@ -169,6 +174,7 @@ impl PacmanQueryBuilder {
         command = match self.query_type {
             PacmanQueryType::Foreign => command.arg("-m"),
             PacmanQueryType::Info => command.arg("-i"),
+            PacmanQueryType::Native => command.arg("-n"),
             PacmanQueryType::All => command,
         };
 
