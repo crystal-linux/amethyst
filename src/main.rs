@@ -13,6 +13,7 @@ use std::str::FromStr;
 
 mod args;
 mod builder;
+mod interact;
 mod internal;
 mod logging;
 mod operations;

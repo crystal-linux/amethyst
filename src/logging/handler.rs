@@ -9,7 +9,6 @@ use std::{
 };
 
 use crate::{internal::utils::wrap_text, uwu};
-use dialoguer::Confirm;
 
 use super::Verbosity;
 
@@ -18,7 +17,6 @@ const ERR_SYMBOL: &str = "X";
 const WARN_SYMBOL: &str = "!";
 const DEBUG_SYMBOL: &str = "⌘";
 const TRACE_SYMBOL: &str = "🗲";
-const PROMPT_SYMBOL: &str = "?";
 
 pub struct LogHandler {
     level: Arc<RwLock<Verbosity>>,
@@ -46,14 +44,6 @@ pub enum OutputType {
         buffer: Arc<Mutex<Vec<String>>>,
         suspended: Box<OutputType>,
     },
-}
-
-#[allow(unused)]
-#[derive(Clone, Copy, Debug)]
-pub enum PromptDefault {
-    Yes,
-    No,
-    None,
 }
 
 impl LogHandler {
@@ -96,31 +86,6 @@ impl LogHandler {
             let msg = format!("{} {}", TRACE_SYMBOL.cyan(), msg.dimmed());
             self.log(msg);
         }
-    }
-
-    /// Prompts the user with a question and a default selection
-    #[tracing::instrument(level = "trace", skip(self))]
-    pub fn prompt(&self, question: String, p_default: PromptDefault) -> bool {
-        let question = self.preformat_msg(question);
-        let question = format!("{} {}", PROMPT_SYMBOL.purple(), question.bold());
-        let mut confirm = Confirm::new();
-        confirm.with_prompt(question);
-        confirm.wait_for_newline(true);
-
-        match p_default {
-            PromptDefault::Yes => {
-                confirm.default(true);
-            }
-            PromptDefault::No => {
-                confirm.default(false);
-            }
-            PromptDefault::None => {}
-        }
-        self.suspend();
-        let result = confirm.interact().unwrap();
-        self.unsuspend();
-
-        result
     }
 
     pub fn print_list<I: IntoIterator<Item = T>, T: Display>(&self, list: I, separator: &str) {

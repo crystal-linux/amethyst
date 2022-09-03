@@ -1,0 +1,211 @@
+use crossterm::style::Stylize;
+use dialoguer::theme::Theme;
+
+use crate::internal::utils::wrap_text;
+
+const ERR_SYMBOL: &str = "X";
+const PROMPT_SYMBOL: &str = "?";
+
+pub struct AmeTheme;
+
+impl AmeTheme {
+    pub fn get() -> &'static Self {
+        static AME_THEME: AmeTheme = AmeTheme;
+        &AME_THEME
+    }
+}
+
+impl Theme for AmeTheme {
+    fn format_prompt(&self, f: &mut dyn std::fmt::Write, prompt: &str) -> std::fmt::Result {
+        let prompt = wrap_text(prompt).join("\n  ");
+        write!(f, "{} {}:", PROMPT_SYMBOL.magenta(), prompt.bold())
+    }
+
+    fn format_error(&self, f: &mut dyn std::fmt::Write, err: &str) -> std::fmt::Result {
+        write!(f, "{} error: {}", ERR_SYMBOL.red(), err)
+    }
+
+    fn format_confirm_prompt(
+        &self,
+        f: &mut dyn std::fmt::Write,
+        prompt: &str,
+        default: Option<bool>,
+    ) -> std::fmt::Result {
+        let prompt = wrap_text(prompt).join("\n  ");
+        if !prompt.is_empty() {
+            write!(f, "{} {} ", PROMPT_SYMBOL.magenta(), &prompt.bold())?;
+        }
+        match default {
+            None => write!(f, "[y/n] ")?,
+            Some(true) => write!(f, "[{}/n] ", "Y".bold())?,
+            Some(false) => write!(f, "[y/{}] ", "N".bold())?,
+        }
+        Ok(())
+    }
+
+    fn format_confirm_prompt_selection(
+        &self,
+        f: &mut dyn std::fmt::Write,
+        prompt: &str,
+        selection: Option<bool>,
+    ) -> std::fmt::Result {
+        let prompt = wrap_text(prompt).join("\n  ");
+        let selection = selection.map(|b| if b { "yes" } else { "no" });
+
+        match selection {
+            Some(selection) if prompt.is_empty() => {
+                write!(f, "{}", selection.italic())
+            }
+            Some(selection) => {
+                write!(f, "{} {}", &prompt.bold(), selection.italic())
+            }
+            None if prompt.is_empty() => Ok(()),
+            None => {
+                write!(f, "{}", &prompt.bold())
+            }
+        }
+    }
+
+    fn format_input_prompt(
+        &self,
+        f: &mut dyn std::fmt::Write,
+        prompt: &str,
+        default: Option<&str>,
+    ) -> std::fmt::Result {
+        match default {
+            Some(default) if prompt.is_empty() => {
+                write!(f, "{} [{}]: ", PROMPT_SYMBOL.magenta(), default)
+            }
+            Some(default) => write!(
+                f,
+                "{} {} [{}]: ",
+                PROMPT_SYMBOL.magenta(),
+                prompt.bold(),
+                default
+            ),
+            None => write!(f, "{} {}: ", PROMPT_SYMBOL.magenta(), prompt.bold()),
+        }
+    }
+
+    fn format_input_prompt_selection(
+        &self,
+        f: &mut dyn std::fmt::Write,
+        prompt: &str,
+        sel: &str,
+    ) -> std::fmt::Result {
+        write!(
+            f,
+            "{} {}: {}",
+            PROMPT_SYMBOL.magenta(),
+            prompt.bold(),
+            sel.italic()
+        )
+    }
+
+    fn format_password_prompt(
+        &self,
+        f: &mut dyn std::fmt::Write,
+        prompt: &str,
+    ) -> std::fmt::Result {
+        self.format_input_prompt(f, prompt, None)
+    }
+
+    fn format_password_prompt_selection(
+        &self,
+        f: &mut dyn std::fmt::Write,
+        prompt: &str,
+    ) -> std::fmt::Result {
+        self.format_input_prompt_selection(f, prompt, "[hidden]")
+    }
+
+    fn format_select_prompt(&self, f: &mut dyn std::fmt::Write, prompt: &str) -> std::fmt::Result {
+        self.format_prompt(f, prompt)
+    }
+
+    fn format_select_prompt_selection(
+        &self,
+        f: &mut dyn std::fmt::Write,
+        prompt: &str,
+        sel: &str,
+    ) -> std::fmt::Result {
+        self.format_input_prompt_selection(f, prompt, sel)
+    }
+
+    fn format_multi_select_prompt(
+        &self,
+        f: &mut dyn std::fmt::Write,
+        prompt: &str,
+    ) -> std::fmt::Result {
+        self.format_prompt(f, prompt)
+    }
+
+    fn format_sort_prompt(&self, f: &mut dyn std::fmt::Write, prompt: &str) -> std::fmt::Result {
+        self.format_prompt(f, prompt)
+    }
+
+    fn format_multi_select_prompt_selection(
+        &self,
+        f: &mut dyn std::fmt::Write,
+        prompt: &str,
+        selections: &[&str],
+    ) -> std::fmt::Result {
+        write!(f, "{}: ", prompt.bold())?;
+        if selections.is_empty() {
+            write!(f, "{}", "No selections".italic())?;
+        } else {
+            for (idx, sel) in selections.iter().enumerate() {
+                write!(f, "{}{}", if idx == 0 { "" } else { ", " }, sel)?;
+            }
+        }
+        Ok(())
+    }
+
+    fn format_sort_prompt_selection(
+        &self,
+        f: &mut dyn std::fmt::Write,
+        prompt: &str,
+        selections: &[&str],
+    ) -> std::fmt::Result {
+        self.format_multi_select_prompt_selection(f, prompt, selections)
+    }
+
+    fn format_select_prompt_item(
+        &self,
+        f: &mut dyn std::fmt::Write,
+        text: &str,
+        active: bool,
+    ) -> std::fmt::Result {
+        write!(f, "{} {}", if active { ">" } else { " " }, text)
+    }
+
+    fn format_multi_select_prompt_item(
+        &self,
+        f: &mut dyn std::fmt::Write,
+        text: &str,
+        checked: bool,
+        active: bool,
+    ) -> std::fmt::Result {
+        let active_symbol = if active { ">" } else { " " };
+        let checked_symbol = if checked { "x" } else { " " }.magenta();
+        write!(f, "{active_symbol} [{checked_symbol}] {text}")
+    }
+
+    fn format_sort_prompt_item(
+        &self,
+        f: &mut dyn std::fmt::Write,
+        text: &str,
+        picked: bool,
+        active: bool,
+    ) -> std::fmt::Result {
+        write!(
+            f,
+            "{} {}",
+            match (picked, active) {
+                (true, true) => "> [x]",
+                (false, true) => "> [ ]",
+                (_, false) => "  [ ]",
+            },
+            text
+        )
+    }
+}

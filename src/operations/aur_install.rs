@@ -3,6 +3,7 @@ use aur_rpc::PackageInfo;
 use crossterm::style::Stylize;
 use futures::future;
 use indicatif::ProgressBar;
+
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -22,7 +23,7 @@ use crate::internal::utils::{get_cache_dir, wrap_text};
 use crate::logging::get_logger;
 use crate::logging::output::{print_aur_package_list, print_dependency_list};
 use crate::logging::piped_stdio::StdioReader;
-use crate::{cancelled, crash, prompt, Options};
+use crate::{cancelled, crash, multi_select, prompt, Options};
 
 #[derive(Debug)]
 pub struct BuildContext {
@@ -88,6 +89,7 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
     tracing::debug!("package info = {package_info:?}");
 
     if package_info.len() != packages.len() {
+        pb.finish_with_message("Couldn't find all packages".red().to_string());
         let mut not_found = packages.clone();
         package_info
             .iter()
@@ -99,10 +101,18 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
         );
     }
 
+    pb.finish_with_message("All packages found".green().to_string());
     get_logger().reset_output_type();
 
     pb.finish_with_message("Found all packages in the aur");
     print_aur_package_list(&package_info);
+
+    if !options.noconfirm {
+        let to_review = multi_select!(&packages, "Select packages to review");
+        for pkg in to_review.into_iter().filter_map(|i| packages.get(i)) {
+            review_pkgbuild(pkg).await.unwrap();
+        }
+    }
 
     if !options.noconfirm
         && !prompt!(default yes, "Do you want to install those packages from the AUR?")
@@ -459,6 +469,14 @@ async fn review_build_log(log_file: &Path) -> AppResult<()> {
     if prompt!(default yes, "Do you want to review the build log?") {
         PagerBuilder::default().path(log_file).open().await?;
     }
+
+    Ok(())
+}
+
+#[tracing::instrument(level = "trace")]
+async fn review_pkgbuild(package: &str) -> AppResult<()> {
+    let pkgbuild_path = get_cache_dir().join(package).join("PKGBUILD");
+    PagerBuilder::default().path(pkgbuild_path).open().await?;
 
     Ok(())
 }
