@@ -1,7 +1,7 @@
 [package]
 name = "Amethyst"
 version = "4.0.0"
-authors = ["michal <michal@tar.black>", "axtlos <axtlos@tar.black>", "triveris <trivernis@protonmail.com>"]
+authors = ["michal <michal@tar.black>", "axtlos <axtlos@tar.black>", "trivernis <trivernis@protonmail.com>"]
 edition = "2021"
 description = "A fast and efficient AUR helper"
 license-file = "LICENSE.md"
