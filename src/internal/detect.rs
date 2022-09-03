@@ -33,10 +33,10 @@ pub async fn detect() {
 
     // If pacnew files are found, warn the user and prompt to pacdiff
     if pacnew.is_empty() {
-        pb.finish_with_message("No .pacnew files found");
+        pb.finish_with_message("No .pacnew files found".bold().to_string());
         get_logger().reset_output_type();
     } else {
-        pb.finish_with_message("pacnew files found");
+        pb.finish_with_message("pacnew files found".bold().to_string());
         get_logger().reset_output_type();
         tracing::info!(
             "It appears that at least one program you have installed / upgraded has installed a .pacnew config file. \
