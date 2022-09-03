@@ -1,3 +1,4 @@
+use std::env;
 use std::ffi::{OsStr, OsString};
 use std::path::{Path, PathBuf};
 use std::process::{ExitStatus, Stdio};
@@ -50,6 +51,12 @@ impl ShellCommand {
 
     pub fn sudo() -> Self {
         Self::new("sudo")
+    }
+
+    pub fn pager() -> Self {
+        let pager = env::var("PAGER").unwrap_or_else(|_| String::from("less"));
+
+        Self::new(pager)
     }
 
     fn new<S: ToString>(command: S) -> Self {
@@ -149,6 +156,7 @@ impl ShellCommand {
             .args(self.args)
             .stdout(stdout)
             .stderr(stderr)
+            .kill_on_drop(true)
             .spawn()?;
 
         Ok(child)

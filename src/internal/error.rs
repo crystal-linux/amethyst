@@ -15,6 +15,7 @@ pub enum AppError {
     Rpc(aur_rpc::error::RPCError),
     NonZeroExit,
     BuildStepViolation,
+    BuildError { pkg_name: String },
 }
 
 impl Display for AppError {
@@ -25,6 +26,7 @@ impl Display for AppError {
             AppError::Other(s) => Display::fmt(s, f),
             AppError::NonZeroExit => Display::fmt("exited with non zero code", f),
             AppError::BuildStepViolation => Display::fmt("AUR build violated build steps", f),
+            AppError::BuildError { pkg_name } => write!(f, "Failed to build package {pkg_name}"),
         }
     }
 }

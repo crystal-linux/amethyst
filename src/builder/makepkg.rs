@@ -20,6 +20,7 @@ pub struct MakePkgBuilder {
     skip_pgp: bool,
     needed: bool,
     no_prepare: bool,
+    force: bool,
 }
 
 impl MakePkgBuilder {
@@ -76,6 +77,12 @@ impl MakePkgBuilder {
         self
     }
 
+    pub fn force(mut self, force: bool) -> Self {
+        self.force = force;
+
+        self
+    }
+
     pub async fn run(self) -> AppResult<()> {
         let output = self.build().wait_with_output().await?;
 
@@ -121,6 +128,9 @@ impl MakePkgBuilder {
         }
         if self.no_prepare {
             command = command.arg("--noprepare")
+        }
+        if self.force {
+            command = command.arg("-f")
         }
 
         command

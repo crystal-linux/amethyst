@@ -4,21 +4,24 @@ use crossterm::style::Stylize;
 use futures::future;
 use indicatif::ProgressBar;
 use std::collections::{HashMap, HashSet};
-use std::mem;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use tokio::io::{AsyncRead, AsyncReadExt, BufReader};
-use tokio::task::JoinHandle;
+use tokio::fs::OpenOptions;
+use tokio::io::{AsyncWriteExt, BufWriter};
+use tokio::process::{ChildStderr, ChildStdout};
+use tokio::task;
 
 use crate::builder::git::{GitCloneBuilder, GitPullBuilder};
 use crate::builder::makepkg::MakePkgBuilder;
 use crate::builder::pacman::PacmanInstallBuilder;
+use crate::builder::pager::PagerBuilder;
 use crate::internal::dependencies::DependencyInformation;
 use crate::internal::error::{AppError, AppResult, SilentUnwrap};
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::utils::{get_cache_dir, wrap_text};
 use crate::logging::get_logger;
 use crate::logging::output::{print_aur_package_list, print_dependency_list};
+use crate::logging::piped_stdio::StdioReader;
 use crate::{cancelled, crash, prompt, Options};
 
 #[derive(Debug)]
@@ -186,16 +189,21 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
 
     tracing::info!("Installing {} packages", contexts.len());
 
-    build_and_install(
+    if let Err(e) = build_and_install(
         contexts,
         MakePkgBuilder::default(),
         PacmanInstallBuilder::default().no_confirm(true),
     )
     .await
-    .silent_unwrap(AppExitCode::MakePkgError);
+    {
+        handle_build_error(e)
+            .await
+            .silent_unwrap(AppExitCode::MakePkgError);
+    }
     tracing::info!("Done!");
 }
 
+#[tracing::instrument(level = "trace")]
 async fn install_aur_deps(deps: Vec<PackageInfo>) -> AppResult<()> {
     get_logger().new_multi_progress();
 
@@ -208,12 +216,16 @@ async fn install_aur_deps(deps: Vec<PackageInfo>) -> AppResult<()> {
 
     get_logger().reset_output_type();
 
-    build_and_install(
+    if let Err(e) = build_and_install(
         dep_contexts,
         MakePkgBuilder::default().as_deps(true),
         PacmanInstallBuilder::default().as_deps(true),
     )
-    .await?;
+    .await
+    {
+        handle_build_error(e).await?;
+    }
+    get_logger().reset_output_type();
 
     Ok(())
 }
@@ -230,8 +242,7 @@ async fn build_and_install(
         ctxs.into_iter()
             .map(|ctx| build_package(ctx, make_opts.clone())),
     )
-    .await
-    .silent_unwrap(AppExitCode::MakePkgError);
+    .await?;
     get_logger().reset_output_type();
 
     tracing::info!("Built {} packages", ctxs.len());
@@ -295,6 +306,7 @@ async fn download_aur_source(mut ctx: BuildContext) -> AppResult<BuildContext> {
     Ok(ctx)
 }
 
+#[tracing::instrument(level = "trace")]
 async fn build_package(
     mut ctx: BuildContext,
     make_opts: MakePkgBuilder,
@@ -310,22 +322,19 @@ async fn build_package(
         .no_deps(true)
         .skip_pgp(true)
         .needed(true)
+        .force(true)
         .spawn()?;
 
     let stderr = child.stderr.take().unwrap();
     let stdout = child.stdout.take().unwrap();
-    let h1 = show_stdio_on_pb(stdout, pb.clone(), {
+    let handle = task::spawn({
+        let pb = pb.clone();
         let pkg_name = pkg_name.clone();
-        move |s| format!("{}: {s}", pkg_name.clone().bold())
-    });
-    let h2 = show_stdio_on_pb(stderr, pb.clone(), {
-        let pkg_name = pkg_name.clone();
-        move |s| format!("{}: {s}", pkg_name.clone().bold())
+        async move { show_and_log_stdio(stdout, stderr, pb, pkg_name).await }
     });
 
     let exit_status = child.wait().await?;
-    h1.abort();
-    h2.abort();
+    handle.abort();
 
     if !exit_status.success() {
         pb.set_message(format!(
@@ -333,7 +342,9 @@ async fn build_package(
             "Build failed!".red(),
             pkg_name.clone().bold()
         ));
-        return Err(AppError::from("Failed to build package"));
+        return Err(AppError::BuildError {
+            pkg_name: pkg_name.to_owned(),
+        });
     }
 
     let packages = MakePkgBuilder::package_list(build_path).await?;
@@ -343,6 +354,7 @@ async fn build_package(
     Ok(ctx)
 }
 
+#[tracing::instrument(level = "trace")]
 async fn install_packages(
     mut ctxs: Vec<BuildContext>,
     install_opts: PacmanInstallBuilder,
@@ -393,29 +405,65 @@ fn create_dependency_batches(deps: Vec<PackageInfo>) -> Vec<Vec<PackageInfo>> {
     batches
 }
 
-fn show_stdio_on_pb<
-    R: AsyncRead + Unpin + Send + 'static,
-    F: Fn(String) -> String + 'static + Send,
->(
-    stdout: R,
+#[tracing::instrument(level = "trace")]
+async fn show_and_log_stdio(
+    stdout: ChildStdout,
+    stderr: ChildStderr,
     pb: Arc<ProgressBar>,
-    fmt: F,
-) -> JoinHandle<()> {
-    tokio::task::spawn({
-        async move {
-            let mut stdout = BufReader::new(stdout);
-            let mut line = String::new();
+    package_name: String,
+) -> AppResult<()> {
+    let mut reader = StdioReader::new(stdout, stderr);
+    let out_file = get_cache_dir().join(format!("{package_name}-build.log"));
+    let mut out_writer = BufWriter::new(
+        OpenOptions::new()
+            .create(true)
+            .write(true)
+            .open(out_file)
+            .await?,
+    );
 
-            while let Ok(ch) = stdout.read_u8().await {
-                if ch == b'\n' {
-                    let line = fmt(mem::take(&mut line));
-                    let lines = wrap_text(line);
-                    let line = lines.into_iter().next().unwrap();
-                    pb.set_message(line);
-                } else {
-                    line.push(ch as char);
-                }
-            }
+    while let Ok(line) = reader.read_line().await {
+        let _ = out_writer.write(line.as_bytes()).await?;
+        let _ = out_writer.write(&[b'\n']).await?;
+        tracing::trace!("{package_name}: {line}");
+        let line = format!("{}: {}", package_name.clone().bold(), line);
+        let lines = wrap_text(line);
+        let line = lines.into_iter().next().unwrap();
+        pb.set_message(line);
+    }
+    out_writer.flush().await?;
+
+    Ok(())
+}
+
+#[tracing::instrument(level = "trace")]
+async fn review_build_log(log_file: &Path) -> AppResult<()> {
+    if prompt!(default yes, "Do you want to review the build log?") {
+        PagerBuilder::default().path(log_file).open().await?;
+    }
+
+    Ok(())
+}
+
+async fn handle_build_error<E: Into<AppError>>(err: E) -> AppResult<()> {
+    get_logger().reset_output_type();
+    let err = err.into();
+
+    match &err {
+        AppError::BuildError { pkg_name } => {
+            get_logger().print_newline();
+            tracing::error!("Failed to build package {pkg_name}!");
+            let log_path = get_cache_dir().join(format!("{pkg_name}-build.log"));
+            get_logger().reset_output_type();
+            review_build_log(&log_path).await?;
+
+            Err(err)
         }
-    })
+        e => {
+            crash!(
+                AppExitCode::MakePkgError,
+                "An error occurred while building: {e}"
+            )
+        }
+    }
 }
