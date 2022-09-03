@@ -1,12 +1,14 @@
+use std::collections::{HashMap, HashSet};
+
 use aur_rpc::PackageInfo;
 use console::Alignment;
 use crossterm::style::Stylize;
 
-use crate::internal::dependencies::DependencyInformation;
+use crate::{builder::pacman::PacmanQueryBuilder, internal::dependencies::DependencyInformation};
 
 use super::get_logger;
 
-pub fn print_dependency_list(dependencies: &[DependencyInformation]) -> bool {
+pub async fn print_dependency_list(dependencies: &[DependencyInformation]) -> bool {
     let (deps_repo, makedeps_repo, deps_aur, makedeps_aur) = dependencies
         .iter()
         .map(|d| {
@@ -39,7 +41,7 @@ pub fn print_dependency_list(dependencies: &[DependencyInformation]) -> bool {
     if !deps_aur.is_empty() {
         get_logger().print_newline();
         tracing::info!("AUR dependencies");
-        print_aur_package_list(&deps_aur);
+        print_aur_package_list(&deps_aur).await;
         empty = false;
     }
 
@@ -53,23 +55,45 @@ pub fn print_dependency_list(dependencies: &[DependencyInformation]) -> bool {
     if !makedeps_aur.is_empty() {
         get_logger().print_newline();
         tracing::info!("AUR make dependencies");
-        print_aur_package_list(&makedeps_aur);
+        print_aur_package_list(&makedeps_aur).await;
         empty = false;
     }
 
     empty
 }
 
-pub fn print_aur_package_list(packages: &[PackageInfo]) {
+pub async fn print_aur_package_list(packages: &[PackageInfo]) -> bool {
+    let pkgs = packages
+        .iter()
+        .map(|p| p.metadata.name.clone())
+        .collect::<HashSet<_>>();
+    let installed = PacmanQueryBuilder::all()
+        .query_with_output()
+        .await
+        .unwrap()
+        .into_iter()
+        .filter(|p| pkgs.contains(&p.name))
+        .map(|p| (p.name.clone(), p))
+        .collect::<HashMap<_, _>>();
+
     get_logger().print_list(
         packages.iter().map(|pkg| {
             format!(
-                "{} version {} ({} votes)",
+                "{} version {} ({} votes) {}",
                 console::pad_str(&pkg.metadata.name, 30, Alignment::Left, Some("...")).bold(),
                 pkg.metadata.version.clone().dim(),
                 pkg.metadata.num_votes,
+                if installed.contains_key(&pkg.metadata.name) {
+                    "(Installed)"
+                } else {
+                    ""
+                }
+                .bold()
+                .magenta()
             )
         }),
         "\n  ",
     );
+
+    !installed.is_empty()
 }

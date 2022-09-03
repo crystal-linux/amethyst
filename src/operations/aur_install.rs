@@ -104,8 +104,11 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
     pb.finish_with_message("All packages found".green().to_string());
     get_logger().reset_output_type();
 
-    pb.finish_with_message("Found all packages in the aur");
-    print_aur_package_list(&package_info);
+    if print_aur_package_list(&package_info).await && !options.noconfirm {
+        if !prompt!(default yes, "Some packages are already installed. Continue anyway?") {
+            cancelled!();
+        }
+    }
 
     if !options.noconfirm {
         let to_review = multi_select!(&packages, "Select packages to review");
@@ -133,7 +136,7 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
     .await
     .silent_unwrap(AppExitCode::RpcError);
 
-    print_dependency_list(&dependencies);
+    print_dependency_list(&dependencies).await;
     get_logger().new_multi_progress();
 
     let contexts = future::try_join_all(
@@ -377,7 +380,7 @@ async fn install_packages(
         ctx.step = BuildStep::Done;
     }
 
-    install_opts.files(packages).install().await?;
+    install_opts.files(packages).needed(false).install().await?;
 
     Ok(ctxs)
 }

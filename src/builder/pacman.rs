@@ -8,6 +8,7 @@ pub struct PacmanInstallBuilder {
     files: Vec<PathBuf>,
     as_deps: bool,
     no_confirm: bool,
+    needed: bool,
 }
 
 impl PacmanInstallBuilder {
@@ -44,6 +45,12 @@ impl PacmanInstallBuilder {
         self
     }
 
+    pub fn needed(mut self, needed: bool) -> Self {
+        self.needed = needed;
+
+        self
+    }
+
     #[tracing::instrument(level = "debug")]
     pub async fn install(self) -> AppResult<()> {
         let mut command = ShellCommand::pacman().elevated();
@@ -61,9 +68,11 @@ impl PacmanInstallBuilder {
         if self.as_deps {
             command = command.arg("--asdeps")
         }
+        if self.needed {
+            command = command.arg("--needed")
+        }
 
         command
-            .arg("--needed")
             .args(self.packages)
             .args(self.files)
             .wait_success()
