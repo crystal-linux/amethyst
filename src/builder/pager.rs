@@ -1,6 +1,9 @@
 use std::path::{Path, PathBuf};
 
-use crate::internal::{commands::ShellCommand, error::AppResult};
+use crate::{
+    internal::{commands::ShellCommand, error::AppResult},
+    logging::get_logger,
+};
 
 #[derive(Default)]
 pub struct PagerBuilder {
@@ -15,6 +18,10 @@ impl PagerBuilder {
     }
 
     pub async fn open(self) -> AppResult<()> {
-        ShellCommand::pager().arg(self.path).wait_success().await
+        get_logger().suspend();
+        ShellCommand::pager().arg(self.path).wait_success().await?;
+        get_logger().unsuspend();
+
+        Ok(())
     }
 }

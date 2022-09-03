@@ -123,12 +123,7 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
     .await
     .silent_unwrap(AppExitCode::RpcError);
 
-    if !print_dependency_list(&dependencies) && !options.noconfirm {
-        get_logger().print_newline();
-        if !prompt!(default yes, "Do you want to install those dependencies?") {
-            cancelled!();
-        }
-    }
+    print_dependency_list(&dependencies);
     get_logger().new_multi_progress();
 
     let contexts = future::try_join_all(
@@ -167,8 +162,8 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
         tracing::info!("Installing repo dependencies");
         PacmanInstallBuilder::default()
             .as_deps(true)
-            .no_confirm(true)
             .packages(repo_dependencies)
+            .no_confirm(options.noconfirm)
             .install()
             .await
             .silent_unwrap(AppExitCode::PacmanError);
@@ -183,7 +178,7 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
         tracing::debug!("aur install batches: {batches:?}");
 
         for batch in batches {
-            install_aur_deps(batch).await.unwrap();
+            install_aur_deps(batch, options.noconfirm).await.unwrap();
         }
     }
 
@@ -204,7 +199,7 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
 }
 
 #[tracing::instrument(level = "trace")]
-async fn install_aur_deps(deps: Vec<PackageInfo>) -> AppResult<()> {
+async fn install_aur_deps(deps: Vec<PackageInfo>, no_confirm: bool) -> AppResult<()> {
     get_logger().new_multi_progress();
 
     let dep_contexts = future::try_join_all(
@@ -219,7 +214,9 @@ async fn install_aur_deps(deps: Vec<PackageInfo>) -> AppResult<()> {
     if let Err(e) = build_and_install(
         dep_contexts,
         MakePkgBuilder::default().as_deps(true),
-        PacmanInstallBuilder::default().as_deps(true),
+        PacmanInstallBuilder::default()
+            .no_confirm(no_confirm)
+            .as_deps(true),
     )
     .await
     {
@@ -436,25 +433,15 @@ async fn show_and_log_stdio(
     Ok(())
 }
 
-#[tracing::instrument(level = "trace")]
-async fn review_build_log(log_file: &Path) -> AppResult<()> {
-    if prompt!(default yes, "Do you want to review the build log?") {
-        PagerBuilder::default().path(log_file).open().await?;
-    }
-
-    Ok(())
-}
-
+#[tracing::instrument(level = "trace", skip_all)]
 async fn handle_build_error<E: Into<AppError>>(err: E) -> AppResult<()> {
     get_logger().reset_output_type();
     let err = err.into();
 
     match &err {
         AppError::BuildError { pkg_name } => {
-            get_logger().print_newline();
             tracing::error!("Failed to build package {pkg_name}!");
             let log_path = get_cache_dir().join(format!("{pkg_name}-build.log"));
-            get_logger().reset_output_type();
             review_build_log(&log_path).await?;
 
             Err(err)
@@ -466,4 +453,13 @@ async fn handle_build_error<E: Into<AppError>>(err: E) -> AppResult<()> {
             )
         }
     }
+}
+
+#[tracing::instrument(level = "trace")]
+async fn review_build_log(log_file: &Path) -> AppResult<()> {
+    if prompt!(default yes, "Do you want to review the build log?") {
+        PagerBuilder::default().path(log_file).open().await?;
+    }
+
+    Ok(())
 }

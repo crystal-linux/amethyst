@@ -48,6 +48,7 @@ dialoguer = "0.10.2"
 lazy-regex = "2.3.0"
 directories = "4.0.1"
 console = "0.15.1"
+tracing-error = "0.2.0"
 
 [dependencies.tokio]
 version = "1.21.0"

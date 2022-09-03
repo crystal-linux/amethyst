@@ -53,6 +53,10 @@ impl ShellCommand {
         Self::new("sudo")
     }
 
+    pub fn rm() -> Self {
+        Self::new("rm")
+    }
+
     pub fn pager() -> Self {
         let pager = env::var("PAGER").unwrap_or_else(|_| String::from("less"));
 

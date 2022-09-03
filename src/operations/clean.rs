@@ -2,8 +2,11 @@ use tokio::process::Command;
 
 use crate::crash;
 use crate::internal::commands::ShellCommand;
+
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
+
+use crate::internal::utils::get_cache_dir;
 use crate::prompt;
 use crate::Options;
 
@@ -71,13 +74,13 @@ pub async fn clean(options: Options) {
     // Prompt the user whether to clear the Amethyst cache
     let clear_ame_cache = prompt!(default no, "Clear Amethyst's internal PKGBUILD cache?");
     if clear_ame_cache {
-        // Remove ~/.cache/ame
-        Command::new("rm")
-            .arg("-rf")
-            .arg("~/.cache/ame")
-            .spawn()
-            .unwrap()
-            .wait()
+        let cache_dir = get_cache_dir();
+        ShellCommand::rm()
+            .arg(cache_dir)
+            .arg("-r")
+            .arg("-f")
+            .elevated()
+            .wait_success()
             .await
             .unwrap();
     }

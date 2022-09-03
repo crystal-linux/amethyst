@@ -1,7 +1,9 @@
 use colored::Colorize;
-use indicatif::{MultiProgress, ProgressBar};
+use indicatif::{MultiProgress, ProgressBar, ProgressDrawTarget};
+use parking_lot::{Mutex, RwLock};
 use std::{
     fmt::Display,
+    mem,
     sync::{atomic::AtomicBool, Arc},
     time::Duration,
 };
@@ -10,7 +12,6 @@ use crate::{internal::utils::wrap_text, uwu};
 use dialoguer::Confirm;
 
 use super::Verbosity;
-use parking_lot::RwLock;
 
 const OK_SYMBOL: &str = "❖";
 const ERR_SYMBOL: &str = "X";
@@ -41,9 +42,14 @@ pub enum OutputType {
     Stderr,
     MultiProgress(Arc<MultiProgress>),
     Progress(Arc<ProgressBar>),
+    Buffer {
+        buffer: Arc<Mutex<Vec<String>>>,
+        suspended: Box<OutputType>,
+    },
 }
 
 #[allow(unused)]
+#[derive(Clone, Copy, Debug)]
 pub enum PromptDefault {
     Yes,
     No,
@@ -93,11 +99,13 @@ impl LogHandler {
     }
 
     /// Prompts the user with a question and a default selection
+    #[tracing::instrument(level = "trace", skip(self))]
     pub fn prompt(&self, question: String, p_default: PromptDefault) -> bool {
         let question = self.preformat_msg(question);
         let question = format!("{} {}", PROMPT_SYMBOL.purple(), question.bold());
         let mut confirm = Confirm::new();
         confirm.with_prompt(question);
+        confirm.wait_for_newline(true);
 
         match p_default {
             PromptDefault::Yes => {
@@ -108,7 +116,11 @@ impl LogHandler {
             }
             PromptDefault::None => {}
         }
-        confirm.interact().unwrap()
+        self.suspend();
+        let result = confirm.interact().unwrap();
+        self.unsuspend();
+
+        result
     }
 
     pub fn print_list<I: IntoIterator<Item = T>, T: Display>(&self, list: I, separator: &str) {
@@ -134,6 +146,33 @@ impl LogHandler {
     #[tracing::instrument(level = "trace", skip_all)]
     pub fn reset_output_type(&self) {
         self.set_output_type(OutputType::Stdout);
+    }
+
+    pub fn suspend(&self) {
+        let mut output_type = self.output_type.write();
+        let mut old_output_type = OutputType::Stdout;
+        mem::swap(&mut *output_type, &mut old_output_type);
+
+        (*output_type) = OutputType::Buffer {
+            buffer: Arc::new(Mutex::new(Vec::new())),
+            suspended: Box::new(old_output_type),
+        }
+    }
+
+    pub fn unsuspend(&self) {
+        let mut buffered = Vec::new();
+        {
+            let mut output_type = self.output_type.write();
+            let mut old_output_type = OutputType::Stdout;
+            mem::swap(&mut *output_type, &mut old_output_type);
+
+            if let OutputType::Buffer { buffer, suspended } = old_output_type {
+                (*output_type) = *suspended;
+                buffered = mem::take(&mut *buffer.lock());
+            }
+        }
+
+        buffered.into_iter().for_each(|msg| self.log(msg));
     }
 
     /// Creates a new progress spinner and registers it on the log handler
@@ -170,8 +209,24 @@ impl LogHandler {
 
     /// Sets the output type of the log handler to either stdout/stderr or a progress bar
     #[tracing::instrument(level = "trace", skip_all)]
-    pub fn set_output_type(&self, output: OutputType) {
-        (*self.output_type.write()) = output;
+    pub fn set_output_type(&self, mut output: OutputType) {
+        {
+            let mut output_type = self.output_type.write();
+            mem::swap(&mut *output_type, &mut output);
+        }
+
+        match &mut output {
+            OutputType::MultiProgress(mp) => mp.set_draw_target(ProgressDrawTarget::hidden()),
+            OutputType::Progress(p) => p.set_draw_target(ProgressDrawTarget::hidden()),
+            OutputType::Buffer {
+                buffer,
+                suspended: _,
+            } => {
+                let buffered = mem::take(&mut *buffer.lock());
+                buffered.into_iter().for_each(|c| self.log(c));
+            }
+            _ => {}
+        }
     }
 
     #[tracing::instrument(level = "trace", skip_all)]
@@ -207,6 +262,10 @@ impl LogHandler {
                 let _ = m.println(msg);
             }
             OutputType::Progress(p) => p.println(msg),
+            OutputType::Buffer {
+                buffer,
+                suspended: _,
+            } => buffer.lock().push(msg),
         };
     }
 }

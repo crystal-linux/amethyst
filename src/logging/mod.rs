@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use lazy_static::lazy_static;
 use tracing::Level;
+use tracing_error::ErrorLayer;
 use tracing_subscriber::prelude::__tracing_subscriber_SubscriberExt;
 use tracing_subscriber::Registry;
 
@@ -57,7 +58,9 @@ pub fn init_logger(verbosity: Verbosity) {
     logger.set_uwu_enabled(uwu_enabled());
     let ame_layer = AmeFormatLayer::new(logger);
 
-    let subscriber = Registry::default().with(ame_layer);
+    let subscriber = Registry::default()
+        .with(ErrorLayer::default())
+        .with(ame_layer);
     tracing::subscriber::set_global_default(subscriber).unwrap();
 }
 
