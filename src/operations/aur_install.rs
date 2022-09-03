@@ -211,17 +211,14 @@ async fn install_aur_deps(deps: Vec<PackageInfo>, no_confirm: bool) -> AppResult
 
     get_logger().reset_output_type();
 
-    if let Err(e) = build_and_install(
+    build_and_install(
         dep_contexts,
         MakePkgBuilder::default().as_deps(true),
         PacmanInstallBuilder::default()
             .no_confirm(no_confirm)
             .as_deps(true),
     )
-    .await
-    {
-        handle_build_error(e).await?;
-    }
+    .await?;
     get_logger().reset_output_type();
 
     Ok(())
@@ -235,12 +232,19 @@ async fn build_and_install(
 ) -> AppResult<()> {
     tracing::info!("Building packages");
     get_logger().new_multi_progress();
-    let ctxs = future::try_join_all(
+    let results = future::join_all(
         ctxs.into_iter()
             .map(|ctx| build_package(ctx, make_opts.clone())),
     )
-    .await?;
+    .await;
     get_logger().reset_output_type();
+    let mut ctxs = Vec::new();
+    for result in results {
+        match result {
+            Ok(ctx) => ctxs.push(ctx),
+            Err(e) => handle_build_error(e).await?,
+        }
+    }
 
     tracing::info!("Built {} packages", ctxs.len());
     tracing::info!("Installing packages...");
@@ -334,10 +338,10 @@ async fn build_package(
     handle.abort();
 
     if !exit_status.success() {
-        pb.set_message(format!(
+        pb.finish_with_message(format!(
             "{}: {}",
+            pkg_name.clone().bold(),
             "Build failed!".red(),
-            pkg_name.clone().bold()
         ));
         return Err(AppError::BuildError {
             pkg_name: pkg_name.to_owned(),
@@ -438,20 +442,15 @@ async fn handle_build_error<E: Into<AppError>>(err: E) -> AppResult<()> {
     get_logger().reset_output_type();
     let err = err.into();
 
-    match &err {
+    match err {
         AppError::BuildError { pkg_name } => {
             tracing::error!("Failed to build package {pkg_name}!");
             let log_path = get_cache_dir().join(format!("{pkg_name}-build.log"));
             review_build_log(&log_path).await?;
 
-            Err(err)
+            Ok(())
         }
-        e => {
-            crash!(
-                AppExitCode::MakePkgError,
-                "An error occurred while building: {e}"
-            )
-        }
+        e => Err(e),
     }
 }
 

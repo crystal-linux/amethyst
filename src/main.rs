@@ -65,8 +65,6 @@ async fn cmd_install(args: InstallArgs, options: Options) {
     let packages = args.packages;
     let sorted = sort(&packages, options).await;
 
-    // info!("Attempting to install packages: {}", packages.join(", "));
-
     if !sorted.repo.is_empty() {
         operations::install(sorted.repo, options).await;
     }
