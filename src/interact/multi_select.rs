@@ -4,12 +4,12 @@ use crate::logging::get_logger;
 
 use super::{theme::AmeTheme, Interact};
 
-pub struct MultiSelect {
+pub struct AmeMultiSelect {
     prompt: String,
     items: Vec<String>,
 }
 
-impl MultiSelect {
+impl AmeMultiSelect {
     /// Creates a new multi select prompt
     pub fn new<S: ToString>(prompt: S) -> Self {
         Self {
@@ -26,7 +26,7 @@ impl MultiSelect {
     }
 }
 
-impl Interact for MultiSelect {
+impl Interact for AmeMultiSelect {
     type Result = Vec<usize>;
 
     fn interact(&mut self) -> Self::Result {

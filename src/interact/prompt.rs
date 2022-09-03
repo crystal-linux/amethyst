@@ -4,12 +4,12 @@ use crate::logging::get_logger;
 
 use super::{theme::AmeTheme, Interact};
 
-pub struct Prompt {
+pub struct AmePrompt {
     question: String,
     default_yes: Option<bool>,
 }
 
-impl Prompt {
+impl AmePrompt {
     /// Creates a new prompt
     pub fn new<Q: ToString>(question: Q) -> Self {
         Self {
@@ -33,7 +33,7 @@ impl Prompt {
     }
 }
 
-impl Interact for Prompt {
+impl Interact for AmePrompt {
     type Result = bool;
 
     fn interact(&mut self) -> Self::Result {
