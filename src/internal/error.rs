@@ -65,7 +65,10 @@ impl<T> SilentUnwrap<T> for AppResult<T> {
     fn silent_unwrap(self, exit_code: AppExitCode) -> T {
         match self {
             Ok(val) => val,
-            Err(_) => crash!(exit_code, "An error occurred"),
+            Err(e) => {
+                tracing::debug!("{e}");
+                crash!(exit_code, "An error occurred")
+            }
         }
     }
 }
