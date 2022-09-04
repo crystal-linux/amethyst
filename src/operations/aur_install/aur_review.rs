@@ -23,8 +23,10 @@ impl AurReview {
     pub async fn review_pkgbuild(self) -> AppResult<RepoDependencyInstallation> {
         if !self.options.noconfirm {
             let to_review = multi_select!(&self.packages, "Select packages to review");
+
             for pkg in to_review.into_iter().filter_map(|i| self.packages.get(i)) {
-                review_pkgbuild(pkg).await.unwrap();
+                let pkgbuild_path = get_cache_dir().join(pkg).join("PKGBUILD");
+                PagerBuilder::default().path(pkgbuild_path).open().await?;
             }
             if !prompt!(default yes, "Do you still want to install those packages?") {
                 return Err(AppError::UserCancellation);
@@ -36,12 +38,4 @@ impl AurReview {
             contexts: self.contexts,
         })
     }
-}
-
-#[tracing::instrument(level = "trace")]
-async fn review_pkgbuild(package: &str) -> AppResult<()> {
-    let pkgbuild_path = get_cache_dir().join(package).join("PKGBUILD");
-    PagerBuilder::default().path(pkgbuild_path).open().await?;
-
-    Ok(())
 }

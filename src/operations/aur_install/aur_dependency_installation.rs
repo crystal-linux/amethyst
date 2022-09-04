@@ -49,7 +49,7 @@ impl AurDependencyInstallation {
     }
 
     #[tracing::instrument(level = "trace", skip(self))]
-    pub async fn install(&self, deps: Vec<&PackageInfo>) -> AppResult<()> {
+    async fn install(&self, deps: Vec<&PackageInfo>) -> AppResult<()> {
         multi_progress!();
 
         let dep_contexts = future::try_join_all(
