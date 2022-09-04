@@ -15,9 +15,14 @@ pub async fn aur_search(query: &str, by_field: Option<SearchBy>, options: Option
     let total_results = packages.len();
 
     for package in &packages {
+        let description = if let Some(desc) = &package.description {
+            desc
+        } else {
+            ""
+        };
         println!(
             "aur/{} {}\n    {}",
-            package.name, package.version, package.description
+            package.name, package.version, description
         )
     }
 
