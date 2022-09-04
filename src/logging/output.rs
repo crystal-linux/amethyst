@@ -36,7 +36,7 @@ pub async fn print_dependency_list(dependencies: &[DependencyInformation]) -> bo
     let mut empty = true;
     if !deps_repo.is_empty() {
         tracing::info!("Repo dependencies");
-        get_logger().print_list(&deps_repo, "  ");
+        get_logger().print_list(&deps_repo, "  ", 2);
         empty = false;
         get_logger().print_newline();
     }
@@ -49,7 +49,7 @@ pub async fn print_dependency_list(dependencies: &[DependencyInformation]) -> bo
 
     if !makedeps_repo.is_empty() {
         tracing::info!("Repo make dependencies");
-        get_logger().print_list(&makedeps_repo, "  ");
+        get_logger().print_list(&makedeps_repo, "  ", 2);
         empty = false;
         get_logger().print_newline();
     }
@@ -94,7 +94,8 @@ pub async fn print_aur_package_list(packages: &[&PackageInfo]) -> bool {
                 .magenta()
             )
         }),
-        "\n  ",
+        "\n",
+        2,
     );
 
     !installed.is_empty()

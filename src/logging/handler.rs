@@ -91,7 +91,12 @@ impl LogHandler {
         }
     }
 
-    pub fn print_list<I: IntoIterator<Item = T>, T: Display>(&self, list: I, separator: &str) {
+    pub fn print_list<I: IntoIterator<Item = T>, T: Display>(
+        &self,
+        list: I,
+        separator: &str,
+        padding: usize,
+    ) {
         let lines = list
             .into_iter()
             .map(|l| self.preformat_msg(l.to_string()))
@@ -99,7 +104,7 @@ impl LogHandler {
                 format!("{}{}{}", acc, separator, line)
             });
 
-        let lines = wrap_text(lines, 2).join("\n");
+        let lines = wrap_text(lines, padding).join("\n");
         self.log(lines)
     }
 

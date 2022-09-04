@@ -8,6 +8,7 @@ use crate::args::{InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs};
 use crate::internal::detect;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::{sort, start_sudoloop, structs::Options};
+use crate::logging::get_logger;
 use crate::logging::Printable;
 
 use clap_complete::{Generator, Shell};
@@ -131,7 +132,8 @@ async fn cmd_search(args: SearchArgs, options: Options) {
         tracing::info!("No results found");
     } else {
         tracing::info!("Results:");
-        
+        let list: Vec<String> = results.iter().map(|x| x.to_print_string()).collect();
+        get_logger().print_list(list, "\n", 0);
     }
 }
 
