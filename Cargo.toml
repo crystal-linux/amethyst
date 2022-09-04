@@ -6,10 +6,8 @@ edition = "2021"
 description = "A fast and efficient AUR helper"
 license-file = "LICENSE.md"
 default-run = "ame"
-
-[features]
-pkg-warner = []
-
+keywords = ["aur", "crystal-linux", "pacman", "aur-helper"]
+categories = ["command-line-utilities"]
 
 [[bin]]
 name = "ame"
