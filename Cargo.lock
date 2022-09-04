@@ -37,6 +37,7 @@ dependencies = [
  "tracing",
  "tracing-error",
  "tracing-subscriber",
+ "trigram",
 ]
 
 [[package]]
@@ -1757,6 +1758,16 @@ dependencies = [
  "tracing",
  "tracing-core",
  "tracing-log",
+]
+
+[[package]]
+name = "trigram"
+version = "0.4.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "324350103581dfc6869f2c9399c019f394ac49a7ab16af23206add07851c5347"
+dependencies = [
+ "lazy_static",
+ "regex",
 ]
 
 [[package]]
