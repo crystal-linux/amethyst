@@ -160,7 +160,7 @@ pub async fn repo_search(query: &str, options: Options) -> Vec<PackageSearchResu
             let version = package.version();
             let groups = Some(package.groups().iter().map(std::string::ToString::to_string).collect());
             let out_of_date = None;
-            let installed = local.pkg(&*name).is_ok();
+            let installed = local.pkg(name).is_ok();
             let description = package.desc();
 
             let result = PackageSearchResult {
