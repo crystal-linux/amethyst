@@ -23,7 +23,7 @@ use crate::internal::utils::{get_cache_dir, wrap_text};
 use crate::logging::get_logger;
 use crate::logging::output::{print_aur_package_list, print_dependency_list};
 use crate::logging::piped_stdio::StdioReader;
-use crate::{cancelled, crash, multi_select, prompt, Options};
+use crate::{cancelled, crash, multi_select, numeric, prompt, Options};
 
 #[derive(Debug)]
 pub struct BuildContext {
@@ -186,8 +186,8 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
 
     if !aur_dependencies.is_empty() {
         tracing::info!(
-            "Installing {} dependencies from the aur",
-            aur_dependencies.len()
+            "Installing {} from the aur",
+            numeric!(aur_dependencies.len(), "package"["s"])
         );
         let batches = create_dependency_batches(aur_dependencies);
         tracing::debug!("aur install batches: {batches:?}");
@@ -197,7 +197,7 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
         }
     }
 
-    tracing::info!("Installing {} packages", contexts.len());
+    tracing::info!("Installing {}", numeric!(contexts.len(), "package"["s"]));
 
     if let Err(e) = build_and_install(
         contexts,
@@ -276,8 +276,8 @@ async fn build_and_install(
         }
     }
 
-    tracing::info!("Built {} packages", ctxs.len());
-    tracing::info!("Installing packages...");
+    tracing::info!("Built {}", numeric!(ctxs.len(), "package"["s"]));
+    tracing::info!("Installing packages");
 
     install_packages(ctxs, install_opts).await?;
 
