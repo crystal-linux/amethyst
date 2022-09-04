@@ -104,7 +104,7 @@ impl LogHandler {
                 format!("{}{}{}", acc, separator, line)
             });
 
-        let lines = wrap_text(lines, padding).join("\n");
+        let lines = wrap_text(lines.trim_start_matches(separator), padding).join("\n");
         self.log(lines)
     }
 
