@@ -23,6 +23,7 @@ codegen-units = 1
 opt-level = 0
 
 [dependencies]
+minus = { version = "5.0.5", features = ["search", "static_output"] }
 alpm = "2.2.1"
 alpm-utils = "2.0.0"
 pacmanconf = "2.0.0"
