@@ -14,15 +14,23 @@ use aur_rpc::SearchField;
 use chrono::Local;
 use chrono::TimeZone;
 use colored::Colorize;
+use trigram::similarity;
 
 #[derive(Debug)]
 pub struct PackageSearchResult {
     pub repo: String,
     pub name: String,
     pub version: String,
-    pub group: Option<String>,
+    pub groups: Option<Vec<String>>,
     pub out_of_date: Option<u64>,
+    pub installed: bool,
     pub description: String,
+}
+
+impl PackageSearchResult {
+    pub fn score(&self, query: &str) -> f32 {
+        similarity(query, &self.name)
+    }
 }
 
 impl Display for PackageSearchResult {
@@ -30,11 +38,29 @@ impl Display for PackageSearchResult {
         let repo = &self.repo;
         let name = &self.name;
         let version = &self.version;
-        let group = self.group.clone().unwrap_or_default();
-        let out_of_date = self.out_of_date.unwrap_or(0);
-        let description = &self.description;
+        let groups = if self.groups.is_some() {
+            format!(" ({})", self.groups.clone().unwrap().join(", "))
+        } else {
+            "".to_string()
+        };
+        let out_of_date = if self.out_of_date.is_some() {
+            format!(
+                " [out of date: since {}]",
+                Local
+                    .timestamp(self.out_of_date.unwrap().try_into().unwrap(), 0)
+                    .date_naive()
+            )
+        } else {
+            "".to_string()
+        };
+        let installed = if self.installed {
+            " [installed]".to_string()
+        } else {
+            "".to_string()
+        };
+        let description = wrap_text(&self.description, 4).join("\n");
 
-        format!("{repo}/{name} {version} {group} {out_of_date}\n    {description}").fmt(f)
+        format!("{repo}{name} {version}{groups}{out_of_date}{installed}\n    {description}").fmt(f)
     }
 }
 
@@ -47,14 +73,16 @@ impl Printable for PackageSearchResult {
         };
         let name = &self.name.bold();
         let version = &self.version.bold().green();
-        let group = if self.group.is_some() {
-            format!("({})", self.group.clone().unwrap()).bold().blue()
+        let groups = if self.groups.is_some() {
+            format!(" ({})", self.groups.clone().unwrap().join(", "))
         } else {
-            "".bold()
-        };
+            "".to_string()
+        }
+        .bold()
+        .blue();
         let out_of_date = if self.out_of_date.is_some() {
             format!(
-                "[out of date: since {}]",
+                " [out of date: since {}]",
                 Local
                     .timestamp(self.out_of_date.unwrap().try_into().unwrap(), 0)
                     .date_naive()
@@ -64,9 +92,16 @@ impl Printable for PackageSearchResult {
         }
         .bold()
         .red();
+        let installed = if self.installed {
+            " [installed]".to_string()
+        } else {
+            "".to_string()
+        }
+        .bold()
+        .cyan();
         let description = wrap_text(&self.description, 4).join("\n");
 
-        format!("{repo}{name} {version} {group} {out_of_date}\n    {description}")
+        format!("{repo}{name} {version}{groups}{out_of_date}{installed}\n    {description}")
     }
 }
 
@@ -76,6 +111,8 @@ pub async fn aur_search(
     by_field: Option<SearchBy>,
     options: Options,
 ) -> Vec<PackageSearchResult> {
+    let alpm = get_handler().unwrap();
+    let local = alpm.localdb();
     let packages = rpcsearch(query.to_string(), by_field.map(SearchBy::into))
         .await
         .silent_unwrap(AppExitCode::RpcError);
@@ -88,16 +125,18 @@ pub async fn aur_search(
         .map(|package| {
             let name = package.name;
             let version = package.version;
-            let group = None;
+            let groups = None;
             let out_of_date = package.out_of_date;
+            let installed = local.pkg(&*name).is_ok(); 
             let description = package.description;
 
             PackageSearchResult {
                 repo: "aur".to_string(),
                 name,
                 version,
-                group,
+                groups,
                 out_of_date,
+                installed,
                 description: description.unwrap_or_else(|| "No description".to_string()),
             }
         })
@@ -109,6 +148,7 @@ pub async fn aur_search(
 #[tracing::instrument(level = "trace")]
 pub async fn repo_search(query: &str, options: Options) -> Vec<PackageSearchResult> {
     let alpm = get_handler().unwrap();
+    let local = alpm.localdb();
     let dbs = alpm.syncdbs();
 
     let mut results = Vec::new();
@@ -118,16 +158,18 @@ pub async fn repo_search(query: &str, options: Options) -> Vec<PackageSearchResu
         for package in packages {
             let name = package.name();
             let version = package.version();
-            let description = package.desc();
-            let group = package.groups().first().map(|s| s.to_string());
+            let groups = Some(package.groups().iter().map(std::string::ToString::to_string).collect());
             let out_of_date = None;
+            let installed = local.pkg(&*name).is_ok();
+            let description = package.desc();
 
             let result = PackageSearchResult {
                 repo: db.name().to_string(),
                 name: name.to_string(),
                 version: version.to_string(),
-                group,
+                groups,
                 out_of_date,
+                installed,
                 description: description.unwrap_or("No description").to_string(),
             };
 

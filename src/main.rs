@@ -28,7 +28,7 @@ use logging::init_logger;
 async fn main() {
     color_eyre::install().unwrap();
     if unsafe { libc::geteuid() } == 0 {
-        crash!( AppExitCode::RunAsRoot, "Running amethyst as root is disallowed as it can lead to system breakage. Instead, amethyst will prompt you when it needs superuser permissions");
+        crash!( AppExitCode::RunAsRoot, "Running amethyst as root is disall&owed as it can lead to system breakage. Instead, amethyst will prompt you when it needs superuser permissions");
     }
 
     let args: Args = Args::parse();
@@ -134,8 +134,17 @@ async fn cmd_search(args: SearchArgs, options: Options) {
         tracing::info!("No results found");
     } else {
         tracing::info!("Results:");
+
+        results.sort_by(|a, b | {
+            let a_score = a.score(&query_string);
+            let b_score = b.score(&query_string);
+
+            b_score.partial_cmp(&a_score).unwrap_or(std::cmp::Ordering::Equal)
+        });
+
         let list: Vec<String> = results.iter().map(|x| x.to_print_string()).collect();
         get_logger().print_list(&list, "\n", 0);
+
         if list.join("\n").lines().count() > crossterm::terminal::size().unwrap().1 as usize {
             page_string(&list.join("\n")).silent_unwrap(AppExitCode::Other);
         }
