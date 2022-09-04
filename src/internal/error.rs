@@ -16,6 +16,8 @@ pub enum AppError {
     NonZeroExit,
     BuildStepViolation,
     BuildError { pkg_name: String },
+    UserCancellation,
+    MissingDependencies(Vec<String>),
 }
 
 impl Display for AppError {
@@ -27,6 +29,10 @@ impl Display for AppError {
             AppError::NonZeroExit => Display::fmt("exited with non zero code", f),
             AppError::BuildStepViolation => Display::fmt("AUR build violated build steps", f),
             AppError::BuildError { pkg_name } => write!(f, "Failed to build package {pkg_name}"),
+            AppError::UserCancellation => write!(f, "Cancelled by user"),
+            AppError::MissingDependencies(deps) => {
+                write!(f, "Missing dependencies {}", deps.join(", "))
+            }
         }
     }
 }

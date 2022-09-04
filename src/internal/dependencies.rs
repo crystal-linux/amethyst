@@ -5,7 +5,7 @@ use futures::future;
 
 use crate::builder::pacman::{PacmanQueryBuilder, PacmanSearchBuilder};
 
-use super::error::AppResult;
+use super::error::{AppError, AppResult};
 use lazy_regex::regex;
 
 #[derive(Clone, Debug)]
@@ -83,7 +83,9 @@ impl DependencyInformation {
             already_searched.extend(packages_to_resolve.iter().cloned());
             Self::extend_by_repo_packages(&mut packages_to_resolve, &mut dependencies).await?;
 
-            let mut aur_packages = aur_rpc::info(&packages_to_resolve).await?;
+            let mut aur_packages = aur_rpc::info(&packages_to_resolve).await.map_err(|_| {
+                AppError::MissingDependencies(packages_to_resolve.iter().cloned().collect())
+            })?;
             aur_packages.iter().for_each(|p| {
                 packages_to_resolve.remove(&p.metadata.name);
             });
