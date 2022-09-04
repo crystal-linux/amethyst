@@ -1,11 +1,11 @@
 [package]
 name = "Amethyst"
 version = "4.0.0"
-authors = ["michal <michal@tar.black>", "axtlos <axtlos@tar.black>", "trivernis <trivernis@protonmail.com>"]
+authors = ["Michal S. <michal@tar.black>", "axtlos <axtlos@tar.black>", "trivernis <trivernis@protonmail.com>"]
 edition = "2021"
 description = "A fast and efficient AUR helper"
-license-file = "LICENSE.md"
 default-run = "ame"
+license-file = "LICENSE"
 keywords = ["aur", "crystal-linux", "pacman", "aur-helper"]
 categories = ["command-line-utilities"]
 
