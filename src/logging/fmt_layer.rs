@@ -95,8 +95,8 @@ impl<S: Subscriber + for<'a> LookupSpan<'a>> Layer<S> for AmeFormatLayer {
         }
     }
 
-    fn on_exit(&self, id: &span::Id, ctx: tracing_subscriber::layer::Context<'_, S>) {
-        let span = ctx.span(id).unwrap();
+    fn on_close(&self, id: span::Id, ctx: tracing_subscriber::layer::Context<'_, S>) {
+        let span = ctx.span(&id).unwrap();
         let metadata = span.metadata();
 
         if self.is_enabled(metadata) {

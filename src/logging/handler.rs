@@ -108,7 +108,6 @@ impl LogHandler {
         (*self.level.write()) = level;
     }
 
-    #[tracing::instrument(level = "trace", skip_all)]
     pub fn reset_output_type(&self) {
         self.set_output_type(OutputType::Stdout);
     }
@@ -141,7 +140,6 @@ impl LogHandler {
     }
 
     /// Creates a new progress spinner and registers it on the log handler
-    #[tracing::instrument(level = "trace", skip_all)]
     pub fn new_progress_spinner(&self) -> Arc<ProgressBar> {
         let pb = ProgressBar::new_spinner();
         pb.enable_steady_tick(Duration::from_millis(250));
@@ -158,7 +156,6 @@ impl LogHandler {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip_all)]
     pub fn new_multi_progress(&self) -> Arc<MultiProgress> {
         let mp = Arc::new(MultiProgress::new());
         self.set_output_type(OutputType::MultiProgress(mp.clone()));
@@ -166,14 +163,7 @@ impl LogHandler {
         mp
     }
 
-    /// Registeres a progress bar on the log handler
-    #[tracing::instrument(level = "trace", skip_all)]
-    fn set_progress_bar(&self, pb: Arc<ProgressBar>) {
-        self.set_output_type(OutputType::Progress(pb))
-    }
-
     /// Sets the output type of the log handler to either stdout/stderr or a progress bar
-    #[tracing::instrument(level = "trace", skip_all)]
     pub fn set_output_type(&self, mut output: OutputType) {
         {
             let mut output_type = self.output_type.write();
