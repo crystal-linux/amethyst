@@ -1,5 +1,8 @@
 use std::sync::Arc;
 
+mod printable;
+pub use printable::Printable;
+
 use lazy_static::lazy_static;
 use tracing::Level;
 use tracing_error::ErrorLayer;

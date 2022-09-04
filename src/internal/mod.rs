@@ -17,6 +17,7 @@ mod sort;
 pub mod structs;
 #[macro_use]
 pub mod utils;
+pub mod alpm;
 mod sudoloop;
 
 #[macro_export]

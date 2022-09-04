@@ -1,6 +1,11 @@
-target/
-.vscode
-.idea
-result
-.DS_Store
-.direnv
+# Rust
+/target/
+**/*.rs.bk
+
+# Nix
+/result*
+/nix/result*
+
+# Direnv
+/.direnv
+/.envrc

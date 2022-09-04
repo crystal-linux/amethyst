@@ -7,6 +7,7 @@ use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::Options;
 
+/// Uninstalls the given packages
 #[tracing::instrument(level = "trace")]
 pub async fn uninstall(packages: Vec<String>, options: Options) {
     let mut pacman_args = vec!["-Rs"];

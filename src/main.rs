@@ -8,6 +8,8 @@ use crate::args::{InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs};
 use crate::internal::detect;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::{sort, start_sudoloop, structs::Options};
+use crate::logging::Printable;
+
 use clap_complete::{Generator, Shell};
 use std::str::FromStr;
 
@@ -108,19 +110,28 @@ async fn cmd_remove(args: RemoveArgs, options: Options) {
 async fn cmd_search(args: SearchArgs, options: Options) {
     let query_string = args.search;
 
-    if args.aur {
+    let mut results = Vec::new();
+
+    let both = !args.aur && !args.repo;
+    let aur = args.aur || both;
+    let repo = args.repo || both;
+
+    if aur {
         tracing::info!("Searching AUR for {}", &query_string);
-        operations::aur_search(&query_string, args.by, options).await;
+        let res = operations::aur_search(&query_string, args.by, options).await;
+        results.extend(res);
     }
-    if args.repo {
+    if repo {
         tracing::info!("Searching repos for {}", &query_string);
-        operations::search(&query_string, options).await;
+        let res = operations::search(&query_string, options).await;
+        results.extend(res);
     }
 
-    if !args.aur && !args.repo {
-        tracing::info!("Searching AUR and repos for {}", &query_string);
-        operations::search(&query_string, options).await;
-        operations::aur_search(&query_string, args.by, options).await;
+    if results.is_empty() {
+        tracing::info!("No results found");
+    } else {
+        tracing::info!("Results:");
+        
     }
 }
 

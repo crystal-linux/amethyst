@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs";
     utils.url = "github:numtide/flake-utils";
     naersk = {
       url = "github:nix-community/naersk";
@@ -40,7 +40,13 @@
             cargo-audit
             rustfmt
             clippy
+
+            # For `alpm` libs
+            pkg-config
+            pacman
+            openssl
           ];
+          # For rust-analyzer
           RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
         };
 
