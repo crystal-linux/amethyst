@@ -117,14 +117,14 @@ async fn cmd_search(args: SearchArgs, options: Options) {
     let aur = args.aur || both;
     let repo = args.repo || both;
 
-    if aur {
-        tracing::info!("Searching AUR for {}", &query_string);
-        let res = operations::aur_search(&query_string, args.by, options).await;
-        results.extend(res);
-    }
     if repo {
         tracing::info!("Searching repos for {}", &query_string);
         let res = operations::search(&query_string, options).await;
+        results.extend(res);
+    }
+    if aur {
+        tracing::info!("Searching AUR for {}", &query_string);
+        let res = operations::aur_search(&query_string, args.by, options).await;
         results.extend(res);
     }
 
