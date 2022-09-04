@@ -1,52 +1,44 @@
 use std::process::{Command, Stdio};
 
 use crate::internal::{clean, rpc, structs};
-use crate::{log, Options};
+use crate::Options;
 
-/// Sorts the given packages into an [`crate::internal::structs::Sorted`]
-pub fn sort(input: &[String], options: Options) -> structs::Sorted {
-    // Initialise variables
-    let mut repo: Vec<String> = vec![];
-    let mut aur: Vec<String> = vec![];
-    let mut nf: Vec<String> = vec![];
-    let verbosity = options.verbosity;
+use super::error::SilentUnwrap;
+use super::exit_code::AppExitCode;
 
-    // Sanitise all packages passed in
-    let a = clean(input, options);
+#[tracing::instrument(level = "trace")]
+pub async fn sort(input: &[String], options: Options) -> structs::Sorted {
+    let mut repo_packages: Vec<String> = vec![];
+    let mut aur_packages: Vec<String> = vec![];
+    let mut missing_packages: Vec<String> = vec![];
 
-    if verbosity >= 1 {
-        log!("Sorting: {:?}", a.join(" "));
-    }
+    let packages = clean(input);
 
-    for b in a {
-        // Check if package is in the repos
+    tracing::debug!("Sorting: {:?}", packages.join(" "));
+
+    for package in packages {
         let rs = Command::new("pacman")
             .arg("-Ss")
-            .arg(format!("^{}$", &b))
+            .arg(format!("^{}$", &package))
             .stdout(Stdio::null())
             .status()
             .expect("Something has gone wrong");
 
-        if rs.code() == Some(0) {
-            // If it is, add it to the repo vector
-            if verbosity >= 1 {
-                log!("{} found in repos", b);
-            }
-            repo.push(b.to_string());
-        } else if rpc::rpcinfo(&b).found {
-            // Otherwise, check if it is in the AUR, if it is, add it to the AUR vector
-            if verbosity >= 1 {
-                log!("{} found in AUR", b);
-            }
-            aur.push(b.to_string());
+        if let Some(0) = rs.code() {
+            tracing::debug!("{} found in repos", package);
+            repo_packages.push(package.to_string());
+        } else if rpc::rpcinfo(&package)
+            .await
+            .silent_unwrap(AppExitCode::RpcError)
+            .is_some()
+        {
+            tracing::debug!("{} found in AUR", package);
+            aur_packages.push(package.to_string());
         } else {
-            // Otherwise, add it to the not found vector
-            if verbosity >= 1 {
-                log!("{} not found", b);
-            }
-            nf.push(b.to_string());
+            tracing::debug!("{} not found", package);
+            missing_packages.push(package.to_string());
         }
     }
 
-    structs::Sorted::new(repo, aur, nf)
+    structs::Sorted::new(repo_packages, aur_packages, missing_packages)
 }

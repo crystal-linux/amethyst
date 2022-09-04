@@ -1,146 +1,97 @@
-use chrono::{Local, TimeZone};
-use colored::Colorize;
-use textwrap::wrap;
+use std::str::FromStr;
 
 use crate::internal::commands::ShellCommand;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcsearch;
-use crate::{log, Options};
+use crate::Options;
+use aur_rpc::SearchField;
 
-#[allow(clippy::module_name_repetitions)]
-/// Searches for packages from the AUR and returns wrapped results
-pub fn aur_search(query: &str, options: Options) -> String {
-    // Query AUR for package info
-    let res = rpcsearch(query);
+#[tracing::instrument(level = "trace")]
+pub async fn aur_search(query: &str, by_field: Option<SearchBy>, options: Options) {
+    let packages = rpcsearch(query.to_string(), by_field.map(SearchBy::into))
+        .await
+        .silent_unwrap(AppExitCode::RpcError);
+    let total_results = packages.len();
 
-    // Get verbosity
-    let verbosity = options.verbosity;
-
-    // Format output
-    let mut results_vec = vec![];
-    for package in &res.results {
-        // Define wrapping options
-        let opts = textwrap::Options::new(crossterm::terminal::size().unwrap().0 as usize - 4)
-            .subsequent_indent("    ");
-
-        let result = format!(
-            "{}{} {} {}\n    {}",
-            "aur/".cyan().bold(),
-            package.name.bold(),
-            package.version.green().bold(),
-            if package.out_of_date.is_some() {
-                format!(
-                    "[out of date: since {}]",
-                    Local
-                        .timestamp(package.out_of_date.unwrap().try_into().unwrap(), 0)
-                        .date_naive()
-                )
-                .red()
-                .bold()
-            } else {
-                "".bold()
-            },
-            wrap(
-                package
-                    .description
-                    .as_ref()
-                    .unwrap_or(&"No description".to_string()),
-                opts,
-            )
-            .join("\n"),
-        );
-        results_vec.push(result);
+    for package in &packages {
+        println!(
+            "aur/{} {}\n    {}",
+            package.name, package.version, package.description
+        )
     }
 
-    if verbosity > 1 {
-        log!(
-            "Found {} results for \"{}\" in the AUR",
-            res.results.len(),
-            query
-        );
-    }
-
-    results_vec.join("\n")
+    tracing::debug!("Found {total_results} resuls for \"{query}\" in AUR",);
 }
 
-struct SearchResult {
-    repo: String,
-    name: String,
-    version: String,
-    description: String,
-}
-
-#[allow(clippy::module_name_repetitions)]
-/// Searches for packages from the repos and returns wrapped results
-pub fn repo_search(query: &str, options: Options) -> String {
-    // Initialise variables
-    let verbosity = options.verbosity;
-
-    // Query pacman for package info
-    let output = ShellCommand::bash()
-        .args(&["-c", &format!("expac -Ss '%r\\\\%n\\\\%v\\\\%d' {}", query)])
+#[tracing::instrument(level = "trace")]
+pub async fn repo_search(query: &str, options: Options) {
+    let output = ShellCommand::pacman()
+        .arg("-Ss")
         .arg(query)
         .wait_with_output()
+        .await
         .silent_unwrap(AppExitCode::PacmanError)
         .stdout;
 
-    // Split output into lines
-    let lines = output.trim().split('\n');
+    tracing::debug!(
+        "Found {} results for \"{}\" in repos",
+        &output.split('\n').count() / 2,
+        &query
+    );
 
-    // Initialise results vector
-    let mut results_vec: Vec<SearchResult> = vec![];
+    println!("{}", output)
+}
 
-    let clone = lines.clone().collect::<Vec<&str>>();
-    if clone.len() == 1 && clone[0].is_empty() {
-        // If no results, return empty string
-        return "".to_string();
-    }
+/// Represents a field to search by
+#[derive(Debug, Clone, Copy)]
+pub enum SearchBy {
+    /// Searches by name
+    Name,
+    /// Searches name and description
+    NameDesc,
+    /// Searches by package maintainer
+    Maintainer,
+    /// Searches for packages that depend on the given keywods
+    Depends,
+    /// Searches for packages that require the given keywords to be build
+    MakeDepends,
+    /// Searches for packages that optionally depend on the given keywods
+    OptDepends,
+    /// Searches for packages that require the given keywods to be present
+    CheckDepends,
+}
 
-    // Iterate over lines
-    for line in lines {
-        let parts: Vec<&str> = line.split('\\').collect();
-        let res = SearchResult {
-            repo: parts[0].to_string(),
-            name: parts[1].to_string(),
-            version: parts[2].to_string(),
-            description: parts[3].to_string(),
+impl FromStr for SearchBy {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let arg = match s {
+            "name" => Self::Name,
+            "name-desc" => Self::NameDesc,
+            "maintainer" => Self::Maintainer,
+            "depends" => Self::Depends,
+            "makedepends" | "make-depends" => Self::MakeDepends,
+            "optdepends" | "opt-depends" => Self::OptDepends,
+            "checkdepends" | "check-depends" => Self::CheckDepends,
+            directive => return Err(format!("Invalid search by directive '{directive}'")),
         };
-        results_vec.push(res);
+
+        Ok(arg)
     }
+}
 
-    if verbosity >= 1 {
-        log!(
-            "Found {} results for \"{}\" in repos",
-            &results_vec.len(),
-            &query
-        );
-    }
-
-    // Format output
-    let results_vec = results_vec
-        .into_iter()
-        .map(|res| {
-            let opts = textwrap::Options::new(crossterm::terminal::size().unwrap().0 as usize - 4)
-                .subsequent_indent("    ");
-            format!(
-                "{}{}{} {}\n    {}",
-                res.repo.purple().bold(),
-                "/".purple().bold(),
-                res.name.bold(),
-                res.version.green().bold(),
-                if res.description.is_empty() {
-                    "No description".to_string()
-                } else {
-                    wrap(&res.description, opts).join("\n")
-                },
-            )
-        })
-        .collect::<Vec<String>>();
-
-    if output.trim().is_empty() {
-        "".to_string()
-    } else {
-        results_vec.join("\n")
+#[allow(clippy::from_over_into)]
+impl Into<SearchField> for SearchBy {
+    fn into(self) -> SearchField {
+        match self {
+            SearchBy::Name => SearchField::Name,
+            SearchBy::NameDesc => SearchField::NameDesc,
+            SearchBy::Maintainer => SearchField::Maintainer,
+            SearchBy::Depends => SearchField::Depends,
+            SearchBy::MakeDepends => SearchField::MakeDepends,
+            SearchBy::OptDepends => SearchField::OptDepends,
+            SearchBy::CheckDepends => SearchField::CheckDepends,
+        }
     }
 }

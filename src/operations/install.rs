@@ -1,36 +1,20 @@
-use crate::internal::commands::ShellCommand;
-use crate::internal::error::SilentUnwrap;
+use crate::builder::pacman::PacmanInstallBuilder;
 use crate::internal::exit_code::AppExitCode;
-use crate::{crash, info, log, Options};
+use crate::{crash, Options};
 
-/// Help the user install a package from the pacman repos
-pub fn install(packages: &[String], options: Options) {
-    info!("Installing packages {} from repos", &packages.join(", "));
-
-    // Build pacman args
-    let mut opers = vec!["-S", "--needed"];
-    if options.noconfirm {
-        opers.push("--noconfirm");
-    }
-    if options.asdeps {
-        opers.push("--asdeps");
-    }
-    let verbosity = options.verbosity;
+#[tracing::instrument(level = "trace")]
+pub async fn install(packages: Vec<String>, options: Options) {
+    tracing::info!("Installing packages {} from repos", &packages.join(", "));
 
     if !packages.is_empty() {
-        if verbosity >= 1 {
-            log!("Installing from repos: {:?}", &packages);
-        }
+        tracing::debug!("Installing from repos: {:?}", &packages);
 
-        // Install packages
-        let status = ShellCommand::pacman()
-            .elevated()
-            .args(opers)
-            .args(packages)
-            .wait()
-            .silent_unwrap(AppExitCode::PacmanError);
-        if !status.success() {
-            // If pacman failed, crash
+        let result = PacmanInstallBuilder::from_options(options)
+            .packages(packages.clone())
+            .install()
+            .await;
+
+        if result.is_err() {
             crash!(
                 AppExitCode::PacmanError,
                 "An error occured while installing packages: {}, aborting",
@@ -38,8 +22,6 @@ pub fn install(packages: &[String], options: Options) {
             );
         }
 
-        if verbosity >= 1 {
-            log!("Installing packages: {:?} was successful", &packages);
-        }
+        tracing::debug!("Installing packages: {:?} was successful", &packages);
     }
 }

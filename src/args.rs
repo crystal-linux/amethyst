@@ -1,5 +1,6 @@
 #![allow(clippy::module_name_repetitions)]
 
+use crate::operations::SearchBy;
 use clap::{Parser, Subcommand, ValueHint};
 
 #[derive(Debug, Clone, Parser)]
@@ -28,19 +29,19 @@ pub struct Args {
 #[derive(Debug, Clone, Subcommand)]
 pub enum Operation {
     /// Installs a package from either the AUR or the Pacman-defined repositories
-    #[clap(bin_name = "ame", name = "install", visible_aliases = & ["-S"], aliases = & ["-Sa", "-Sr"])]
+    #[clap(bin_name = "ame", name = "install", visible_aliases = & ["-S", "i"], aliases = & ["-Sa", "-Sr"])]
     Install(InstallArgs),
 
     /// Removes a previously installed package
-    #[clap(bin_name = "ame", name = "remove", visible_aliases = & ["rm", "-Rs"])]
+    #[clap(bin_name = "ame", name = "remove", visible_aliases = & ["rm", "r", "-Rs"])]
     Remove(RemoveArgs),
 
     /// Searches for packages matching a regex-supported pattern in the AUR and/or the repos
-    #[clap(bin_name = "ame", name = "search", visible_aliases = & ["-Ss"], aliases = & ["-Ssa", "-Ssr"])]
+    #[clap(bin_name = "ame", name = "search", visible_aliases = & ["-Ss", "s"], aliases = & ["-Ssa", "-Ssr"])]
     Search(SearchArgs),
 
     /// Queries installed packages
-    #[clap(bin_name = "ame", name = "query", visible_aliases = & ["-Q"], aliases = & ["-Qa", "-Qr", "-Qm", "-Qn"])]
+    #[clap(bin_name = "ame", name = "query", visible_aliases = & ["-Q", "q"], aliases = & ["-Qa", "-Qr", "-Qm", "-Qn"])]
     Query(QueryArgs),
 
     /// Gets info about a package
@@ -48,7 +49,7 @@ pub enum Operation {
     Info(InfoArgs),
 
     /// Upgrades locally installed packages to their latest versions (Default)
-    #[clap(bin_name = "ame", name = "upgrade", visible_aliases = & ["-Syu"])]
+    #[clap(bin_name = "ame", name = "upgrade", visible_aliases = & ["-Syu", "u"])]
     Upgrade(UpgradeArgs),
 
     /// Generates shell completions for supported shells (bash, fish, elvish, pwsh)
@@ -56,7 +57,7 @@ pub enum Operation {
     GenComp(GenCompArgs),
 
     /// Removes all orphaned packages
-    #[clap(bin_name = "ame", name = "clean", visible_aliases = & ["-Sc"])]
+    #[clap(bin_name = "ame", name = "clean", visible_aliases = & ["-Sc", "c"])]
     Clean,
 
     /// Runs pacdiff
@@ -104,7 +105,11 @@ pub struct SearchArgs {
 
     /// The string the package must match in the search
     #[clap(required = true)]
-    pub search: Vec<String>,
+    pub search: String,
+
+    /// Searches by a specific field
+    #[clap(long, short)]
+    pub by: Option<SearchBy>,
 }
 
 #[derive(Default, Debug, Clone, Parser)]

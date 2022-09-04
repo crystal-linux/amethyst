@@ -1,8 +1,9 @@
+use std::env;
 use std::ffi::{OsStr, OsString};
-use std::fs;
-use std::process::{Child, Command, ExitStatus, Stdio};
+use std::path::{Path, PathBuf};
+use std::process::{ExitStatus, Stdio};
+use tokio::process::{Child, Command};
 
-use crate::internal::config;
 use crate::internal::error::{AppError, AppResult};
 use crate::internal::is_tty;
 
@@ -12,22 +13,18 @@ pub struct StringOutput {
     pub status: ExitStatus,
 }
 
-/// A wrapper around [`std::process::Command`] with predefined
+/// A wrapper around [std::process::Command] with predefined
 /// commands used in this project as well as elevated access.
 pub struct ShellCommand {
     command: String,
     args: Vec<OsString>,
     elevated: bool,
+    working_dir: Option<PathBuf>,
 }
 
 impl ShellCommand {
     pub fn pacman() -> Self {
-        let config = config::read();
-        let pacman_cmd = if config.base.powerpill && fs::metadata("/usr/bin/powerpill").is_ok() {
-            Self::new("powerpill")
-        } else {
-            Self::new("pacman")
-        };
+        let pacman_cmd = Self::new("pacman");
 
         if is_tty() {
             pacman_cmd.arg("--color=always")
@@ -56,11 +53,22 @@ impl ShellCommand {
         Self::new("sudo")
     }
 
-    fn new(command: &str) -> Self {
+    pub fn rm() -> Self {
+        Self::new("rm")
+    }
+
+    pub fn pager() -> Self {
+        let pager = env::var("PAGER").unwrap_or_else(|_| String::from("less"));
+
+        Self::new(pager)
+    }
+
+    fn new<S: ToString>(command: S) -> Self {
         Self {
             command: command.to_string(),
             args: Vec::new(),
             elevated: false,
+            working_dir: None,
         }
     }
 
@@ -83,16 +91,22 @@ impl ShellCommand {
         self
     }
 
+    pub fn working_dir<D: AsRef<Path>>(mut self, dir: D) -> Self {
+        self.working_dir = Some(dir.as_ref().into());
+
+        self
+    }
+
     /// Runs the command with sudo
-    pub const fn elevated(mut self) -> Self {
+    pub fn elevated(mut self) -> Self {
         self.elevated = true;
 
         self
     }
 
     /// Waits for the child to exit but returns an error when it exists with a non-zero status code
-    pub fn wait_success(self) -> AppResult<()> {
-        let status = self.wait()?;
+    pub async fn wait_success(self) -> AppResult<()> {
+        let status = self.wait().await?;
         if status.success() {
             Ok(())
         } else {
@@ -101,17 +115,17 @@ impl ShellCommand {
     }
 
     /// Waits for the child to exit and returns the output status
-    pub fn wait(self) -> AppResult<ExitStatus> {
+    pub async fn wait(self) -> AppResult<ExitStatus> {
         let mut child = self.spawn(false)?;
 
-        child.wait().map_err(AppError::from)
+        child.wait().await.map_err(AppError::from)
     }
 
     /// Waits with output until the program completed and
     /// returns the string output object
-    pub fn wait_with_output(self) -> AppResult<StringOutput> {
+    pub async fn wait_with_output(self) -> AppResult<StringOutput> {
         let child = self.spawn(true)?;
-        let output = child.wait_with_output()?;
+        let output = child.wait_with_output().await?;
         let stdout = String::from_utf8(output.stdout).map_err(|e| AppError::from(e.to_string()))?;
         let stderr = String::from_utf8(output.stderr).map_err(|e| AppError::from(e.to_string()))?;
 
@@ -122,26 +136,32 @@ impl ShellCommand {
         })
     }
 
-    fn spawn(self, piped: bool) -> AppResult<Child> {
+    pub fn spawn(self, piped: bool) -> AppResult<Child> {
+        tracing::debug!("Running {} {:?}", self.command, self.args);
+
         let (stdout, stderr) = if piped {
             (Stdio::piped(), Stdio::piped())
         } else {
             (Stdio::inherit(), Stdio::inherit())
         };
-        let child = if self.elevated {
-            Command::new("sudo")
-                .arg(self.command)
-                .args(self.args)
-                .stdout(stdout)
-                .stderr(stderr)
-                .spawn()?
+        let mut command = if self.elevated {
+            let mut cmd = Command::new("sudo");
+            cmd.arg(self.command);
+
+            cmd
         } else {
             Command::new(self.command)
-                .args(self.args)
-                .stdout(stdout)
-                .stderr(stderr)
-                .spawn()?
         };
+        if let Some(dir) = self.working_dir {
+            command.current_dir(dir);
+        }
+
+        let child = command
+            .args(self.args)
+            .stdout(stdout)
+            .stderr(stderr)
+            .kill_on_drop(true)
+            .spawn()?;
 
         Ok(child)
     }

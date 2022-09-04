@@ -2,9 +2,9 @@ name: Run checks and tests
 on:
   workflow_dispatch:
   push:
-    branches: [ main, develop, feature/gh-actions ]
+    branches: [ main, development, feature/gh-actions ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, development ]
 
 env:
   CARGO_TERM_COLOR: always

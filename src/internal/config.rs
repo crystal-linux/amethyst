@@ -1,9 +1,7 @@
 #![allow(clippy::module_name_repetitions)]
 
 use serde::Deserialize;
-use std::{env, fs};
-
-use crate::{crash, AppExitCode};
+use std::{env, fs, path::PathBuf};
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
@@ -43,23 +41,9 @@ impl Default for Config {
 }
 
 pub fn read() -> Config {
-    let file = fs::read_to_string(format!(
-        "{}/{}",
-        env::var("HOME").unwrap(),
-        ".config/ame/config.toml"
-    ))
-    .unwrap_or_else(|e| {
-        crash!(
-            AppExitCode::ConfigParseError,
-            "Couldn't find config file: {}",
-            e
-        );
-    });
-    toml::from_str(&file).unwrap_or_else(|e| {
-        crash!(
-            AppExitCode::ConfigParseError,
-            "Could not parse config file: {}",
-            e
-        );
-    })
+    let config_path = PathBuf::from(env::var("HOME").unwrap()).join(".config/ame/config.toml");
+    match fs::read_to_string(config_path) {
+        Ok(contents) => toml::from_str(&contents).expect("Could not parse the config file"),
+        Err(_) => Config::default(),
+    }
 }
