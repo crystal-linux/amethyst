@@ -202,7 +202,7 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
     if let Err(e) = build_and_install(
         contexts,
         MakePkgBuilder::default(),
-        PacmanInstallBuilder::default().no_confirm(true),
+        PacmanInstallBuilder::default().no_confirm(options.noconfirm),
     )
     .await
     {
