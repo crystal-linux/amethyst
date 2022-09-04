@@ -379,7 +379,23 @@ async fn build_package(
         });
     }
 
-    let packages = MakePkgBuilder::package_list(build_path).await?;
+    let mut packages = MakePkgBuilder::package_list(build_path).await?;
+    let match_version = ctx
+        .package
+        .metadata
+        .version
+        .rsplit_once('_')
+        .map(|v| v.0)
+        .unwrap_or(&ctx.package.metadata.version);
+    let match_name = format!("{pkg_name}-{match_version}");
+    tracing::debug!("Match name {match_name}");
+    packages.retain(|name| {
+        name.file_name()
+            .and_then(|n| n.to_str())
+            .unwrap()
+            .starts_with(&match_name)
+    });
+    tracing::debug!("Archives: {packages:?}");
     pb.finish_with_message(format!("{}: {}", pkg_name.clone().bold(), "Built!".green()));
     ctx.step = BuildStep::Install(PackageArchives(packages));
 
