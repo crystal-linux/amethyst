@@ -23,6 +23,10 @@ codegen-units = 1
 opt-level = 0
 
 [dependencies]
+alpm = "2.2.1"
+alpm-utils = "2.0.0"
+pacmanconf = "2.0.0"
+chrono = "0.4.22"
 clap = { version = "3.2.17", features = [ "derive", "wrap_help" ] }
 regex = { version = "1.6.0", default-features = false, features = [ "std", "unicode-perl" ] }
 colored = "2.0.0"

@@ -17,7 +17,7 @@ impl AmeTheme {
 
 impl Theme for AmeTheme {
     fn format_prompt(&self, f: &mut dyn std::fmt::Write, prompt: &str) -> std::fmt::Result {
-        let prompt = wrap_text(prompt).join("\n  ");
+        let prompt = wrap_text(prompt, 4).join("\n");
         write!(f, "{} {}:", PROMPT_SYMBOL.magenta(), prompt.bold())
     }
 
@@ -31,7 +31,7 @@ impl Theme for AmeTheme {
         prompt: &str,
         default: Option<bool>,
     ) -> std::fmt::Result {
-        let prompt = wrap_text(prompt).join("\n  ");
+        let prompt = wrap_text(prompt, 4).join("\n");
         if !prompt.is_empty() {
             write!(f, "{} {} ", PROMPT_SYMBOL.magenta(), &prompt.bold())?;
         }
@@ -49,7 +49,7 @@ impl Theme for AmeTheme {
         prompt: &str,
         selection: Option<bool>,
     ) -> std::fmt::Result {
-        let prompt = wrap_text(prompt).join("\n  ");
+        let prompt = wrap_text(prompt, 4).join("\n");
         let selection = selection.map(|b| if b { "yes" } else { "no" });
 
         match selection {

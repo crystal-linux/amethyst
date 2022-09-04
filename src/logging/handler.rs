@@ -99,7 +99,7 @@ impl LogHandler {
                 format!("{}{}{}", acc, separator, line)
             });
 
-        let lines = wrap_text(lines).join("\n");
+        let lines = wrap_text(lines, 2).join("\n");
         self.log(lines)
     }
 
@@ -214,7 +214,7 @@ impl LogHandler {
     fn preformat_msg(&self, msg: String) -> String {
         let msg = self.apply_uwu(msg);
 
-        wrap_text(msg).join("\n")
+        wrap_text(msg, 2).join("\n")
     }
 
     fn apply_uwu(&self, msg: String) -> String {
