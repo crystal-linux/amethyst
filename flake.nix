@@ -27,7 +27,7 @@
 
         packages.default = packages.amethyst;
 
-        apps.apod = utils.lib.mkApp {
+        apps.amethyst = utils.lib.mkApp {
           drv = packages.amethyst;
         };
 
