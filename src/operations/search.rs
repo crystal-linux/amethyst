@@ -59,11 +59,11 @@ impl Printable for PackageSearchResult {
                     .timestamp(self.out_of_date.unwrap().try_into().unwrap(), 0)
                     .date_naive()
             )
-            .bold()
-            .red()
         } else {
-            "".bold()
-        };
+            "".to_string()
+        }
+        .bold()
+        .red();
         let description = wrap_text(&self.description, 4).join("\n");
 
         format!("{repo}{name} {version} {group} {out_of_date}\n    {description}")

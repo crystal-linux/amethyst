@@ -22,9 +22,12 @@ impl From<pacmanconf::Error> for Error {
     }
 }
 
+#[tracing::instrument(level = "trace")]
 pub fn get_handler() -> Result<Alpm, Error> {
     let config = Config::from_file(Path::new("/etc/pacman.conf"))?;
     let alpm = alpm_with_conf(&config)?;
+
+    tracing::debug!("Initialized alpm handler");
 
     Ok(alpm)
 }
