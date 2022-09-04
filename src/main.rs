@@ -1,10 +1,12 @@
 use args::{Args, GenCompArgs, InfoArgs};
 use builder::pacman::{PacmanColor, PacmanQueryBuilder};
 use clap::Parser;
+
 use internal::commands::ShellCommand;
 use internal::error::SilentUnwrap;
 
 use crate::args::{InstallArgs, Operation, QueryArgs, RemoveArgs, SearchArgs};
+use crate::interact::page_string;
 use crate::internal::detect;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::{sort, start_sudoloop, structs::Options};
@@ -133,7 +135,10 @@ async fn cmd_search(args: SearchArgs, options: Options) {
     } else {
         tracing::info!("Results:");
         let list: Vec<String> = results.iter().map(|x| x.to_print_string()).collect();
-        get_logger().print_list(list, "\n", 0);
+        get_logger().print_list(&list, "\n", 0);
+        if list.join("\n").lines().count() > crossterm::terminal::size().unwrap().1 as usize {
+            page_string(&list.join("\n")).silent_unwrap(AppExitCode::Other);
+        }
     }
 }
 
