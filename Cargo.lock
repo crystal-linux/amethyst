@@ -91,9 +91,9 @@ dependencies = [
 
 [[package]]
 name = "aur-rpc"
-version = "0.1.3"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4edbe8eb8dde1e70c5969f980a5a51a6b267d86c49d99c4bd42b7d26a8bb39c5"
+checksum = "3633aa4f720c5d4470c4705d2f2e0a6eaa06b39693d4a306e4add8e0b5fbea38"
 dependencies = [
  "reqwest",
  "serde",
