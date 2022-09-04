@@ -1,6 +1,6 @@
 use std::mem;
 
-use crate::logging::get_logger;
+use crate::with_suspended_output;
 
 use super::{theme::AmeTheme, Interact};
 
@@ -46,10 +46,6 @@ impl Interact for AmePrompt {
         dialog
             .with_prompt(mem::take(&mut self.question))
             .wait_for_newline(true);
-        get_logger().suspend();
-        let result = dialog.interact().unwrap();
-        get_logger().unsuspend();
-
-        result
+        with_suspended_output!({ dialog.interact().unwrap() })
     }
 }

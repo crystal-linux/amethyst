@@ -89,7 +89,7 @@ impl MakePkgBuilder {
         if output.status.success() {
             Ok(())
         } else {
-            Err(AppError::Other(output.stderr))
+            Err(AppError::MakePkg(output.stderr))
         }
     }
 

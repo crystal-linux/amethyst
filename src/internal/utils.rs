@@ -5,7 +5,7 @@ use std::process::exit;
 use directories::ProjectDirs;
 use textwrap::wrap;
 
-use crate::internal::exit_code::AppExitCode;
+use crate::{internal::exit_code::AppExitCode, logging::get_logger};
 use lazy_static::lazy_static;
 
 use super::error::{AppError, SilentUnwrap};
@@ -31,7 +31,9 @@ macro_rules! cancelled {
 
 /// Logs a message and exits the program with the given exit code.
 pub fn log_and_crash(msg: String, exit_code: AppExitCode) -> ! {
-    tracing::error!(msg);
+    get_logger().reset_output_type();
+    get_logger().log_error(msg);
+    get_logger().flush();
     exit(exit_code as i32);
 }
 

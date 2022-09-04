@@ -114,6 +114,9 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
                     deps.join(", ")
                 )
             }
+            AppError::MakePkg(msg) => {
+                crash!(AppExitCode::MakePkgError, "makepgk failed {msg}")
+            }
             _ => crash!(AppExitCode::Other, "Unknown error"),
         }
     }

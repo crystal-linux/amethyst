@@ -1,6 +1,6 @@
 use std::mem;
 
-use crate::logging::get_logger;
+use crate::with_suspended_output;
 
 use super::{theme::AmeTheme, Interact};
 
@@ -30,14 +30,12 @@ impl Interact for AmeMultiSelect {
     type Result = Vec<usize>;
 
     fn interact(&mut self) -> Self::Result {
-        get_logger().suspend();
-        let selection = dialoguer::MultiSelect::with_theme(AmeTheme::get())
-            .with_prompt(mem::take(&mut self.prompt))
-            .items(&self.items)
-            .interact()
-            .unwrap();
-        get_logger().unsuspend();
-
-        selection
+        with_suspended_output!({
+            dialoguer::MultiSelect::with_theme(AmeTheme::get())
+                .with_prompt(mem::take(&mut self.prompt))
+                .items(&self.items)
+                .interact()
+                .unwrap()
+        })
     }
 }

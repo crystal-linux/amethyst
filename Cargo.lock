@@ -17,6 +17,7 @@ dependencies = [
  "dialoguer",
  "directories",
  "futures",
+ "fuzzy-matcher",
  "indicatif",
  "lazy-regex",
  "lazy_static",
@@ -307,6 +308,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a92e7e37ecef6857fdc0c0c5d42fd5b0938e46590c2183cc92dd310a6d078eb1"
 dependencies = [
  "console",
+ "fuzzy-matcher",
  "tempfile",
  "zeroize",
 ]
@@ -489,6 +491,15 @@ dependencies = [
  "pin-project-lite",
  "pin-utils",
  "slab",
+]
+
+[[package]]
+name = "fuzzy-matcher"
+version = "0.3.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "54614a3312934d066701a80f20f15fa3b56d67ac7722b39eea5b4c9dd1d66c94"
+dependencies = [
+ "thread_local",
 ]
 
 [[package]]

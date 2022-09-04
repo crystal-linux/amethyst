@@ -21,6 +21,13 @@ macro_rules! multi_select {
 }
 
 #[macro_export]
+macro_rules! select_opt {
+    ($items:expr, $($arg:tt)+) => {
+        $crate::interact::InteractOpt::interact_opt($crate::interact::AmeFuzzySelect::new(format!($($arg)+)).items($items))
+    };
+}
+
+#[macro_export]
 /// Returns a singular or plural expression depending on the given len
 /// Usage:
 /// ```rust
@@ -82,16 +89,35 @@ macro_rules! normal_output {
 
 #[macro_export]
 /// Suspends the output so that nothing is being written to stdout/stderr
-macro_rules! supend_output {
+/// Returns a handle that unsuspend the output when it's dropped
+macro_rules! suspend_output {
     () => {
-        $crate::loggign::get_logger().suspend();
+        $crate::logging::get_logger().suspend()
     };
 }
 
 #[macro_export]
 /// Unsuspends the output and writes everything buffered to stdout/stderr
-macro_rules! unsupend_output {
+macro_rules! unsuspend_output {
     () => {
-        $crate::loggign::get_logger().unsuspend();
+        $crate::logging::get_logger().unsuspend();
+    };
+}
+
+#[macro_export]
+/// Suspend all output logging inside the given block
+/// Note: This only works as long as the block itself doesn't unsuspend
+/// the output
+macro_rules! with_suspended_output {
+    ($expr:block) => {{
+        let _handle = $crate::suspend_output!();
+        $expr
+    }};
+}
+
+#[macro_export]
+macro_rules! newline {
+    () => {
+        $crate::logging::get_logger().print_newline();
     };
 }

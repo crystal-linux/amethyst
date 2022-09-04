@@ -1,8 +1,8 @@
 use crossterm::style::Stylize;
 use dialoguer::theme::Theme;
+use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 
 use crate::internal::utils::wrap_text;
-
 const ERR_SYMBOL: &str = "X";
 const PROMPT_SYMBOL: &str = "?";
 
@@ -207,5 +207,55 @@ impl Theme for AmeTheme {
             },
             text
         )
+    }
+
+    fn format_fuzzy_select_prompt(
+        &self,
+        f: &mut dyn std::fmt::Write,
+        prompt: &str,
+        search_term: &str,
+        cursor_pos: usize,
+    ) -> std::fmt::Result {
+        if !prompt.is_empty() {
+            write!(f, "{} {} ", PROMPT_SYMBOL.magenta(), prompt.bold())?;
+        }
+
+        if cursor_pos < search_term.len() {
+            let st_head = search_term[0..cursor_pos].to_string();
+            let st_tail = search_term[cursor_pos..search_term.len()].to_string();
+            let st_cursor = "|".to_string();
+            write!(f, "{}{}{}", st_head, st_cursor, st_tail)
+        } else {
+            let cursor = "|".to_string();
+            write!(f, "{}{}", search_term, cursor)
+        }
+    }
+
+    fn format_fuzzy_select_prompt_item(
+        &self,
+        f: &mut dyn std::fmt::Write,
+        text: &str,
+        active: bool,
+        highlight_matches: bool,
+        matcher: &SkimMatcherV2,
+        search_term: &str,
+    ) -> std::fmt::Result {
+        write!(f, "{} ", if active { ">" } else { " " }.magenta().bold())?;
+
+        if highlight_matches {
+            if let Some((_score, indices)) = matcher.fuzzy_indices(text, search_term) {
+                for (idx, c) in text.chars().into_iter().enumerate() {
+                    if indices.contains(&idx) {
+                        write!(f, "{}", c.bold())?;
+                    } else {
+                        write!(f, "{}", c)?;
+                    }
+                }
+
+                return Ok(());
+            }
+        }
+
+        write!(f, "{}", text)
     }
 }

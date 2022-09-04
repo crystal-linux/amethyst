@@ -18,6 +18,7 @@ pub enum AppError {
     BuildError { pkg_name: String },
     UserCancellation,
     MissingDependencies(Vec<String>),
+    MakePkg(String),
 }
 
 impl Display for AppError {
@@ -33,6 +34,7 @@ impl Display for AppError {
             AppError::MissingDependencies(deps) => {
                 write!(f, "Missing dependencies {}", deps.join(", "))
             }
+            AppError::MakePkg(msg) => write!(f, "Failed to ru makepkg {msg}"),
         }
     }
 }

@@ -44,11 +44,12 @@ color-eyre = { version = "0.6.2", features = ["issue-url", "url"] }
 indicatif = { version = "0.17.0", features = ["tokio"] }
 lazy_static = "1.4.0"
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
-dialoguer = "0.10.2"
+dialoguer = { version = "0.10.2", features = ["fuzzy-select"] }
 lazy-regex = "2.3.0"
 directories = "4.0.1"
 console = "0.15.1"
 tracing-error = "0.2.0"
+fuzzy-matcher = "0.3.7"
 
 [dependencies.tokio]
 version = "1.21.0"

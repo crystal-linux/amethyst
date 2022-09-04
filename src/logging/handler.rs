@@ -3,6 +3,7 @@ use indicatif::{MultiProgress, ProgressBar, ProgressDrawTarget};
 use parking_lot::{Mutex, RwLock};
 use std::{
     fmt::Display,
+    io::{self, Write},
     mem,
     sync::{atomic::AtomicBool, Arc},
     time::Duration,
@@ -10,7 +11,7 @@ use std::{
 
 use crate::{internal::utils::wrap_text, uwu};
 
-use super::Verbosity;
+use super::{get_logger, Verbosity};
 
 const OK_SYMBOL: &str = "❖";
 const ERR_SYMBOL: &str = "X";
@@ -45,6 +46,8 @@ pub enum OutputType {
         suspended: Box<OutputType>,
     },
 }
+
+pub struct SuspendHandle;
 
 impl LogHandler {
     pub fn log_error(&self, msg: String) {
@@ -101,7 +104,7 @@ impl LogHandler {
     }
 
     pub fn print_newline(&self) {
-        self.log(String::from("\n"))
+        self.log(String::from(""))
     }
 
     pub fn set_verbosity(&self, level: Verbosity) {
@@ -112,7 +115,8 @@ impl LogHandler {
         self.set_output_type(OutputType::Stdout);
     }
 
-    pub fn suspend(&self) {
+    #[must_use]
+    pub fn suspend(&self) -> SuspendHandle {
         let mut output_type = self.output_type.write();
         let mut old_output_type = OutputType::Stdout;
         mem::swap(&mut *output_type, &mut old_output_type);
@@ -120,7 +124,9 @@ impl LogHandler {
         (*output_type) = OutputType::Buffer {
             buffer: Arc::new(Mutex::new(Vec::new())),
             suspended: Box::new(old_output_type),
-        }
+        };
+
+        SuspendHandle
     }
 
     pub fn unsuspend(&self) {
@@ -194,6 +200,17 @@ impl LogHandler {
         (*self.level.read()) >= level
     }
 
+    /// Flushes the output buffer
+    pub fn flush(&self) {
+        let output = self.output_type.read();
+        match &*output {
+            OutputType::Stdout => io::stdout().flush().unwrap(),
+            OutputType::Stderr => io::stderr().flush().unwrap(),
+            OutputType::Progress(p) => p.tick(),
+            _ => {}
+        }
+    }
+
     fn preformat_msg(&self, msg: String) -> String {
         let msg = self.apply_uwu(msg);
 
@@ -222,5 +239,11 @@ impl LogHandler {
                 suspended: _,
             } => buffer.lock().push(msg),
         };
+    }
+}
+
+impl Drop for SuspendHandle {
+    fn drop(&mut self) {
+        get_logger().unsuspend();
     }
 }
