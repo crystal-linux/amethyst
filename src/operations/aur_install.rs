@@ -20,10 +20,13 @@ use crate::internal::dependencies::DependencyInformation;
 use crate::internal::error::{AppError, AppResult, SilentUnwrap};
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::utils::{get_cache_dir, wrap_text};
-use crate::logging::get_logger;
+
 use crate::logging::output::{print_aur_package_list, print_dependency_list};
 use crate::logging::piped_stdio::StdioReader;
-use crate::{cancelled, crash, multi_select, numeric, prompt, Options};
+use crate::{
+    cancelled, crash, multi_progress, multi_select, normal_output, numeric, prompt, spinner,
+    Options,
+};
 
 #[derive(Debug)]
 pub struct BuildContext {
@@ -84,8 +87,7 @@ impl BuildContext {
 pub async fn aur_install(packages: Vec<String>, options: Options) {
     tracing::debug!("Installing from AUR: {:?}", &packages);
 
-    let pb = get_logger().new_progress_spinner();
-    pb.set_message("Fetching package information");
+    let pb = spinner!("Fetching package information");
 
     let package_info = aur_rpc::info(&packages)
         .await
@@ -108,7 +110,7 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
     }
 
     pb.finish_with_message("All packages found".green().to_string());
-    get_logger().reset_output_type();
+    normal_output!();
 
     if print_aur_package_list(&package_info.iter().collect::<Vec<_>>()).await
         && !options.noconfirm
@@ -117,8 +119,7 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
         cancelled!();
     }
 
-    let pb = get_logger().new_progress_spinner();
-    pb.set_message("Fetching package information");
+    let pb = spinner!("Fetching package information");
 
     let dependencies = future::try_join_all(
         package_info
@@ -128,7 +129,7 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
     .await
     .silent_unwrap(AppExitCode::RpcError);
     pb.finish_and_clear();
-    get_logger().reset_output_type();
+    normal_output!();
 
     print_dependency_list(&dependencies).await;
 
@@ -139,7 +140,7 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
     }
 
     tracing::info!("Downloading sources");
-    get_logger().new_multi_progress();
+    multi_progress!();
 
     let contexts = future::try_join_all(
         package_info
@@ -150,7 +151,7 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
     .await
     .unwrap();
 
-    get_logger().reset_output_type();
+    normal_output!();
     tracing::info!("All sources are ready.");
 
     if !options.noconfirm {
@@ -230,7 +231,7 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
 
 #[tracing::instrument(level = "trace")]
 async fn install_aur_deps(deps: Vec<&PackageInfo>, no_confirm: bool) -> AppResult<()> {
-    get_logger().new_multi_progress();
+    multi_progress!();
 
     let dep_contexts = future::try_join_all(
         deps.into_iter()
@@ -239,7 +240,7 @@ async fn install_aur_deps(deps: Vec<&PackageInfo>, no_confirm: bool) -> AppResul
     )
     .await?;
 
-    get_logger().reset_output_type();
+    normal_output!();
 
     build_and_install(
         dep_contexts,
@@ -249,7 +250,6 @@ async fn install_aur_deps(deps: Vec<&PackageInfo>, no_confirm: bool) -> AppResul
             .as_deps(true),
     )
     .await?;
-    get_logger().reset_output_type();
 
     Ok(())
 }
@@ -261,13 +261,13 @@ async fn build_and_install(
     install_opts: PacmanInstallBuilder,
 ) -> AppResult<()> {
     tracing::info!("Building packages");
-    get_logger().new_multi_progress();
+    multi_progress!();
     let results = future::join_all(
         ctxs.into_iter()
             .map(|ctx| build_package(ctx, make_opts.clone())),
     )
     .await;
-    get_logger().reset_output_type();
+    normal_output!();
     let mut ctxs = Vec::new();
     for result in results {
         match result {
@@ -286,10 +286,9 @@ async fn build_and_install(
 
 #[tracing::instrument(level = "trace", skip_all)]
 async fn download_aur_source(mut ctx: BuildContext) -> AppResult<BuildContext> {
-    let pb = get_logger().new_progress_spinner();
     let pkg_name = &ctx.package.metadata.name;
     let base_pkg = &ctx.package.metadata.package_base;
-    pb.set_message(format!("{}: Downloading sources", pkg_name.clone().bold()));
+    let pb = spinner!("{}: Downloading sources", pkg_name.clone().bold());
 
     let cache_dir = get_cache_dir();
     let pkg_dir = cache_dir.join(&pkg_name);
@@ -343,10 +342,9 @@ async fn build_package(
     mut ctx: BuildContext,
     make_opts: MakePkgBuilder,
 ) -> AppResult<BuildContext> {
-    let pb = get_logger().new_progress_spinner();
     let pkg_name = &ctx.package.metadata.name;
     let build_path = ctx.build_path()?;
-    pb.set_message(format!("{}: Building Package", pkg_name.clone().bold()));
+    let pb = spinner!("{}: Building Package", pkg_name.as_str().bold());
 
     let mut child = make_opts
         .directory(build_path)
@@ -371,7 +369,7 @@ async fn build_package(
     if !exit_status.success() {
         pb.finish_with_message(format!(
             "{}: {}",
-            pkg_name.clone().bold(),
+            pkg_name.as_str().bold(),
             "Build failed!".red(),
         ));
         return Err(AppError::BuildError {
@@ -495,7 +493,7 @@ async fn show_and_log_stdio(
 
 #[tracing::instrument(level = "trace", skip_all)]
 async fn handle_build_error<E: Into<AppError>>(err: E) -> AppResult<()> {
-    get_logger().reset_output_type();
+    normal_output!();
     let err = err.into();
 
     match err {
