@@ -11,7 +11,6 @@ use super::BuildContext;
 
 pub struct AurPackageInstall {
     pub options: Options,
-    pub packages: Vec<String>,
     pub dependencies: Vec<DependencyInformation>,
     pub contexts: Vec<BuildContext>,
 }

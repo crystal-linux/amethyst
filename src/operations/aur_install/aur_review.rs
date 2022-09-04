@@ -32,7 +32,6 @@ impl AurReview {
         }
         Ok(RepoDependencyInstallation {
             options: self.options,
-            packages: self.packages,
             dependencies: self.dependencies,
             contexts: self.contexts,
         })

@@ -9,7 +9,6 @@ use super::{aur_dependency_installation::AurDependencyInstallation, BuildContext
 
 pub struct RepoDependencyInstallation {
     pub options: Options,
-    pub packages: Vec<String>,
     pub dependencies: Vec<DependencyInformation>,
     pub contexts: Vec<BuildContext>,
 }
@@ -34,7 +33,6 @@ impl RepoDependencyInstallation {
         }
         Ok(AurDependencyInstallation {
             options: self.options,
-            packages: self.packages,
             dependencies: self.dependencies,
             contexts: self.contexts,
         })

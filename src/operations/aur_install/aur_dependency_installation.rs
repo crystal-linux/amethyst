@@ -15,7 +15,6 @@ use super::aur_package_install::AurPackageInstall;
 
 pub struct AurDependencyInstallation {
     pub options: crate::internal::structs::Options,
-    pub packages: Vec<String>,
     pub dependencies: Vec<DependencyInformation>,
     pub contexts: Vec<BuildContext>,
 }
@@ -44,11 +43,11 @@ impl AurDependencyInstallation {
 
         Ok(AurPackageInstall {
             options: self.options,
-            packages: self.packages,
             dependencies: self.dependencies,
             contexts: self.contexts,
         })
     }
+
     #[tracing::instrument(level = "trace", skip(self))]
     pub async fn install(&self, deps: Vec<&PackageInfo>) -> AppResult<()> {
         multi_progress!();
