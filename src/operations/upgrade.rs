@@ -1,6 +1,7 @@
 use crate::args::UpgradeArgs;
 use crate::builder::pacman::{PacmanColor, PacmanQueryBuilder};
 use crate::internal::commands::ShellCommand;
+use crate::internal::detect;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcinfo;
@@ -90,4 +91,7 @@ async fn upgrade_aur(options: Options) {
     } else {
         tracing::info!("No upgrades available for installed AUR packages");
     }
+
+    tracing::info!("Scanning for .pacnew files post-upgrade");
+    detect().await;
 }

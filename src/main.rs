@@ -7,7 +7,6 @@ use internal::error::SilentUnwrap;
 
 use crate::args::{InstallArgs, Operation, QueryArgs, RemoveArgs};
 use crate::interact::page_string;
-use crate::internal::detect;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::{sort, start_sudoloop, structs::Options};
 use crate::logging::get_logger;
@@ -68,8 +67,6 @@ async fn main() {
         Operation::GenComp(gen_args) => cmd_gencomp(&gen_args),
         Operation::Diff => todo!(),
     }
-
-    detect().await;
 }
 
 #[tracing::instrument(level = "trace")]
