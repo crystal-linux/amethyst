@@ -20,4 +20,5 @@ impl Sorted {
 pub struct Options {
     pub noconfirm: bool,
     pub asdeps: bool,
+    pub upgrade: bool,
 }
