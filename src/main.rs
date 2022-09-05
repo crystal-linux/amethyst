@@ -29,7 +29,7 @@ use logging::init_logger;
 async fn main() {
     color_eyre::install().unwrap();
     if unsafe { libc::geteuid() } == 0 {
-        crash!( AppExitCode::RunAsRoot, "Running amethyst as root is disall&owed as it can lead to system breakage. Instead, amethyst will prompt you when it needs superuser permissions");
+        crash!( AppExitCode::RunAsRoot, "Running amethyst as root is disallowed as it can lead to system breakage. Instead, amethyst will prompt you when it needs superuser permissions");
     }
 
     let args: Args = Args::parse();
