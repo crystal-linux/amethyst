@@ -4,7 +4,7 @@ use crate::operations::SearchBy;
 use clap::{Parser, Subcommand, ValueHint};
 
 #[derive(Debug, Clone, Parser)]
-#[clap(bin_name = "ame", name = "Amethyst", version = env ! ("CARGO_PKG_VERSION"), about = env ! ("CARGO_PKG_DESCRIPTION"), infer_subcommands = true, allow_external_subcommands = true, allow_hyphen_values = true)]
+#[clap(bin_name = "ame", name = "Amethyst", version = env ! ("CARGO_PKG_VERSION"), about = env ! ("CARGO_PKG_DESCRIPTION"), infer_subcommands = true)]
 pub struct Args {
     #[clap(subcommand)]
     pub subcommand: Option<Operation>,
@@ -28,40 +28,36 @@ pub struct Args {
 
 #[derive(Debug, Clone, Subcommand)]
 pub enum Operation {
-    /// Installs a package from either the AUR or the Pacman-defined repositories
-    #[clap(bin_name = "ame", name = "install", visible_aliases = & ["-S", "i"], aliases = & ["-Sa", "-Sr"])]
+    /// Installs or searches for a package in either the AUR or the Pacman-defined repositories
+    #[clap(bin_name = "ame", name = "sync", aliases = & [ "-S" ], visible_aliases = & ["install", "i"], short_flag = 'S')]
     Install(InstallArgs),
 
     /// Removes a previously installed package
-    #[clap(bin_name = "ame", name = "remove", visible_aliases = & ["rm", "r", "-Rs"])]
+    #[clap(bin_name = "ame", name = "remove", visible_aliases = & ["rm", "r"], short_flag = 'R')]
     Remove(RemoveArgs),
 
-    /// Searches for packages matching a provided pattern in the AUR/repos
-    #[clap(bin_name = "ame", name = "search", visible_aliases = & ["-Ss", "s"], aliases = & ["-Ssa", "-Ssr"])]
-    Search(SearchArgs),
+    /// Searches for packages matching a provided pattern in the AUR/repos [aliases: -Ss]
+    #[clap(bin_name = "ame", name = "search")]
+    Search(InstallArgs),
 
     /// Queries installed packages
-    #[clap(bin_name = "ame", name = "query", visible_aliases = & ["-Q", "q"], aliases = & ["-Qa", "-Qr", "-Qm", "-Qn"])]
+    #[clap(bin_name = "ame", name = "query", visible_aliases = & ["q"], short_flag = 'Q')]
     Query(QueryArgs),
 
-    /// Gets info about a package
-    #[clap(bin_name = "ame", name = "info", visible_aliases = & ["-Qi"])]
-    Info(InfoArgs),
-
     /// Upgrades locally installed packages to their latest versions (Default)
-    #[clap(bin_name = "ame", name = "upgrade", visible_aliases = & ["-Syu", "u"])]
+    #[clap(bin_name = "ame", name = "upgrade", visible_aliases = & ["u", "-Syu"])]
     Upgrade(UpgradeArgs),
 
     /// Generates shell completions for supported shells (bash, fish, elvish, pwsh)
-    #[clap(bin_name = "ame", name = "gencomp", visible_aliases = & ["-g"])]
+    #[clap(bin_name = "ame", name = "gencomp", visible_aliases = & ["g"], short_flag = 'G')]
     GenComp(GenCompArgs),
 
     /// Removes all orphaned packages
-    #[clap(bin_name = "ame", name = "clean", visible_aliases = & ["-Sc", "c"])]
+    #[clap(bin_name = "ame", name = "clean", visible_aliases = & ["c"], short_flag = 'C')]
     Clean,
 
     /// Runs pacdiff
-    #[clap(bin_name = "ame", name = "diff", visible_aliases = & ["-d"])]
+    #[clap(bin_name = "ame", name = "diff", visible_aliases = & ["d"], short_flag = 'd')]
     Diff,
 }
 
@@ -84,6 +80,14 @@ pub struct InstallArgs {
     /// Install the packages only from the pacman-defined repositories [-Sr]
     #[clap(long, short)]
     pub repo: bool,
+
+    /// Search packages for a given pattern instead of installing
+    #[clap(hidden = true, short = 's')]
+    pub search: bool,
+
+    /// Searches by a specific field
+    #[clap(long, short)]
+    pub by: Option<SearchBy>,
 }
 
 #[derive(Default, Debug, Clone, Parser)]
@@ -91,25 +95,6 @@ pub struct RemoveArgs {
     /// The name of the package(s) to remove
     #[clap(required = true)]
     pub packages: Vec<String>,
-}
-
-#[derive(Default, Debug, Clone, Parser)]
-pub struct SearchArgs {
-    /// Searches for the relevant packages in the AUR [-Ssa]
-    #[clap(long, short)]
-    pub aur: bool,
-
-    /// Searches only pacman repos for the package [-Ssr]
-    #[clap(long, short)]
-    pub repo: bool,
-
-    /// The string the package must match in the search
-    #[clap(required = true)]
-    pub search: String,
-
-    /// Searches by a specific field
-    #[clap(long, short)]
-    pub by: Option<SearchBy>,
 }
 
 #[derive(Default, Debug, Clone, Parser)]
@@ -121,13 +106,10 @@ pub struct QueryArgs {
     /// Lists repo/native packages [-Qr, -Qn]
     #[clap(long, short)]
     pub repo: bool,
-}
 
-#[derive(Default, Debug, Clone, Parser)]
-pub struct InfoArgs {
-    /// The name of the package(s) to get info on
-    #[clap(required = true)]
-    pub package: String,
+    /// Get information about a specific package
+    #[clap(long, short)]
+    pub info: Option<String>,
 }
 
 #[derive(Default, Debug, Clone, Parser)]

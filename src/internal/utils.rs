@@ -65,8 +65,9 @@ fn create_if_not_exist(dir: &Path) -> &Path {
 
 pub fn wrap_text<S: AsRef<str>>(s: S, padding: usize) -> Vec<String> {
     let subsequent_padding = " ".repeat(padding);
-    let opts = textwrap::Options::new(crossterm::terminal::size().unwrap().0 as usize - padding)
-        .subsequent_indent(&subsequent_padding);
+    let opts =
+        textwrap::Options::new(crossterm::terminal::size().unwrap().0 as usize - (padding + 1))
+            .subsequent_indent(&subsequent_padding);
     wrap(s.as_ref(), opts)
         .into_iter()
         .map(String::from)
