@@ -73,7 +73,7 @@ impl Printable for PackageSearchResult {
         };
         let name = &self.name.bold();
         let version = &self.version.bold().green();
-        let groups = if self.groups.is_some() {
+        let groups = if self.groups.is_some() && !self.groups.as_ref().unwrap().is_empty() {
             format!(" ({})", self.groups.clone().unwrap().join(", "))
         } else {
             "".to_string()
