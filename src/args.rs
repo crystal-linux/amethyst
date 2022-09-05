@@ -33,7 +33,7 @@ pub enum Operation {
     Install(InstallArgs),
 
     /// Removes a previously installed package
-    #[clap(bin_name = "ame", name = "remove", visible_aliases = & ["rm", "r"], short_flag = 'R')]
+    #[clap(bin_name = "ame", name = "remove", visible_aliases = & ["rm"], short_flag = 'R')]
     Remove(RemoveArgs),
 
     /// Searches for packages matching a provided pattern in the AUR/repos [aliases: -Ss]
@@ -41,23 +41,23 @@ pub enum Operation {
     Search(InstallArgs),
 
     /// Queries installed packages
-    #[clap(bin_name = "ame", name = "query", visible_aliases = & ["q"], short_flag = 'Q')]
+    #[clap(bin_name = "ame", name = "query", short_flag = 'Q')]
     Query(QueryArgs),
 
     /// Upgrades locally installed packages to their latest versions (Default)
-    #[clap(bin_name = "ame", name = "upgrade", visible_aliases = & ["u", "-Syu"])]
+    #[clap(bin_name = "ame", name = "upgrade", visible_aliases = & ["-Syu"])]
     Upgrade(UpgradeArgs),
 
     /// Generates shell completions for supported shells (bash, fish, elvish, pwsh)
-    #[clap(bin_name = "ame", name = "gencomp", visible_aliases = & ["g"], short_flag = 'G')]
+    #[clap(bin_name = "ame", name = "gencomp", short_flag = 'G')]
     GenComp(GenCompArgs),
 
     /// Removes all orphaned packages
-    #[clap(bin_name = "ame", name = "clean", visible_aliases = & ["c"], short_flag = 'C')]
+    #[clap(bin_name = "ame", name = "clean", short_flag = 'C')]
     Clean,
 
     /// Runs pacdiff
-    #[clap(bin_name = "ame", name = "diff", visible_aliases = & ["d"], short_flag = 'd')]
+    #[clap(bin_name = "ame", name = "diff", short_flag = 'd')]
     Diff,
 }
 
