@@ -41,6 +41,7 @@ impl AurFetch {
 
         if print_aur_package_list(&package_infos.iter().collect::<Vec<_>>()).await
             && !self.options.noconfirm
+            && !self.options.upgrade
             && !prompt!(default yes, "Some packages are already installed. Continue anyway?")
         {
             return Err(AppError::UserCancellation);

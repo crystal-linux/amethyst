@@ -87,6 +87,10 @@ async fn upgrade_aur(options: Options) {
     }
 
     if !aur_upgrades.is_empty() {
+        let options = Options {
+            upgrade: true,
+            ..options
+        };
         aur_install(aur_upgrades, options).await;
     } else {
         tracing::info!("No upgrades available for installed AUR packages");

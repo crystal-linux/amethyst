@@ -38,6 +38,7 @@ async fn main() {
     let options = Options {
         noconfirm,
         asdeps: false,
+        upgrade: false,
     };
 
     if args.sudoloop {
