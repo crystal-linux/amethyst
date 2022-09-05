@@ -20,9 +20,12 @@ jobs:
   clippy:
     name: cargo clippy
     runs-on: ubuntu-latest
+    container: ghcr.io/crystal-linux/crystal:latest
     steps:
       - uses: actions/checkout@v1
-      - run: rustup component add clippy
+      - run: |
+        sudo pacman -Syu --needed --noconfirm
+        sudo pacman -S --noconfirm rust
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
