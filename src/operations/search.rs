@@ -38,25 +38,29 @@ impl Display for PackageSearchResult {
         let repo = &self.repo;
         let name = &self.name;
         let version = &self.version;
-        let groups = if self.groups.is_some() {
-            format!(" ({})", self.groups.clone().unwrap().join(", "))
+        let groups = if let Some(groups) = &self.groups {
+            if groups.is_empty() {
+                String::new()
+            } else {
+                format!("({})", groups.join(", "))
+            }
         } else {
-            "".to_string()
+            String::new()
         };
-        let out_of_date = if self.out_of_date.is_some() {
+        let out_of_date = if let Some(out_of_date) = self.out_of_date {
             format!(
                 " [out of date: since {}]",
                 Local
-                    .timestamp(self.out_of_date.unwrap().try_into().unwrap(), 0)
+                    .timestamp(out_of_date.try_into().unwrap(), 0)
                     .date_naive()
             )
         } else {
-            "".to_string()
+            String::new()
         };
         let installed = if self.installed {
             " [installed]".to_string()
         } else {
-            "".to_string()
+            String::new()
         };
         let description = wrap_text(
             self.description
@@ -79,18 +83,22 @@ impl Printable for PackageSearchResult {
         };
         let name = &self.name.bold();
         let version = &self.version.bold().green();
-        let groups = if self.groups.is_some() && !self.groups.as_ref().unwrap().is_empty() {
-            format!(" ({})", self.groups.clone().unwrap().join(", "))
+        let groups = if let Some(groups) = &self.groups {
+            if groups.is_empty() {
+                "".to_string()
+            } else {
+                format!(" ({})", groups.join(", "))
+            }
         } else {
             "".to_string()
         }
         .bold()
         .blue();
-        let out_of_date = if self.out_of_date.is_some() {
+        let out_of_date = if let Some(out_of_date) = self.out_of_date {
             format!(
                 " [out of date: since {}]",
                 Local
-                    .timestamp(self.out_of_date.unwrap().try_into().unwrap(), 0)
+                    .timestamp(out_of_date.try_into().unwrap(), 0)
                     .date_naive()
             )
         } else {
