@@ -2,12 +2,13 @@
 name = "Amethyst"
 version = "4.0.0"
 authors = ["Michal S. <michal@tar.black>", "axtlos <axtlos@tar.black>", "trivernis <trivernis@protonmail.com>"]
-edition = "2021"
 description = "A fast and efficient AUR helper"
-default-run = "ame"
+repository = "https://github.com/crystal-linux/amethyst"
 license-file = "LICENSE"
 keywords = ["aur", "crystal-linux", "pacman", "aur-helper"]
 categories = ["command-line-utilities"]
+default-run = "ame"
+edition = "2021"
 
 [[bin]]
 name = "ame"
