@@ -73,8 +73,8 @@ async fn cmd_install(args: InstallArgs, options: Options) {
 
     let arg1 = env::args().collect::<Vec<String>>()[1].clone();
     let both = !args.aur && arg1 != "-Sa" && arg1 != "-Sr";
-    let aur = args.aur || arg1 == "-Sa" || both;
-    let repo = args.repo || arg1 == "-Sr" || both;
+    let aur = args.aur || arg1 == "-Sa";
+    let repo = args.repo || arg1 == "-Sr";
 
     if repo {
         operations::install(packages, options).await;
@@ -95,10 +95,10 @@ async fn cmd_install(args: InstallArgs, options: Options) {
                 sorted.nf.join(", ")
             );
         }
-        if !sorted.repo.is_empty() && repo {
+        if !sorted.repo.is_empty() {
             operations::install(sorted.repo, options).await;
         }
-        if !sorted.aur.is_empty() && aur {
+        if !sorted.aur.is_empty() {
             operations::aur_install(sorted.aur, options).await;
         }
     };
