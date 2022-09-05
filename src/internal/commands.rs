@@ -45,6 +45,7 @@ impl ShellCommand {
         Self::new("git")
     }
 
+    #[allow(dead_code)]
     pub fn bash() -> Self {
         Self::new("bash")
     }

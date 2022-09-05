@@ -127,7 +127,7 @@ pub async fn aur_search(
             let version = package.version;
             let groups = None;
             let out_of_date = package.out_of_date;
-            let installed = local.pkg(&*name).is_ok(); 
+            let installed = local.pkg(&*name).is_ok();
             let description = package.description;
 
             PackageSearchResult {
@@ -158,7 +158,13 @@ pub async fn repo_search(query: &str, options: Options) -> Vec<PackageSearchResu
         for package in packages {
             let name = package.name();
             let version = package.version();
-            let groups = Some(package.groups().iter().map(std::string::ToString::to_string).collect());
+            let groups = Some(
+                package
+                    .groups()
+                    .iter()
+                    .map(std::string::ToString::to_string)
+                    .collect(),
+            );
             let out_of_date = None;
             let installed = local.pkg(name).is_ok();
             let description = package.desc();
