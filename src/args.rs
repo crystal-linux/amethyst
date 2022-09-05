@@ -36,7 +36,7 @@ pub enum Operation {
     #[clap(bin_name = "ame", name = "remove", visible_aliases = & ["rm", "r", "-Rs"])]
     Remove(RemoveArgs),
 
-    /// Searches for packages matching a regex-supported pattern in the AUR and/or the repos
+    /// Searches for packages matching a provided pattern in the AUR/repos
     #[clap(bin_name = "ame", name = "search", visible_aliases = & ["-Ss", "s"], aliases = & ["-Ssa", "-Ssr"])]
     Search(SearchArgs),
 
@@ -95,7 +95,7 @@ pub struct RemoveArgs {
 
 #[derive(Default, Debug, Clone, Parser)]
 pub struct SearchArgs {
-    /// Searches for the relevant packages in both the AUR and repos [-Ssa]
+    /// Searches for the relevant packages in the AUR [-Ssa]
     #[clap(long, short)]
     pub aur: bool,
 

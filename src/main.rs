@@ -14,6 +14,7 @@ use crate::logging::get_logger;
 use crate::logging::Printable;
 
 use clap_complete::{Generator, Shell};
+use std::env;
 use std::str::FromStr;
 
 mod args;
@@ -71,12 +72,10 @@ async fn cmd_install(args: InstallArgs, options: Options) {
     let packages = args.packages;
     let sorted = sort(&packages, options).await;
 
-    if !sorted.repo.is_empty() {
-        operations::install(sorted.repo, options).await;
-    }
-    if !sorted.aur.is_empty() {
-        operations::aur_install(sorted.aur, options).await;
-    }
+    let both = !args.aur && !args.repo && env::args().collect::<Vec<String>>()[1] == "-S";
+    let aur = args.aur || env::args().collect::<Vec<String>>()[1] == "-Sa" || both;
+    let repo = args.repo || env::args().collect::<Vec<String>>()[1] == "-Sr" || both;
+
     if !sorted.nf.is_empty() {
         crash!(
             AppExitCode::PacmanError,
@@ -85,20 +84,11 @@ async fn cmd_install(args: InstallArgs, options: Options) {
         );
     }
 
-    let bash_output = ShellCommand::bash()
-        .arg("-c")
-        .arg("sudo find /etc -name *.pacnew")
-        .wait_with_output()
-        .await
-        .silent_unwrap(AppExitCode::Other)
-        .stdout;
-
-    if !bash_output.is_empty() {
-        let pacnew_files = bash_output
-            .split_whitespace()
-            .collect::<Vec<&str>>()
-            .join(", ");
-        tracing::info!("You have .pacnew files in /etc ({pacnew_files}) that you haven't removed or acted upon, it is recommended you do that now" );
+    if !sorted.repo.is_empty() && repo {
+        operations::install(sorted.repo, options).await;
+    }
+    if !sorted.aur.is_empty() && aur {
+        operations::aur_install(sorted.aur, options).await;
     }
 }
 
@@ -115,9 +105,9 @@ async fn cmd_search(args: SearchArgs, options: Options) {
 
     let mut results = Vec::new();
 
-    let both = !args.aur && !args.repo;
-    let aur = args.aur || both;
-    let repo = args.repo || both;
+    let both = !args.aur && !args.repo && env::args().collect::<Vec<String>>()[1] == "-Ss";
+    let aur = args.aur || env::args().collect::<Vec<String>>()[1] == "-Ssa" || both;
+    let repo = args.repo || env::args().collect::<Vec<String>>()[1] == "-Ssr" || both;
 
     if repo {
         tracing::info!("Searching repos for {}", &query_string);
@@ -135,11 +125,13 @@ async fn cmd_search(args: SearchArgs, options: Options) {
     } else {
         tracing::info!("Results:");
 
-        results.sort_by(|a, b | {
+        results.sort_by(|a, b| {
             let a_score = a.score(&query_string);
             let b_score = b.score(&query_string);
 
-            b_score.partial_cmp(&a_score).unwrap_or(std::cmp::Ordering::Equal)
+            b_score
+                .partial_cmp(&a_score)
+                .unwrap_or(std::cmp::Ordering::Equal)
         });
 
         let list: Vec<String> = results.iter().map(|x| x.to_print_string()).collect();
@@ -153,7 +145,11 @@ async fn cmd_search(args: SearchArgs, options: Options) {
 
 #[tracing::instrument(level = "trace")]
 async fn cmd_query(args: QueryArgs) {
-    if args.repo || !args.aur {
+    let both = !args.aur && !args.repo && env::args().collect::<Vec<String>>()[1] == "-Q";
+    let aur = args.aur || env::args().collect::<Vec<String>>()[1] == "-Qa";
+    let repo = args.repo || env::args().collect::<Vec<String>>()[1] == "-Qr";
+
+    if repo {
         tracing::info!("Installed Repo Packages: ");
         PacmanQueryBuilder::native()
             .color(PacmanColor::Always)
@@ -161,9 +157,17 @@ async fn cmd_query(args: QueryArgs) {
             .await
             .silent_unwrap(AppExitCode::PacmanError);
     }
-    if args.aur || !args.repo {
+    if aur {
         tracing::info!("Installed AUR Packages: ");
         PacmanQueryBuilder::foreign()
+            .color(PacmanColor::Always)
+            .query()
+            .await
+            .silent_unwrap(AppExitCode::PacmanError);
+    }
+    if both {
+        tracing::info!("Installed Packages: ");
+        PacmanQueryBuilder::all()
             .color(PacmanColor::Always)
             .query()
             .await
