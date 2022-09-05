@@ -24,7 +24,7 @@ pub struct PackageSearchResult {
     pub groups: Option<Vec<String>>,
     pub out_of_date: Option<u64>,
     pub installed: bool,
-    pub description: String,
+    pub description: Option<String>,
 }
 
 impl PackageSearchResult {
@@ -58,7 +58,13 @@ impl Display for PackageSearchResult {
         } else {
             "".to_string()
         };
-        let description = wrap_text(&self.description, 4).join("\n");
+        let description = wrap_text(
+            self.description
+                .clone()
+                .unwrap_or_else(|| "No description".to_string()),
+            4,
+        )
+        .join("\n");
 
         format!("{repo}{name} {version}{groups}{out_of_date}{installed}\n    {description}").fmt(f)
     }
@@ -99,7 +105,13 @@ impl Printable for PackageSearchResult {
         }
         .bold()
         .cyan();
-        let description = wrap_text(&self.description, 4).join("\n");
+        let description = wrap_text(
+            self.description
+                .clone()
+                .unwrap_or_else(|| "No description".to_string()),
+            4,
+        )
+        .join("\n");
 
         format!("{repo}{name} {version}{groups}{out_of_date}{installed}\n    {description}")
     }
@@ -137,7 +149,7 @@ pub async fn aur_search(
                 groups,
                 out_of_date,
                 installed,
-                description: description.unwrap_or_else(|| "No description".to_string()),
+                description,
             }
         })
         .collect();
@@ -176,7 +188,7 @@ pub async fn repo_search(query: &str, options: Options) -> Vec<PackageSearchResu
                 groups,
                 out_of_date,
                 installed,
-                description: description.unwrap_or("No description").to_string(),
+                description: Some(description.unwrap().to_string()),
             };
 
             results.push(result);
