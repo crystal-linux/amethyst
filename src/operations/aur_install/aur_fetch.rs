@@ -39,7 +39,6 @@ impl AurFetch {
         pb.finish_with_message("All packages found".green().to_string());
         normal_output!();
 
-        print!("  "); // TODO: Make this less hacky
         if print_aur_package_list(&package_infos.iter().collect::<Vec<_>>()).await
             && !self.options.noconfirm
             && !prompt!(default yes, "Some packages are already installed. Continue anyway?")
