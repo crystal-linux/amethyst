@@ -1,10 +1,10 @@
-name: Run checks and tests
+name: Lint Code
 on:
   workflow_dispatch:
   push:
-    branches: [ main, development, feature/gh-actions ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, development ]
+    branches: [ main ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -12,29 +12,18 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/crystal-linux/crystal:latest
     steps:
-      - uses: actions/checkout@v2
-        if: ${{ !env.ACT }}
+      - name: Prepare
+        run : |
+          pacman -Syu --needed --noconfirm
+          pacman -S --noconfirm rust
 
-      - name: Cache build data
-        if: ${{ !env.ACT }}
-        uses: actions/cache@v2
-        with:
-          path: |
-            target
-            ~/.cargo/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
+      - name: Clippy
+        run: |
+          cargo clippy -- -D warnings
 
-      - name: Fetch
-        run: cargo fetch
-
-      - name: Check
-        run: cargo check --all-features
-
-      - name: Lint
-        run: cargo clippy -- -D warnings
-
-      - name: Test
-        run : cargo test --all-features
+      - name: Format
+        run: |
+          cargo fmt --check
