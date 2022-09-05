@@ -8,4 +8,6 @@
 
 # Direnv
 /.direnv
-/.envrc
+
+# IDEs
+/.idea
