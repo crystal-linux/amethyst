@@ -70,26 +70,37 @@ async fn main() {
 #[tracing::instrument(level = "trace")]
 async fn cmd_install(args: InstallArgs, options: Options) {
     let packages = args.packages;
-    let sorted = sort(&packages, options).await;
 
     let both = !args.aur && !args.repo && env::args().collect::<Vec<String>>()[1] == "-S";
     let aur = args.aur || env::args().collect::<Vec<String>>()[1] == "-Sa" || both;
     let repo = args.repo || env::args().collect::<Vec<String>>()[1] == "-Sr" || both;
 
-    if !sorted.nf.is_empty() {
-        crash!(
-            AppExitCode::PacmanError,
-            "Couldn't find packages: {} in repos or the AUR",
-            sorted.nf.join(", ")
-        );
+    if repo {
+        operations::install(packages, options).await;
+        return;
     }
 
-    if !sorted.repo.is_empty() && repo {
-        operations::install(sorted.repo, options).await;
+    if aur {
+        operations::aur_install(packages, options).await;
+        return;
     }
-    if !sorted.aur.is_empty() && aur {
-        operations::aur_install(sorted.aur, options).await;
-    }
+
+    if both {
+        let sorted = sort(&packages, options).await;
+        if !sorted.nf.is_empty() {
+            crash!(
+                AppExitCode::PacmanError,
+                "Couldn't find packages: {} in repos or the AUR",
+                sorted.nf.join(", ")
+            );
+        }
+        if !sorted.repo.is_empty() && repo {
+            operations::install(sorted.repo, options).await;
+        }
+        if !sorted.aur.is_empty() && aur {
+            operations::aur_install(sorted.aur, options).await;
+        }
+    };
 }
 
 #[tracing::instrument(level = "trace")]
