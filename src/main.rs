@@ -71,9 +71,10 @@ async fn main() {
 async fn cmd_install(args: InstallArgs, options: Options) {
     let packages = args.packages;
 
-    let both = !args.aur && !args.repo && env::args().collect::<Vec<String>>()[1] == "-S";
-    let aur = args.aur || env::args().collect::<Vec<String>>()[1] == "-Sa" || both;
-    let repo = args.repo || env::args().collect::<Vec<String>>()[1] == "-Sr" || both;
+    let arg1 = env::args().collect::<Vec<String>>()[1].clone();
+    let both = !args.aur && arg1 != "-Sa" && arg1 != "-Sr";
+    let aur = args.aur || arg1 == "-Sa" || both;
+    let repo = args.repo || arg1 == "-Sr" || both;
 
     if repo {
         operations::install(packages, options).await;
@@ -116,9 +117,10 @@ async fn cmd_search(args: SearchArgs, options: Options) {
 
     let mut results = Vec::new();
 
-    let both = !args.aur && !args.repo && env::args().collect::<Vec<String>>()[1] == "-Ss";
-    let aur = args.aur || env::args().collect::<Vec<String>>()[1] == "-Ssa" || both;
-    let repo = args.repo || env::args().collect::<Vec<String>>()[1] == "-Ssr" || both;
+    let arg1 = env::args().collect::<Vec<String>>()[1].clone();
+    let both = !args.aur && arg1 != "-Ssa" && arg1 != "-Ssr";
+    let aur = args.aur || arg1 == "-Ssa" || both;
+    let repo = args.repo || arg1 == "-Ssr" || both;
 
     if repo {
         tracing::info!("Searching repos for {}", &query_string);
@@ -156,9 +158,10 @@ async fn cmd_search(args: SearchArgs, options: Options) {
 
 #[tracing::instrument(level = "trace")]
 async fn cmd_query(args: QueryArgs) {
-    let both = !args.aur && !args.repo && env::args().collect::<Vec<String>>()[1] == "-Q";
-    let aur = args.aur || env::args().collect::<Vec<String>>()[1] == "-Qa";
-    let repo = args.repo || env::args().collect::<Vec<String>>()[1] == "-Qr";
+    let arg1 = env::args().collect::<Vec<String>>()[1].clone();
+    let both = !args.aur && arg1 != "-Qa" && arg1 != "-Qr";
+    let aur = args.aur || arg1 == "-Qa" || both;
+    let repo = args.repo || arg1 == "-Qr" || both;
 
     if repo {
         tracing::info!("Installed Repo Packages: ");
