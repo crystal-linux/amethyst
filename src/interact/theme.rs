@@ -54,14 +54,14 @@ impl Theme for AmeTheme {
 
         match selection {
             Some(selection) if prompt.is_empty() => {
-                write!(f, "{}", selection.italic())
+                write!(f, "  {}", selection.italic())
             }
             Some(selection) => {
-                write!(f, "{} {}", &prompt.bold(), selection.italic())
+                write!(f, "  {} {}", &prompt.bold(), selection.italic())
             }
             None if prompt.is_empty() => Ok(()),
             None => {
-                write!(f, "{}", &prompt.bold())
+                write!(f, "  {}", &prompt.bold())
             }
         }
     }
