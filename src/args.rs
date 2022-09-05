@@ -69,15 +69,15 @@ impl Default for Operation {
 
 #[derive(Default, Debug, Clone, Parser)]
 pub struct InstallArgs {
-    /// The name of the package(s) to install
+    /// The name of the package(s) to install or search for
     #[clap(required = true)]
     pub packages: Vec<String>,
 
-    /// Installs only from the AUR [-Sa]
+    /// Operate only on AUR packages
     #[clap(long, short)]
     pub aur: bool,
 
-    /// Install the packages only from the pacman-defined repositories [-Sr]
+    /// Operate only on repo packages
     #[clap(long, short)]
     pub repo: bool,
 
