@@ -24,8 +24,8 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - run: |
-        sudo pacman -Syu --needed --noconfirm
-        sudo pacman -S --noconfirm rust
+          sudo pacman -Syu --needed --noconfirm
+          sudo pacman -S --noconfirm rust
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
