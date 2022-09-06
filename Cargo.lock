@@ -13,6 +13,7 @@ dependencies = [
  "chrono",
  "clap",
  "clap_complete",
+ "clap_complete_fig",
  "color-eyre",
  "colored",
  "console",
@@ -247,6 +248,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e4179da71abd56c26b54dd0c248cc081c1f43b0a1a7e8448e28e57a29baa993d"
 dependencies = [
  "clap",
+]
+
+[[package]]
+name = "clap_complete_fig"
+version = "3.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ed37b4c0c1214673eba6ad8ea31666626bf72be98ffb323067d973c48b4964b9"
+dependencies = [
+ "clap",
+ "clap_complete",
 ]
 
 [[package]]

@@ -45,6 +45,7 @@ textwrap = "0.15.0"
 crossterm = "0.25.0"
 toml = "0.5.9"
 clap_complete = "3.2.4"
+clap_complete_fig = "3.2.4"
 color-eyre = { version = "0.6.2", features = ["issue-url", "url"] }
 indicatif = { version = "0.17.0", features = ["tokio"] }
 lazy_static = "1.4.0"
