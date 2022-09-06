@@ -40,6 +40,7 @@
             cargo-audit
             rustfmt
             clippy
+            rust-analyzer
 
             # For `alpm` libs
             pkg-config
