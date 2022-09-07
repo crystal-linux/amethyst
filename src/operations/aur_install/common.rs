@@ -198,7 +198,7 @@ async fn build_package(
 
     let packages = MakePkgBuilder::package_list(build_path).await?;
     tracing::debug!("Archives: {packages:?}");
-    
+
     pb.finish_with_message(format!("{}: {}", pkg_name.clone().bold(), "Built!".green()));
     ctx.step = BuildStep::Install(PackageArchives(packages));
 
