@@ -41,7 +41,6 @@ impl AurReview {
     }
 
     async fn review_single_package(&self, pkg: &str) -> AppResult<()> {
-        newline!();
         tracing::info!("Reviewing {pkg}");
         let mut files_iter = fs::read_dir(get_cache_dir().join(pkg)).await?;
         let mut files = Vec::new();
