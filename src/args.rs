@@ -125,7 +125,7 @@ pub struct UpgradeArgs {
 
 #[derive(Default, Debug, Clone, Parser)]
 pub struct GenCompArgs {
-    /// The shell to generate completions for (bash, fish, elvish, pwsh)
+    /// The shell to generate completions for (bash, fish, elvish, pwsh, fig)
     #[clap(required = true)]
     pub shell: String,
 }

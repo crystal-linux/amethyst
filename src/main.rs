@@ -13,6 +13,8 @@ use crate::logging::get_logger;
 use crate::logging::Printable;
 
 use clap_complete::{Generator, Shell};
+use clap_complete_fig::Fig;
+
 use std::str::FromStr;
 
 mod args;
@@ -200,19 +202,28 @@ async fn cmd_query(args: QueryArgs) {
 
 #[tracing::instrument(level = "trace")]
 fn cmd_gencomp(args: &GenCompArgs) {
-    let shell: Shell = Shell::from_str(&args.shell).unwrap_or_else(|e| {
-        crash!(AppExitCode::Other, "Invalid shell: {}", e);
-    });
-
-    if shell == Shell::Zsh {
-        crash!(
-            AppExitCode::Other,
-            "Zsh shell completions are currently unsupported due to a bug in the clap_completion crate"
+    if args.shell == "fig" {
+        clap_complete::generate(
+            Fig,
+            &mut <args::Args as clap::CommandFactory>::command(),
+            "ame",
+            &mut std::io::stderr(),
         );
-    };
+    } else {
+        let shell: Shell = Shell::from_str(&args.shell).unwrap_or_else(|e| {
+            crash!(AppExitCode::Other, "Invalid shell, {}", e);
+        });
 
-    shell.generate(
-        &<args::Args as clap::CommandFactory>::command(),
-        &mut std::io::stderr(),
-    );
+        if shell == Shell::Zsh {
+            crash!(
+                AppExitCode::Other,
+                "Zsh shell completions are currently unsupported due to a bug in the clap_completion crate"
+            );
+        };
+
+        shell.generate(
+            &<args::Args as clap::CommandFactory>::command(),
+            &mut std::io::stderr(),
+        );
+    }
 }
