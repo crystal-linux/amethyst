@@ -149,7 +149,7 @@ impl Theme for AmeTheme {
         prompt: &str,
         selections: &[&str],
     ) -> std::fmt::Result {
-        write!(f, "{}: ", prompt.bold())?;
+        write!(f, "  {}: ", prompt.bold())?;
         if selections.is_empty() {
             write!(f, "{}", "No selections".italic())?;
         } else {
