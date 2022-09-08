@@ -5,7 +5,7 @@ use std::process::{ExitStatus, Stdio};
 use tokio::process::{Child, Command};
 
 use crate::internal::error::{AppError, AppResult};
-use crate::internal::{is_tty, config};
+use crate::internal::{config, is_tty};
 
 pub struct StringOutput {
     pub stdout: String,
