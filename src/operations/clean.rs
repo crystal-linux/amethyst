@@ -1,8 +1,7 @@
-use tokio::process::Command;
-
 use crate::crash;
 use crate::internal::commands::ShellCommand;
 
+use crate::internal::config;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 
@@ -108,15 +107,16 @@ pub async fn clean(options: Options) {
         tracing::debug!("Clearing using `paccache -r`");
 
         // Clear pacman's cache (keeping latest 3 versions of installed packages)
-        Command::new("sudo")
+        ShellCommand::sudo()
             .arg("paccache")
             .args(paccache_args)
-            .spawn()
+            .elevated()
+            .spawn(true)
             .unwrap_or_else(|e| {
                 crash!(
                     AppExitCode::PacmanError,
                     "Couldn't clear cache using `paccache -r`, {}",
-                    e,
+                    e
                 )
             })
             .wait()
