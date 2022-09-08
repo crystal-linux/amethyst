@@ -206,12 +206,13 @@ async fn build_package(
 
     let mut pkgs_produced: HashMap<String, PathBuf> = HashMap::new();
     let alpm = crate::internal::alpm::get_handler()?;
+
     for ar in archives {
         let pkg = alpm
             .pkg_load(ar.to_str().unwrap(), true, SigLevel::NONE)
             .map_err(|e| AppError::Other(e.to_string()))?;
         let name = pkg.name().to_owned();
-        pkgs_produced.insert(name, ar.clone());
+        pkgs_produced.insert(name, ar);
     }
     tracing::debug!("Produced packages: {pkgs_produced:#?}");
 
@@ -220,7 +221,7 @@ async fn build_package(
         .ok_or_else(|| {
             AppError::Other(format!(
                 "Could not find package {} in produced packages",
-                ctx.package.metadata.name
+                pkg_name.clone()
             ))
         })?;
 
