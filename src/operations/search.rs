@@ -2,7 +2,7 @@ use std::fmt::Display;
 use std::fmt::Formatter;
 use std::str::FromStr;
 
-use crate::internal::alpm::get_handler;
+use crate::internal::alpm::Alpm;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcsearch;
@@ -131,7 +131,9 @@ pub async fn aur_search(
     by_field: Option<SearchBy>,
     options: Options,
 ) -> Vec<PackageSearchResult> {
-    let alpm = get_handler().unwrap();
+    let alpm = Alpm::new().unwrap();
+    let alpm = alpm.handler();
+
     let local = alpm.localdb();
     let packages = rpcsearch(query.to_string(), by_field.map(SearchBy::into))
         .await
@@ -167,7 +169,9 @@ pub async fn aur_search(
 
 #[tracing::instrument(level = "trace")]
 pub async fn repo_search(query: &str, options: Options) -> Vec<PackageSearchResult> {
-    let alpm = get_handler().unwrap();
+    let alpm = Alpm::new().unwrap();
+    let alpm = alpm.handler();
+
     let local = alpm.localdb();
     let dbs = alpm.syncdbs();
 
