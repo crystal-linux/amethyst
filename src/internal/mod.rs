@@ -38,7 +38,7 @@ macro_rules! uwu {
 }
 
 pub fn uwu_enabled() -> bool {
-    let config = config::read();
+    let config = config::Config::get();
     config.extra.uwu.unwrap_or(false)
 }
 

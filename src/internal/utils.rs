@@ -37,6 +37,14 @@ pub fn log_and_crash(msg: String, exit_code: AppExitCode) -> ! {
     exit(exit_code as i32);
 }
 
+pub fn get_config_dir() -> &'static Path {
+    lazy_static! {
+        static ref CONFIG_DIR: &'static Path = create_if_not_exist(get_directories().config_dir());
+    }
+
+    *CONFIG_DIR
+}
+
 pub fn get_cache_dir() -> &'static Path {
     lazy_static! {
         static ref CACHE_DIR: &'static Path = create_if_not_exist(get_directories().cache_dir());

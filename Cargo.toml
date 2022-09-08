@@ -57,6 +57,10 @@ console = "0.15.1"
 tracing-error = "0.2.0"
 fuzzy-matcher = "0.3.7"
 
+[dependencies.config]
+version = "0.13.2"
+features = ["toml"]
+
 [dependencies.tokio]
 version = "1.21.0"
 features = ["rt", "rt-multi-thread", "io-std", "io-util", "process", "time", "macros", "tracing", "fs"]

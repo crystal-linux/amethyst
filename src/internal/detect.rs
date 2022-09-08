@@ -1,7 +1,7 @@
 use crossterm::style::Stylize;
 
 use crate::internal::commands::ShellCommand;
-use crate::internal::config;
+use crate::internal::config::Config;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::logging::get_logger;
@@ -47,7 +47,7 @@ pub async fn detect() {
 
         let choice = prompt!(default no, "Would you like to run pacdiff now?");
         if choice {
-            let config = config::read();
+            let config = Config::get();
             if config.base.pacdiff_warn {
                 ShellCommand::pacdiff()
                     .elevated()

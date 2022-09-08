@@ -8,7 +8,7 @@ use crate::{
         structs::Options,
         utils::get_cache_dir,
     },
-    multi_select, newline, prompt, select_opt,
+    multi_select, prompt, select_opt,
 };
 
 use super::{repo_dependency_installation::RepoDependencyInstallation, BuildContext};
@@ -41,7 +41,6 @@ impl AurReview {
     }
 
     async fn review_single_package(&self, pkg: &str) -> AppResult<()> {
-        newline!();
         tracing::info!("Reviewing {pkg}");
         let mut files_iter = fs::read_dir(get_cache_dir().join(pkg)).await?;
         let mut files = Vec::new();
