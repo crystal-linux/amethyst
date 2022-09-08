@@ -45,6 +45,20 @@ pub enum PackageFrom {
     File(PathBuf),
 }
 
+pub enum AlpmPackage<'a> {
+    Found(alpm::Package<'a>),
+    Loaded(alpm::LoadedPackage<'a>),
+}
+
+impl AlpmPackage<'_> {
+    pub fn name(&self) -> &str {
+        match self {
+            Self::Found(p) => p.name(),
+            Self::Loaded(p) => p.name(),
+        }
+    }
+}
+
 pub struct Alpm(alpm::Alpm);
 
 impl Alpm {
@@ -56,12 +70,12 @@ impl Alpm {
         Ok(Self(alpm))
     }
 
-    pub fn load(&self, pkg: PackageFrom) -> Result<alpm::Pkg, Error> {
+    pub fn load(&self, pkg: PackageFrom) -> Result<AlpmPackage, Error> {
         match pkg {
             PackageFrom::LocalDb(name) => {
                 let db = self.0.localdb();
                 let package = db.pkg(name)?;
-                Ok(*package)
+                Ok(AlpmPackage::Found(package))
             }
             PackageFrom::SyncDb(name) => {
                 let package = self
@@ -69,13 +83,13 @@ impl Alpm {
                     .syncdbs()
                     .find_satisfier(name)
                     .ok_or(Error::Alpm(alpm::Error::PkgNotFound))?;
-                Ok(*package)
+                Ok(AlpmPackage::Found(package))
             }
             PackageFrom::File(path) => {
                 let package = self
                     .0
                     .pkg_load(path.to_str().unwrap(), true, SigLevel::NONE)?;
-                Ok(*package)
+                Ok(AlpmPackage::Loaded(package))
             }
         }
     }
