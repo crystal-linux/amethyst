@@ -39,7 +39,15 @@ macro_rules! uwu {
 
 pub fn uwu_enabled() -> bool {
     let config = config::Config::get();
-    config.extra.uwu.unwrap_or(false)
+    if let Some(uwu) = &config.extra {
+        if let Some(uwu) = uwu.uwu {
+            uwu
+        } else {
+            false
+        }
+    } else {
+        false
+    }
 }
 
 /// Checks if we're running in a tty. If we do we can assume that
