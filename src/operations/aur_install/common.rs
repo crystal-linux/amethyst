@@ -1,5 +1,10 @@
-use std::{collections::HashMap, path::Path, sync::Arc};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
+use alpm::SigLevel;
 use aur_rpc::PackageInfo;
 use crossterm::style::Stylize;
 use futures::future;
@@ -196,11 +201,31 @@ async fn build_package(
         });
     }
 
-    let packages = MakePkgBuilder::package_list(build_path).await?;
-    tracing::debug!("Archives: {packages:?}");
+    let archives = MakePkgBuilder::package_list(build_path).await?;
+    tracing::debug!("Archives: {archives:?}");
+
+    let mut pkgs_produced: HashMap<String, PathBuf> = HashMap::new();
+    let alpm = crate::internal::alpm::get_handler()?;
+    for ar in archives {
+        let pkg = alpm
+            .pkg_load(ar.to_str().unwrap(), true, SigLevel::NONE)
+            .map_err(|e| AppError::Other(e.to_string()))?;
+        let name = pkg.name().to_owned();
+        pkgs_produced.insert(name, ar.clone());
+    }
+    tracing::debug!("Produced packages: {pkgs_produced:#?}");
+
+    let pkg_to_install = pkgs_produced
+        .get(&ctx.package.metadata.name)
+        .ok_or_else(|| {
+            AppError::Other(format!(
+                "Could not find package {} in produced packages",
+                ctx.package.metadata.name
+            ))
+        })?;
 
     pb.finish_with_message(format!("{}: {}", pkg_name.clone().bold(), "Built!".green()));
-    ctx.step = BuildStep::Install(PackageArchives(packages));
+    ctx.step = BuildStep::Install(PackageArchives(vec![pkg_to_install.to_path_buf()]));
 
     Ok(ctx)
 }
