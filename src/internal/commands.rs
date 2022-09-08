@@ -51,7 +51,7 @@ impl ShellCommand {
     }
 
     pub fn sudo() -> Self {
-        Self::new(&config::read().bin.sudo.unwrap_or_default())
+        Self::new(config::read().bin.sudo.unwrap_or("sudo".to_string()))
     }
 
     pub fn rm() -> Self {
