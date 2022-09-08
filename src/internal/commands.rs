@@ -4,8 +4,9 @@ use std::path::{Path, PathBuf};
 use std::process::{ExitStatus, Stdio};
 use tokio::process::{Child, Command};
 
+use crate::internal::config::Config;
 use crate::internal::error::{AppError, AppResult};
-use crate::internal::{config, is_tty};
+use crate::internal::is_tty;
 
 pub struct StringOutput {
     pub stdout: String,
@@ -52,7 +53,7 @@ impl ShellCommand {
 
     pub fn sudo() -> Self {
         Self::new(
-            config::read()
+            Config::read()
                 .bin
                 .sudo
                 .unwrap_or_else(|| "sudo".to_string()),
@@ -152,7 +153,7 @@ impl ShellCommand {
         };
         let mut command = if self.elevated {
             let mut cmd = Command::new(
-                config::read()
+                Config::read()
                     .bin
                     .sudo
                     .unwrap_or_else(|| "sudo".to_string()),
