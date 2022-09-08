@@ -8,7 +8,7 @@ use crate::{
         structs::Options,
         utils::get_cache_dir,
     },
-    multi_select, newline, prompt, select_opt,
+    multi_select, prompt, select_opt,
 };
 
 use super::{repo_dependency_installation::RepoDependencyInstallation, BuildContext};
