@@ -1,7 +1,6 @@
 use crate::crash;
 use crate::internal::commands::ShellCommand;
 
-use crate::internal::config;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 

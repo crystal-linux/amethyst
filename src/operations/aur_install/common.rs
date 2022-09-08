@@ -207,10 +207,10 @@ async fn build_package(
     let mut pkgs_produced: HashMap<String, PathBuf> = HashMap::new();
     let alpm = Alpm::new()?;
 
-    for ar in archives {
-        let pkg = alpm.load(PackageFrom::File(ar.clone()))?;
+    for archive in archives {
+        let pkg = alpm.load(PackageFrom::File(archive.clone()))?;
         let name = pkg.name().to_owned();
-        pkgs_produced.insert(name, ar);
+        pkgs_produced.insert(name, archive);
     }
     tracing::debug!("Produced packages: {pkgs_produced:#?}");
 
