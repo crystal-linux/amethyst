@@ -49,12 +49,6 @@ pub async fn detect() {
         if choice {
             let config = Config::get();
             if config.base.pacdiff_warn {
-                ShellCommand::pacdiff()
-                    .elevated()
-                    .wait()
-                    .await
-                    .silent_unwrap(AppExitCode::PacmanError);
-            } else {
                 tracing::warn!("Pacdiff uses vimdiff by default to edit files for merging. You can focus panes by mousing over them and pressing left click, and scroll up and down using your mouse's scroll wheel (or the arrow keys). To exit vimdiff, press the following key combination: ESC, :qa!, ENTER");
                 tracing::warn!("You can surpress this warning in the future by setting `pacdiff_warn` to \"false\" in ~/.config/ame/config.toml");
 
@@ -65,6 +59,12 @@ pub async fn detect() {
                         .await
                         .silent_unwrap(AppExitCode::PacmanError);
                 }
+            } else {
+                ShellCommand::pacdiff()
+                    .elevated()
+                    .wait()
+                    .await
+                    .silent_unwrap(AppExitCode::PacmanError);
             }
         }
     }
