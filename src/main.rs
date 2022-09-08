@@ -3,6 +3,7 @@ use builder::pacman::{PacmanColor, PacmanQueryBuilder};
 use clap::Parser;
 
 use internal::commands::ShellCommand;
+use internal::detect;
 use internal::error::SilentUnwrap;
 
 use crate::args::{InstallArgs, Operation, QueryArgs, RemoveArgs};
@@ -68,7 +69,7 @@ async fn main() {
             operations::clean(options).await;
         }
         Operation::GenComp(gen_args) => cmd_gencomp(&gen_args),
-        Operation::Diff => todo!(),
+        Operation::Diff => detect().await,
     }
 }
 
