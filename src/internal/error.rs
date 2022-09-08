@@ -21,6 +21,7 @@ pub enum AppError {
     MakePkg(String),
     MinusError(minus::MinusError),
     FmtError(std::fmt::Error),
+    AlpmError(crate::internal::alpm::Error),
 }
 
 impl Display for AppError {
@@ -36,9 +37,10 @@ impl Display for AppError {
             AppError::MissingDependencies(deps) => {
                 write!(f, "Missing dependencies {}", deps.join(", "))
             }
-            AppError::MakePkg(msg) => write!(f, "Failed to ru makepkg {msg}"),
+            AppError::MakePkg(msg) => write!(f, "Failed to run makepkg {msg}"),
             AppError::MinusError(e) => Display::fmt(e, f),
             AppError::FmtError(e) => Display::fmt(e, f),
+            AppError::AlpmError(e) => Display::fmt(e, f),
         }
     }
 }
@@ -78,6 +80,12 @@ impl From<minus::MinusError> for AppError {
 impl From<std::fmt::Error> for AppError {
     fn from(e: std::fmt::Error) -> Self {
         Self::FmtError(e)
+    }
+}
+
+impl From<crate::internal::alpm::Error> for AppError {
+    fn from(e: crate::internal::alpm::Error) -> Self {
+        Self::AlpmError(e)
     }
 }
 

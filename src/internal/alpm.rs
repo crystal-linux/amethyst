@@ -1,4 +1,7 @@
-use std::path::Path;
+use std::{
+    fmt::{Display, Formatter},
+    path::Path,
+};
 
 use alpm::Alpm;
 use alpm_utils::alpm_with_conf;
@@ -8,6 +11,15 @@ use pacmanconf::Config;
 pub enum Error {
     Alpm(alpm::Error),
     Pacmanconf(pacmanconf::Error),
+}
+
+impl Display for Error {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Alpm(e) => Display::fmt(e, f),
+            Self::Pacmanconf(e) => Display::fmt(e, f),
+        }
+    }
 }
 
 impl From<alpm::Error> for Error {
