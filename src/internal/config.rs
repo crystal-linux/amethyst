@@ -10,22 +10,19 @@ use super::utils::get_config_dir;
 #[derive(Default, Debug, Deserialize, Serialize)]
 pub struct Config {
     pub base: ConfigBase,
-    pub extra: ConfigExtra,
+    pub extra: Option<ConfigExtra>,
     pub bin: ConfigBin,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ConfigBase {
     pub pacdiff_warn: bool,
-    pub highlight_optdepends: bool,
-    pub powerpill: bool,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Default)]
 pub struct ConfigExtra {
     pub uwu: Option<bool>,
     pub uwu_debug: Option<bool>,
-    pub review_user_shell: bool,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -35,21 +32,7 @@ pub struct ConfigBin {
 
 impl Default for ConfigBase {
     fn default() -> Self {
-        Self {
-            pacdiff_warn: true,
-            highlight_optdepends: true,
-            powerpill: false,
-        }
-    }
-}
-
-impl Default for ConfigExtra {
-    fn default() -> Self {
-        Self {
-            uwu: None,
-            uwu_debug: None,
-            review_user_shell: false,
-        }
+        Self { pacdiff_warn: true }
     }
 }
 
