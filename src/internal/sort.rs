@@ -1,32 +1,28 @@
-use std::process::{Command, Stdio};
-
-use crate::internal::{clean, rpc, structs};
+use crate::internal::alpm::{Alpm, PackageFrom};
+use crate::internal::structs::Sorted;
+use crate::internal::{clean, rpc};
 use crate::Options;
 
 use super::error::SilentUnwrap;
 use super::exit_code::AppExitCode;
 
 #[tracing::instrument(level = "trace")]
-pub async fn sort(input: &[String], options: Options) -> structs::Sorted {
+pub async fn sort(input: &[String], options: Options) -> Sorted {
     let mut repo_packages: Vec<String> = vec![];
     let mut aur_packages: Vec<String> = vec![];
     let mut missing_packages: Vec<String> = vec![];
 
     let packages = clean(input);
+    let alpm = Alpm::new().unwrap();
 
     tracing::debug!("Sorting: {:?}", packages.join(" "));
 
     for package in packages {
-        let rs = Command::new("pacman")
-            .arg("-Ss")
-            .arg(format!("^{}$", &package))
-            .stdout(Stdio::null())
-            .status()
-            .expect("Something has gone wrong");
+        let package_result = alpm.load(PackageFrom::SyncDb(package.clone()));
 
-        if let Some(0) = rs.code() {
+        if package_result.is_ok() {
             tracing::debug!("{} found in repos", package);
-            repo_packages.push(package.to_string());
+            repo_packages.push(package);
         } else if rpc::rpcinfo(&package)
             .await
             .silent_unwrap(AppExitCode::RpcError)
@@ -40,5 +36,5 @@ pub async fn sort(input: &[String], options: Options) -> structs::Sorted {
         }
     }
 
-    structs::Sorted::new(repo_packages, aur_packages, missing_packages)
+    Sorted::new(repo_packages, aur_packages, missing_packages)
 }

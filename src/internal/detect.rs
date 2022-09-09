@@ -10,6 +10,7 @@ use crate::prompt;
 use super::prompt_sudo_single;
 
 /// Searches the filesystem for .pacnew files and helps the user deal with them.
+#[tracing::instrument(level = "trace")]
 pub async fn detect() {
     prompt_sudo_single().await.expect("Sudo prompt failed");
     let pb = get_logger().new_progress_spinner();
