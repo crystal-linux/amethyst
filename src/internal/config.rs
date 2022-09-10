@@ -27,7 +27,7 @@ pub struct ConfigExtra {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ConfigBin {
-    pub sudo: Option<String>,
+    pub sudo: String,
 }
 
 impl Default for ConfigBase {
@@ -39,7 +39,7 @@ impl Default for ConfigBase {
 impl Default for ConfigBin {
     fn default() -> Self {
         Self {
-            sudo: Some("sudo".to_string()),
+            sudo: "sudo".to_string(),
         }
     }
 }

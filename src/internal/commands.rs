@@ -52,12 +52,7 @@ impl ShellCommand {
     }
 
     pub fn sudo() -> Self {
-        Self::new(
-            Config::read()
-                .bin
-                .sudo
-                .unwrap_or_else(|| "sudo".to_string()),
-        )
+        Self::new(Config::read().bin.sudo)
     }
 
     pub fn rm() -> Self {
@@ -152,12 +147,7 @@ impl ShellCommand {
             (Stdio::inherit(), Stdio::inherit())
         };
         let mut command = if self.elevated {
-            let mut cmd = Command::new(
-                Config::read()
-                    .bin
-                    .sudo
-                    .unwrap_or_else(|| "sudo".to_string()),
-            );
+            let mut cmd = Command::new(Config::read().bin.sudo);
             cmd.arg(self.command);
 
             cmd
