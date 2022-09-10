@@ -3,9 +3,6 @@ use crate::internal::structs::Sorted;
 use crate::internal::{clean, rpc};
 use crate::Options;
 
-use super::error::SilentUnwrap;
-use super::exit_code::AppExitCode;
-
 #[tracing::instrument(level = "trace")]
 pub async fn sort(input: &[String], options: Options) -> Sorted {
     let mut repo_packages: Vec<String> = vec![];
@@ -16,6 +13,7 @@ pub async fn sort(input: &[String], options: Options) -> Sorted {
     let alpm = Alpm::new().unwrap();
 
     tracing::debug!("Sorting: {:?}", packages.join(" "));
+    let aur_query = rpc::rpcinfo_many(&packages).await.unwrap();
 
     for package in packages {
         let package_result = alpm.load(PackageFrom::SyncDb(package.clone()));
@@ -23,11 +21,7 @@ pub async fn sort(input: &[String], options: Options) -> Sorted {
         if package_result.is_ok() {
             tracing::debug!("{} found in repos", package);
             repo_packages.push(package);
-        } else if rpc::rpcinfo(&package)
-            .await
-            .silent_unwrap(AppExitCode::RpcError)
-            .is_some()
-        {
+        } else if aur_query.iter().any(|p| p.metadata.name == package) {
             tracing::debug!("{} found in AUR", package);
             aur_packages.push(package.to_string());
         } else {
