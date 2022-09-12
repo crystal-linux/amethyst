@@ -4,13 +4,13 @@
   </a>
 </p>
 
-<h2 align="center"> Amethyst</h2>
+<h2 align="center">Amethyst</h2>
 
 <p align="center">
     <a href="https://github.com/crystal-linux/amethyst"><img src="https://github.com/crystal-linux/amethyst/actions/workflows/test.yml/badge.svg"></a><br>
     <a href="https://github.com/crystal-linux/.github/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0-blue.svg" alt="License"></a>
-    <a href="https://github/crystal-linux/amethyst"><img alt="GitHub isses" src="https://img.shields.io/github/issues-raw/crystal-linux/amethyst"></a>
-    <a href="https://github/crystal-linux/amethyst"><img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr-raw/crystal-linux/amethyst"></a><br>
+    <a href="https://github.com/crystal-linux/amethyst/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues-raw/crystal-linux/amethyst"></a>
+    <a href="https://github.com/crystal-linux/amethyst/pulls"><img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr-raw/crystal-linux/amethyst"></a><br>
     <a href="https://discord.gg/hYJgu8K5aA"><img alt="Discord" src="https://img.shields.io/discord/825473796227858482?color=blue&label=Discord&logo=Discord&logoColor=white"> </a>
     <a href="https://github.com/not-my-segfault"><img src="https://img.shields.io/badge/Maintainer-@not%2D-my%2D-segfault-brightgreen" alt="The maintainer of this repository" href="https://github.com/not-my-segfault"></a><br>
     <a href="https://fosstodon.org/@crystal_linux"><img alt="Mastodon Follow" src="https://img.shields.io/mastodon/follow/108618426259408142?domain=https%3A%2F%2Ffosstodon.org"></a>
@@ -32,7 +32,7 @@ Made for Crystal, compatible with any Arch-based Linux distribution.
 | Search for a package   | ame sea/search          | ame -Ss            |
 | Query the package list | ame qu/query            | ame -Q             |    
 | Show a package's info  | ame inf/info            | ame -Qi            |
- | Clean the pacman cache | ame cl/clean            | ame -Sc            |
+| Clean the pacman cache | ame cl/clean            | ame -Sc            |
 | Check for .pacnew      | ame di/diff             | ame -D             |
 
 ### Exit codes overview
