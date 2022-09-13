@@ -1,7 +1,6 @@
 use crate::internal::{
     commands::{ShellCommand, StringOutput},
-    error::{AppError, AppResult, SilentUnwrap},
-    exit_code::AppExitCode,
+    error::{AppError, AppResult},
 };
 
 #[derive(Debug, Default)]
