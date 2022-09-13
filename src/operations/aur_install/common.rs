@@ -22,9 +22,11 @@ use crate::{
         pacman::PacmanInstallBuilder,
         pager::PagerBuilder,
     },
+    crash,
     internal::{
         alpm::{Alpm, PackageFrom},
         error::{AppError, AppResult},
+        exit_code::AppExitCode,
         utils::{get_cache_dir, wrap_text},
     },
     logging::piped_stdio::StdioReader,
@@ -101,6 +103,7 @@ pub fn create_dependency_batches(deps: Vec<&PackageInfo>) -> Vec<Vec<&PackageInf
         let mut current_batch = HashMap::new();
 
         for (key, info) in deps.clone() {
+            tracing::trace!("Testing {key}");
             let contains_make_dep = info
                 .make_depends
                 .iter()
@@ -111,22 +114,39 @@ pub fn create_dependency_batches(deps: Vec<&PackageInfo>) -> Vec<Vec<&PackageInf
                 .iter()
                 .any(|d| current_batch.contains_key(d) || deps.contains_key(d));
 
-            if (!contains_dep || relaxed) && contains_make_dep {
+            if (!contains_dep || relaxed) && !contains_make_dep {
                 deps.remove(&key);
                 current_batch.insert(key, info);
                 if relaxed {
+                    tracing::debug!("Dependency found with relaxed search");
                     break;
                 }
+            } else {
+                tracing::debug!(
+                    "Cannot install {} before {:?} and {:?}",
+                    key,
+                    info.make_depends,
+                    info.depends
+                );
             }
         }
 
         if current_batch.is_empty() {
+            if relaxed {
+                crash!(
+                    AppExitCode::Other,
+                    "Dependency cycle detected. Aborting installation."
+                );
+            }
+
             relaxed = true;
         } else {
+            tracing::debug!("Created batch {current_batch:?}");
             batches.push(current_batch.into_iter().map(|(_, v)| v).collect());
             relaxed = false;
         }
     }
+    tracing::debug!("Created {} batches", batches.len());
 
     batches
 }
