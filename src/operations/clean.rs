@@ -1,3 +1,4 @@
+use crate::builder::rm::RmBuilder;
 use crate::crash;
 use crate::internal::commands::ShellCommand;
 
@@ -73,12 +74,11 @@ pub async fn clean(options: Options) {
     let clear_ame_cache = prompt!(default no, "Clear Amethyst's internal PKGBUILD cache?");
     if clear_ame_cache {
         let cache_dir = get_cache_dir();
-        ShellCommand::rm()
-            .arg(cache_dir)
-            .arg("-r")
-            .arg("-f")
-            .elevated()
-            .wait_success()
+        RmBuilder::default()
+            .recursive(true)
+            .force(true)
+            .directory(cache_dir)
+            .build()
             .await
             .unwrap();
     }
