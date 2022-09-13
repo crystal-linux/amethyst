@@ -3,3 +3,4 @@ pub mod makepkg;
 pub mod pacdiff;
 pub mod pacman;
 pub mod pager;
+pub mod rm;
