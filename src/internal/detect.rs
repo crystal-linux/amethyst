@@ -1,10 +1,7 @@
 use crossterm::style::Stylize;
 
 use crate::builder::pacdiff::PacdiffBuilder;
-use crate::internal::commands::ShellCommand;
 use crate::internal::config::Config;
-use crate::internal::error::SilentUnwrap;
-use crate::internal::exit_code::AppExitCode;
 use crate::logging::get_logger;
 use crate::prompt;
 
