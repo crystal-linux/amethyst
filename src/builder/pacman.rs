@@ -254,6 +254,30 @@ impl PacmanSearchBuilder {
 }
 
 #[derive(Default, Debug, Clone)]
+pub struct PacmanUpgradeBuilder {
+    no_confirm: bool,
+}
+
+impl PacmanUpgradeBuilder {
+    pub fn no_confirm(mut self, no_confirm: bool) -> Self {
+        self.no_confirm = no_confirm;
+
+        self
+    }
+
+    #[tracing::instrument(level = "trace")]
+    pub async fn upgrade(self) -> AppResult<()> {
+        let mut command = ShellCommand::pacman().elevated().arg("-Syu");
+
+        if self.no_confirm {
+            command = command.arg("--noconfirm")
+        }
+
+        command.wait_success().await
+    }
+}
+
+#[derive(Default, Debug, Clone)]
 pub struct PacmanUninstallBuilder {
     packages: Vec<String>,
     no_confirm: bool,
