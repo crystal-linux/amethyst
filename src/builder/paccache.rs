@@ -26,6 +26,7 @@ impl PaccacheBuilder {
         self
     }
 
+    #[tracing::instrument(level = "trace")]
     pub async fn remove(self) -> AppResult<()> {
         let mut command = ShellCommand::paccache().elevated();
 

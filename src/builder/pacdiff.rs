@@ -7,6 +7,7 @@ use crate::internal::{
 pub struct PacdiffBuilder {}
 
 impl PacdiffBuilder {
+    #[tracing::instrument(level = "trace")]
     pub async fn list() -> AppResult<StringOutput> {
         let result = ShellCommand::pacdiff()
             .args(&["-o", "-f"])
@@ -20,6 +21,7 @@ impl PacdiffBuilder {
         }
     }
 
+    #[tracing::instrument(level = "trace")]
     pub async fn pacdiff() -> AppResult<()> {
         ShellCommand::pacdiff().elevated().wait_success().await
     }
