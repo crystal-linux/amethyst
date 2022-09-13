@@ -17,6 +17,8 @@ pub struct Config {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ConfigBase {
     pub pacdiff_warn: bool,
+    pub paccache_keep: i32,
+    pub paccache_keep_ins: bool,
 }
 
 #[derive(Debug, Deserialize, Serialize, Default)]
@@ -32,7 +34,11 @@ pub struct ConfigBin {
 
 impl Default for ConfigBase {
     fn default() -> Self {
-        Self { pacdiff_warn: true }
+        Self {
+            pacdiff_warn: true,
+            paccache_keep: 0,
+            paccache_keep_ins: true,
+        }
     }
 }
 
@@ -59,7 +65,7 @@ impl Config {
         } else {
             let default_conf = Config::default();
             let toml_string = toml::ser::to_string_pretty(&default_conf).unwrap();
-            fs::write(config_path, format!("{}\n\n{}", "# See https://github.com/crystal-linux/amethyst/tree/main/docs for more information on config keys", toml_string)).unwrap();
+            fs::write(config_path, format!("{}\n\n{}", "# See https://github.com/crystal-linux/docs/blob/main/Amethyst/config.mdx for more information on config keys", toml_string)).unwrap();
             default_conf
         }
     }

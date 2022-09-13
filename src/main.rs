@@ -37,9 +37,11 @@ async fn main() {
     init_logger(args.verbose.into());
 
     let noconfirm = args.no_confirm;
+    let quiet = args.quiet;
 
     let options = Options {
         noconfirm,
+        quiet,
         asdeps: false,
         upgrade: false,
     };

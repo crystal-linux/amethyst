@@ -17,6 +17,10 @@ pub struct Args {
     #[clap(long = "noconfirm", global = true)]
     pub no_confirm: bool,
 
+    /// Make some commands have less output
+    #[clap(long, short, global = true)]
+    pub quiet: bool,
+
     /// Loops sudo in the background to ensure it doesn't time out during long builds
     #[clap(long = "sudoloop", global = true)]
     pub sudoloop: bool,
