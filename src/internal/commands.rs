@@ -34,6 +34,16 @@ impl ShellCommand {
         }
     }
 
+    pub fn paccache() -> Self {
+        let paccache_cmd = Self::new("paccache");
+
+        if is_tty() {
+            paccache_cmd
+        } else {
+            paccache_cmd.arg("--nocolor")
+        }
+    }
+
     pub fn pacdiff() -> Self {
         Self::new("pacdiff")
     }

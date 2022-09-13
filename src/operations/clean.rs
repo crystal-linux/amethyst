@@ -1,7 +1,10 @@
+use crate::builder::paccache::PaccacheBuilder;
+use crate::builder::pacman::PacmanQueryBuilder;
 use crate::builder::rm::RmBuilder;
 use crate::crash;
 use crate::internal::commands::ShellCommand;
 
+use crate::internal::config::Config;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 
@@ -13,6 +16,7 @@ use crate::Options;
 #[tracing::instrument(level = "trace")]
 pub async fn clean(options: Options) {
     let noconfirm = options.noconfirm;
+    let quiet = options.quiet;
 
     // Check for orphaned packages
     let orphaned_packages = ShellCommand::pacman()
@@ -91,53 +95,37 @@ pub async fn clean(options: Options) {
     };
 
     if clear_pacman_cache {
-        // Build pacman args
-        let mut pacman_args = vec!["-Sc"];
-        if noconfirm {
-            pacman_args.push("--noconfirm");
+        let conf = Config::read();
+        let mut debug_str = "Clearing using paccache -r".to_string();
+
+        debug_str = format!("{} -k{}", debug_str, conf.base.paccache_keep);
+        if conf.base.paccache_keep_ins {
+            debug_str = format!("{} -u", debug_str);
         }
 
-        // Build paccache args
-        let mut paccache_args = vec!["-r"];
-        if noconfirm {
-            paccache_args.push("--noconfirm");
+        if quiet {
+            debug_str = format!("{} -q", debug_str);
         }
 
-        tracing::debug!("Clearing using `paccache -r`");
+        tracing::debug!(debug_str);
 
-        // Clear pacman's cache (keeping latest 3 versions of installed packages)
-        ShellCommand::sudo()
-            .arg("paccache")
-            .args(paccache_args)
-            .elevated()
-            .spawn(true)
+        // Clear pacman's cache
+        // keeps 0 versions of the package in the cache by default
+        // keeps installed packages in the cache by default
+        PaccacheBuilder::default()
+            .keep(conf.base.paccache_keep)
+            .keep_ins(conf.base.paccache_keep_ins)
+            .quiet(quiet)
+            .remove()
+            .await
             .unwrap_or_else(|e| {
                 crash!(
                     AppExitCode::PacmanError,
-                    "Couldn't clear cache using `paccache -r`, {}",
+                    "Failed to clear package cache, {}",
                     e
                 )
-            })
-            .wait()
-            .await
-            .unwrap();
+            });
 
-        tracing::debug!("Clearing using `pacman -Sc`");
-
-        // Clear pacman's cache (keeping only installed packages)
-        let pacman_result = ShellCommand::pacman()
-            .elevated()
-            .args(pacman_args)
-            .wait()
-            .await
-            .silent_unwrap(AppExitCode::PacmanError);
-
-        if pacman_result.success() {
-            // If pacman succeeded, notify user
-            tracing::info!("Successfully cleared package cache");
-        } else {
-            // If pacman failed, crash
-            crash!(AppExitCode::PacmanError, "Failed to clear package cache",);
-        }
+        tracing::info!("Successfully cleared package cache");
     }
 }
