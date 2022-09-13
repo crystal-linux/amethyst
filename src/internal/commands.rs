@@ -25,13 +25,7 @@ pub struct ShellCommand {
 
 impl ShellCommand {
     pub fn pacman() -> Self {
-        let pacman_cmd = Self::new("pacman");
-
-        if is_tty() {
-            pacman_cmd.arg("--color=always")
-        } else {
-            pacman_cmd
-        }
+        Self::new("pacman")
     }
 
     pub fn paccache() -> Self {

@@ -1,11 +1,10 @@
 use crate::builder::paccache::PaccacheBuilder;
 use crate::builder::pacman::PacmanQueryBuilder;
+use crate::builder::pacman::PacmanUninstallBuilder;
 use crate::builder::rm::RmBuilder;
 use crate::crash;
-use crate::internal::commands::ShellCommand;
 
 use crate::internal::config::Config;
-use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 
 use crate::internal::utils::get_cache_dir;
@@ -19,11 +18,10 @@ pub async fn clean(options: Options) {
     let quiet = options.quiet;
 
     // Check for orphaned packages
-    let orphaned_packages = ShellCommand::pacman()
-        .arg("-Qdtq")
-        .wait_with_output()
+    let orphaned_packages = PacmanQueryBuilder::orphaned()
+        .query_as_string_output()
         .await
-        .silent_unwrap(AppExitCode::PacmanError);
+        .unwrap();
 
     if orphaned_packages.stdout.as_str().is_empty() {
         // If no orphaned packages found, do nothing
@@ -32,7 +30,7 @@ pub async fn clean(options: Options) {
         // Prompt users whether to remove orphaned packages
         tracing::info!(
             "Removing orphans would uninstall the following packages: \n{}",
-            &orphaned_packages.stdout
+            &orphaned_packages.stdout.trim_end()
         );
         let cont = prompt!(default no, "Continue?");
         if !cont {
@@ -41,37 +39,28 @@ pub async fn clean(options: Options) {
             std::process::exit(AppExitCode::PacmanError as i32);
         }
 
-        // Build pacman args
-        let mut pacman_args = vec!["-Rns"];
-        if noconfirm {
-            pacman_args.push("--noconfirm");
-        }
-
         // Collect orphaned packages into a vector
-        let orphaned_packages_vec = orphaned_packages.stdout.split('\n').collect::<Vec<&str>>();
-        for package in &orphaned_packages_vec {
-            if !package.is_empty() {
-                pacman_args.push(package);
-            }
-        }
+        let orphaned_packages_vec = orphaned_packages
+            .stdout
+            .trim_end()
+            .split('\n')
+            .collect::<Vec<&str>>();
 
         tracing::debug!("Removing orphans: {:?}", orphaned_packages_vec);
 
         // Remove orphaned packages
-        let pacman_result = ShellCommand::pacman()
-            .elevated()
-            .args(pacman_args)
-            .wait()
+        PacmanUninstallBuilder::default()
+            .no_save(true)
+            .recursive(true)
+            .no_confirm(noconfirm)
+            .packages(orphaned_packages_vec)
+            .uninstall()
             .await
-            .silent_unwrap(AppExitCode::PacmanError);
+            .unwrap_or_else(|_| {
+                crash!(AppExitCode::PacmanError, "Failed to remove orphans",);
+            });
 
-        if pacman_result.success() {
-            // If pacman succeeded, notify user
-            tracing::info!("Successfully removed orphans");
-        } else {
-            // If pacman failed, crash
-            crash!(AppExitCode::PacmanError, "Failed to remove orphans",);
-        }
+        tracing::info!("Successfully removed orphans");
     }
 
     // Prompt the user whether to clear the Amethyst cache

@@ -1,6 +1,11 @@
 use std::path::{Path, PathBuf};
 
-use crate::internal::{commands::ShellCommand, error::AppResult, structs::Options};
+use crate::internal::{
+    commands::{ShellCommand, StringOutput},
+    error::AppResult,
+    is_tty,
+    structs::Options,
+};
 
 #[derive(Debug, Default)]
 pub struct PacmanInstallBuilder {
@@ -93,6 +98,7 @@ enum PacmanQueryType {
     All,
     Info,
     Native,
+    Orphaned,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -132,6 +138,10 @@ impl PacmanQueryBuilder {
 
     pub fn info() -> Self {
         Self::new(PacmanQueryType::Info)
+    }
+
+    pub fn orphaned() -> Self {
+        Self::new(PacmanQueryType::Orphaned)
     }
 
     pub fn package(mut self, package: String) -> Self {
@@ -177,20 +187,32 @@ impl PacmanQueryBuilder {
         Ok(packages)
     }
 
+    pub async fn query_as_string_output(self) -> AppResult<StringOutput> {
+        let output = self.build_command().wait_with_output().await?;
+        Ok(output)
+    }
+
     fn build_command(self) -> ShellCommand {
-        let mut command = ShellCommand::pacman().arg("-Q").arg("--color").arg("never");
+        let mut command = ShellCommand::pacman().arg("-Q");
 
         command = match self.query_type {
             PacmanQueryType::Foreign => command.arg("-m"),
             PacmanQueryType::Info => command.arg("-i"),
             PacmanQueryType::Native => command.arg("-n"),
+            PacmanQueryType::Orphaned => command.arg("-dtq"),
             PacmanQueryType::All => command,
         };
 
         command = command.arg("--color");
         command = match self.color {
             PacmanColor::Always => command.arg("always"),
-            PacmanColor::Auto => command.arg("auto"),
+            PacmanColor::Auto => {
+                if is_tty() {
+                    command.arg("always")
+                } else {
+                    command.arg("never")
+                }
+            }
             PacmanColor::Never => command.arg("never"),
         };
 
@@ -235,6 +257,8 @@ impl PacmanSearchBuilder {
 pub struct PacmanUninstallBuilder {
     packages: Vec<String>,
     no_confirm: bool,
+    no_save: bool,
+    recursive: bool,
 }
 
 impl PacmanUninstallBuilder {
@@ -251,6 +275,18 @@ impl PacmanUninstallBuilder {
         self
     }
 
+    pub fn no_save(mut self, no_save: bool) -> Self {
+        self.no_save = no_save;
+
+        self
+    }
+
+    pub fn recursive(mut self, recursive: bool) -> Self {
+        self.recursive = recursive;
+
+        self
+    }
+
     #[tracing::instrument(level = "trace")]
     pub async fn uninstall(self) -> AppResult<()> {
         let mut command = ShellCommand::pacman()
@@ -260,6 +296,14 @@ impl PacmanUninstallBuilder {
 
         if self.no_confirm {
             command = command.arg("--noconfirm");
+        }
+
+        if self.no_save {
+            command = command.arg("-n")
+        }
+
+        if self.recursive {
+            command = command.arg("-s")
         }
 
         command.wait_success().await
