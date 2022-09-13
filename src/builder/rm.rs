@@ -28,6 +28,7 @@ impl RmBuilder {
         self
     }
 
+    #[tracing::instrument(level = "trace")]
     pub async fn build(self) -> AppResult<()> {
         let mut command = ShellCommand::rm().elevated();
 
