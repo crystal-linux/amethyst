@@ -39,7 +39,7 @@ impl PaccacheBuilder {
         }
 
         command
-            .args(&["-r", &format!("-k{}", self.keep.to_string())])
+            .args(&["-r", &format!("-k{}", self.keep)])
             .wait_success()
             .await
     }

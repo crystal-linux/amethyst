@@ -33,7 +33,7 @@ async fn upgrade_repo(options: Options) {
         .upgrade()
         .await;
 
-    if let Err(_) = result {
+    if result.is_err() {
         let continue_upgrading = prompt!(default no,
             "Failed to upgrade repo packages, continue to upgrading AUR packages?",
         );
