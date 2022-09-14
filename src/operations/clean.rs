@@ -57,7 +57,7 @@ pub async fn clean(options: Options) {
             .uninstall()
             .await;
 
-        if let Err(_) = result {
+        if result.is_err() {
             crash!(AppExitCode::PacmanError, "Failed to remove orphans");
         } else {
             tracing::info!("Successfully removed orphans");
