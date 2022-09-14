@@ -91,9 +91,9 @@ pub async fn clean(options: Options) {
         // keeps 0 versions of the package in the cache by default
         // keeps installed packages in the cache by default
         let result = PaccacheBuilder::default()
-            .keep(conf.base.paccache_keep)
-            .keep_ins(conf.base.paccache_keep_ins)
-            .quiet(quiet)
+            .set_keep(conf.base.paccache_keep)
+            .keep_ins_pkgs(conf.base.paccache_keep_ins_pkgs)
+            .quiet_output(quiet)
             .remove()
             .await;
 

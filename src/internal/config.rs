@@ -18,7 +18,7 @@ pub struct Config {
 pub struct ConfigBase {
     pub pacdiff_warn: bool,
     pub paccache_keep: i32,
-    pub paccache_keep_ins: bool,
+    pub paccache_keep_ins_pkgs: bool,
 }
 
 #[derive(Debug, Deserialize, Serialize, Default)]
@@ -37,7 +37,7 @@ impl Default for ConfigBase {
         Self {
             pacdiff_warn: true,
             paccache_keep: 0,
-            paccache_keep_ins: true,
+            paccache_keep_ins_pkgs: true,
         }
     }
 }
