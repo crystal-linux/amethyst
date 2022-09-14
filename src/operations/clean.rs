@@ -32,7 +32,7 @@ pub async fn clean(options: Options) {
             "Removing orphans would uninstall the following packages: \n{}",
             &orphaned_packages.stdout.trim_end()
         );
-        let cont = prompt!(default no, "Continue?");
+        let cont = noconfirm || prompt!(default no, "Continue?");
         if !cont {
             // If user doesn't want to continue, break
             tracing::info!("Exiting");
@@ -65,7 +65,9 @@ pub async fn clean(options: Options) {
     }
 
     // Prompt the user whether to clear the Amethyst cache
-    let clear_ame_cache = prompt!(default no, "Clear Amethyst's internal PKGBUILD cache?");
+    let clear_ame_cache =
+        noconfirm || prompt!(default no, "Clear Amethyst's internal PKGBUILD cache?");
+
     if clear_ame_cache {
         let cache_dir = get_cache_dir();
         RmBuilder::default()
@@ -78,11 +80,7 @@ pub async fn clean(options: Options) {
     }
 
     // Prompt the user whether to clear cache or not
-    let clear_pacman_cache = if noconfirm {
-        true
-    } else {
-        prompt!(default no, "Also clear pacman's package cache?")
-    };
+    let clear_pacman_cache = noconfirm || prompt!(default no, "Also clear pacman's package cache?");
 
     if clear_pacman_cache {
         let conf = Config::read();
