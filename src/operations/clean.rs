@@ -85,18 +85,6 @@ pub async fn clean(options: Options) {
 
     if clear_pacman_cache {
         let conf = Config::read();
-        let mut debug_str = "Clearing using paccache -r".to_string();
-
-        debug_str = format!("{} -k{}", debug_str, conf.base.paccache_keep);
-        if conf.base.paccache_keep_ins {
-            debug_str = format!("{} -u", debug_str);
-        }
-
-        if quiet {
-            debug_str = format!("{} -q", debug_str);
-        }
-
-        tracing::debug!(debug_str);
 
         // Clear pacman's cache
         // keeps 0 versions of the package in the cache by default
