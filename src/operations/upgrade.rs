@@ -28,20 +28,22 @@ async fn upgrade_repo(options: Options) {
 
     tracing::debug!("Upgrading repo packages");
 
-    PacmanUpgradeBuilder::default()
+    let result = PacmanUpgradeBuilder::default()
         .no_confirm(noconfirm)
         .upgrade()
-        .await
-        .unwrap_or_else(|_| {
-            let continue_upgrading = prompt!(default no,
-                "Failed to upgrade repo packages, continue to upgrading AUR packages?",
-            );
-            if !continue_upgrading {
-                tracing::info!("Exiting");
-                std::process::exit(AppExitCode::PacmanError as i32);
-            }
-        });
-    tracing::info!("Successfully upgraded repo packages");
+        .await;
+
+    if let Err(_) = result {
+        let continue_upgrading = prompt!(default no,
+            "Failed to upgrade repo packages, continue to upgrading AUR packages?",
+        );
+        if !continue_upgrading {
+            tracing::info!("Exiting");
+            std::process::exit(AppExitCode::PacmanError as i32);
+        }
+    } else {
+        tracing::info!("Successfully upgraded repo packages");
+    }
 }
 
 #[tracing::instrument(level = "trace")]

@@ -49,18 +49,19 @@ pub async fn clean(options: Options) {
         tracing::debug!("Removing orphans: {:?}", orphaned_packages_vec);
 
         // Remove orphaned packages
-        PacmanUninstallBuilder::default()
+        let result = PacmanUninstallBuilder::default()
             .no_save(true)
             .recursive(true)
             .no_confirm(noconfirm)
             .packages(orphaned_packages_vec)
             .uninstall()
-            .await
-            .unwrap_or_else(|_| {
-                crash!(AppExitCode::PacmanError, "Failed to remove orphans",);
-            });
+            .await;
 
-        tracing::info!("Successfully removed orphans");
+        if let Err(_) = result {
+            crash!(AppExitCode::PacmanError, "Failed to remove orphans");
+        } else {
+            tracing::info!("Successfully removed orphans");
+        }
     }
 
     // Prompt the user whether to clear the Amethyst cache
@@ -89,20 +90,21 @@ pub async fn clean(options: Options) {
         // Clear pacman's cache
         // keeps 0 versions of the package in the cache by default
         // keeps installed packages in the cache by default
-        PaccacheBuilder::default()
+        let result = PaccacheBuilder::default()
             .keep(conf.base.paccache_keep)
             .keep_ins(conf.base.paccache_keep_ins)
             .quiet(quiet)
             .remove()
-            .await
-            .unwrap_or_else(|e| {
-                crash!(
-                    AppExitCode::PacmanError,
-                    "Failed to clear package cache, {}",
-                    e
-                )
-            });
+            .await;
 
-        tracing::info!("Successfully cleared package cache");
+        if let Err(e) = result {
+            crash!(
+                AppExitCode::PacmanError,
+                "Failed to clear package cache, {}",
+                e
+            )
+        } else {
+            tracing::info!("Successfully cleared package cache");
+        }
     }
 }
