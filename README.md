@@ -49,9 +49,10 @@ Made for Crystal, compatible with any Arch-based Linux distribution.
 | 8               | Failed to parse config file                              |
 | 63              | Any other misc error                                     |
 
-### How to build:
-
-Tested on latest Cargo (1.62.0-nightly)
+### Install on non-Crystal distros
+- `sudo pacman -S --needed base-devel pacman-contrib cargo`
+- `git clone https://github.com/crystal-linux/pkgbuild.amethyst`
+- `cd pkgbuild.amethyst && makepkg -si`
 
 <br>
 
