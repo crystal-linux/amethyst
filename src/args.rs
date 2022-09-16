@@ -3,7 +3,12 @@
 use crate::operations::SearchBy;
 use clap::{Parser, Subcommand, ValueHint};
 
-static VERSION: &str = concat!(env!("CARGO_PKG_VERSION"), " (Fish)");
+static VERSION: &str = concat!(
+    env!("CARGO_PKG_VERSION"),
+    " (",
+    env!("AMETHYST_CODENAME"),
+    ")"
+);
 
 #[derive(Debug, Clone, Parser)]
 #[clap(bin_name = "ame", name = "Amethyst", version = VERSION, about = env ! ("CARGO_PKG_DESCRIPTION"), infer_subcommands = true)]
