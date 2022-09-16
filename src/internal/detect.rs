@@ -1,9 +1,7 @@
 use crossterm::style::Stylize;
 
-use crate::internal::commands::ShellCommand;
+use crate::builder::pacdiff::PacdiffBuilder;
 use crate::internal::config::Config;
-use crate::internal::error::SilentUnwrap;
-use crate::internal::exit_code::AppExitCode;
 use crate::logging::get_logger;
 use crate::prompt;
 
@@ -19,12 +17,7 @@ pub async fn detect() {
     let mut pacnew = vec![];
 
     // Run `find` to find pacnew files and split by lines into a vec
-    let find = ShellCommand::pacdiff()
-        .args(&["-o", "-f"])
-        .elevated()
-        .wait_with_output()
-        .await
-        .silent_unwrap(AppExitCode::PacmanError);
+    let find = PacdiffBuilder::list().await.unwrap();
     let find_lines = find.stdout.split('\n');
     for line in find_lines {
         if !line.is_empty() {
@@ -54,18 +47,10 @@ pub async fn detect() {
                 tracing::warn!("You can surpress this warning in the future by setting `pacdiff_warn` to \"false\" in ~/.config/ame/config.toml");
 
                 if prompt!(default no, "Continue?") {
-                    ShellCommand::pacdiff()
-                        .elevated()
-                        .wait()
-                        .await
-                        .silent_unwrap(AppExitCode::PacmanError);
+                    PacdiffBuilder::pacdiff().await.unwrap();
                 }
             } else {
-                ShellCommand::pacdiff()
-                    .elevated()
-                    .wait()
-                    .await
-                    .silent_unwrap(AppExitCode::PacmanError);
+                PacdiffBuilder::pacdiff().await.unwrap();
             }
         }
     }

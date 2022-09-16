@@ -19,6 +19,7 @@ impl Sorted {
 /// Options to be passed down to internal functions
 pub struct Options {
     pub noconfirm: bool,
+    pub quiet: bool,
     pub asdeps: bool,
     pub upgrade: bool,
 }

@@ -1,6 +1,5 @@
 use crate::args::UpgradeArgs;
-use crate::builder::pacman::{PacmanColor, PacmanQueryBuilder};
-use crate::internal::commands::ShellCommand;
+use crate::builder::pacman::{PacmanColor, PacmanQueryBuilder, PacmanUpgradeBuilder};
 use crate::internal::detect;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
@@ -27,23 +26,14 @@ pub async fn upgrade(args: UpgradeArgs, options: Options) {
 async fn upgrade_repo(options: Options) {
     let noconfirm = options.noconfirm;
 
-    let mut pacman_args = vec!["-Syu"];
-    if noconfirm {
-        pacman_args.push("--noconfirm");
-    }
-
     tracing::debug!("Upgrading repo packages");
 
-    let pacman_result = ShellCommand::pacman()
-        .elevated()
-        .args(pacman_args)
-        .wait()
-        .await
-        .silent_unwrap(AppExitCode::PacmanError);
+    let result = PacmanUpgradeBuilder::default()
+        .no_confirm(noconfirm)
+        .upgrade()
+        .await;
 
-    if pacman_result.success() {
-        tracing::info!("Successfully upgraded repo packages");
-    } else {
+    if result.is_err() {
         let continue_upgrading = prompt!(default no,
             "Failed to upgrade repo packages, continue to upgrading AUR packages?",
         );
@@ -51,6 +41,8 @@ async fn upgrade_repo(options: Options) {
             tracing::info!("Exiting");
             std::process::exit(AppExitCode::PacmanError as i32);
         }
+    } else {
+        tracing::info!("Successfully upgraded repo packages");
     }
 }
 
