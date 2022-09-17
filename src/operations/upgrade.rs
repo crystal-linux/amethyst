@@ -25,11 +25,13 @@ pub async fn upgrade(args: UpgradeArgs, options: Options) {
 #[tracing::instrument(level = "trace")]
 async fn upgrade_repo(options: Options) {
     let noconfirm = options.noconfirm;
+    let quiet = options.quiet;
 
     tracing::debug!("Upgrading repo packages");
 
     let result = PacmanUpgradeBuilder::default()
         .no_confirm(noconfirm)
+        .quiet(quiet)
         .upgrade()
         .await;
 
