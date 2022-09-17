@@ -13,6 +13,7 @@ pub struct PacmanInstallBuilder {
     files: Vec<PathBuf>,
     as_deps: bool,
     no_confirm: bool,
+    quiet: bool,
     needed: bool,
 }
 
@@ -21,6 +22,7 @@ impl PacmanInstallBuilder {
         Self::default()
             .as_deps(options.asdeps)
             .no_confirm(options.noconfirm)
+            .quiet(options.quiet)
     }
 
     pub fn packages<I: IntoIterator<Item = S>, S: ToString>(mut self, packages: I) -> Self {
@@ -39,6 +41,12 @@ impl PacmanInstallBuilder {
 
     pub fn no_confirm(mut self, no_confirm: bool) -> Self {
         self.no_confirm = no_confirm;
+
+        self
+    }
+
+    pub fn quiet(mut self, quiet: bool) -> Self {
+        self.quiet = quiet;
 
         self
     }
@@ -68,6 +76,10 @@ impl PacmanInstallBuilder {
 
         if self.no_confirm {
             command = command.arg("--noconfirm")
+        }
+
+        if self.quiet {
+            command = command.arg("--quiet")
         }
 
         if self.as_deps {
