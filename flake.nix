@@ -49,6 +49,9 @@
           ];
           # For rust-analyzer
           RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
+
+          # Amethyst codename
+          AMETHYST_CODENAME = "Nixilicious";
         };
 
         formatter = pkgs.alejandra;
