@@ -65,7 +65,7 @@ impl Config {
         } else {
             let default_conf = Config::default();
             let toml_string = toml::ser::to_string_pretty(&default_conf).unwrap();
-            fs::write(config_path, format!("{}\n\n{}", "# See https://github.com/crystal-linux/docs/blob/main/Amethyst/config.mdx for more information on config keys", toml_string)).unwrap();
+            fs::write(config_path, format!("{}\n\n{}", "# See https://getcryst.al/docs/amethyst/config for more information on config keys", toml_string)).unwrap();
             default_conf
         }
     }
