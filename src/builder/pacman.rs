@@ -268,11 +268,18 @@ impl PacmanSearchBuilder {
 #[derive(Default, Debug, Clone)]
 pub struct PacmanUpgradeBuilder {
     no_confirm: bool,
+    quiet: bool,
 }
 
 impl PacmanUpgradeBuilder {
     pub fn no_confirm(mut self, no_confirm: bool) -> Self {
         self.no_confirm = no_confirm;
+
+        self
+    }
+
+    pub fn quiet(mut self, quiet: bool) -> Self {
+        self.quiet = quiet;
 
         self
     }
@@ -283,6 +290,10 @@ impl PacmanUpgradeBuilder {
 
         if self.no_confirm {
             command = command.arg("--noconfirm")
+        }
+
+        if self.quiet {
+            command = command.arg("--quiet")
         }
 
         command.wait_success().await
