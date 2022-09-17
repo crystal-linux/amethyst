@@ -24,8 +24,13 @@ pub struct Args {
     #[clap(long = "noconfirm", global = true)]
     pub no_confirm: bool,
 
-    /// Make some commands have less output
+    /// Make some commands have less output (only clean, upgrade, and install are supported)
     #[clap(long, short, global = true)]
+    // not gonna lie the only reason this option is here is because
+    // i was trying to figure out if paccache had a --noconfirm option.
+    // so basically, it doesn't, but hey, we might as well have it here
+    // anyways as some pacman commands can have a --quiet flag passed
+    // to them.
     pub quiet: bool,
 
     /// Loops sudo in the background to ensure it doesn't time out during long builds
