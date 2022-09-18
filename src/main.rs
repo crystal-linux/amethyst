@@ -111,14 +111,10 @@ async fn cmd_install(args: InstallArgs, options: Options) {
                 }
                 if !sorted.aur.is_empty() {
                     if Config::read().base.aur_verification_prompt {
-                        tracing::info!(
-                            "{}",
-                            format!(
-                                "These packages:\n{}\nwere found in the AUR.",
-                                sorted.aur.join(", ")
-                            )
-                        );
-                        tracing::info!("The AUR is a source of user-submitted scripts and isn't always safe to use.\nPlease make sure to read the PKGBUILDs of any packages you download from the AUR before installing them, to ensure the PKGBUILDs only do what they need to do.");
+                        tracing::info!("The following packages were found in the AUR: ");
+                        get_logger().print_list(&sorted.aur, "  ", 2);
+                        newline!();
+                        tracing::warn!("The AUR is a source of user-submitted packages/scripts and isn't always safe to use.\nPlease make sure to review the PKGBUILD of anything you download from the AUR before installing it, as some PKGBUILDs may potentially be malicious. This warning can be toggled in the configuration file.");
                         let cont = noconfirm
                             || prompt!(default no, "Are you sure that you want to continue?");
                         if !cont {
