@@ -4,7 +4,6 @@ use crate::builder::pacman::PacmanUninstallBuilder;
 use crate::builder::rm::RmBuilder;
 use crate::crash;
 
-use crate::internal::config::Config;
 use crate::internal::exit_code::AppExitCode;
 
 use crate::internal::utils::get_cache_dir;
