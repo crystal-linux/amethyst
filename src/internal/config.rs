@@ -17,8 +17,6 @@ pub struct Config {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ConfigBase {
     pub pacdiff_warn: bool,
-    pub paccache_keep: i32,
-    pub paccache_keep_ins_pkgs: bool,
 }
 
 #[derive(Debug, Deserialize, Serialize, Default)]
@@ -34,11 +32,7 @@ pub struct ConfigBin {
 
 impl Default for ConfigBase {
     fn default() -> Self {
-        Self {
-            pacdiff_warn: true,
-            paccache_keep: 0,
-            paccache_keep_ins_pkgs: true,
-        }
+        Self { pacdiff_warn: true }
     }
 }
 

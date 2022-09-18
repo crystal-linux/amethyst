@@ -83,14 +83,12 @@ pub async fn clean(options: Options) {
     let clear_pacman_cache = noconfirm || prompt!(default no, "Also clear pacman's package cache?");
 
     if clear_pacman_cache {
-        let conf = Config::read();
-
         // Clear pacman's cache
-        // keeps 0 versions of the package in the cache by default
-        // keeps installed packages in the cache by default
+        // keeps 3 versions of the package in the cache
+        // keeps installed packages in the cache
         let result = PaccacheBuilder::default()
-            .set_keep(conf.base.paccache_keep)
-            .keep_ins_pkgs(conf.base.paccache_keep_ins_pkgs)
+            .set_keep(3)
+            .keep_ins_pkgs(true)
             .quiet_output(quiet)
             .remove()
             .await;
