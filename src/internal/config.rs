@@ -19,6 +19,7 @@ pub struct ConfigBase {
     pub pacdiff_warn: bool,
     pub paccache_keep: i32,
     pub paccache_keep_ins_pkgs: bool,
+    pub aur_verification_prompt: bool,
 }
 
 #[derive(Debug, Deserialize, Serialize, Default)]
@@ -38,6 +39,7 @@ impl Default for ConfigBase {
             pacdiff_warn: true,
             paccache_keep: 0,
             paccache_keep_ins_pkgs: true,
+            aur_verification_prompt: true,
         }
     }
 }

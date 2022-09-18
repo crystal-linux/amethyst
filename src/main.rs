@@ -8,6 +8,7 @@ use internal::error::SilentUnwrap;
 
 use crate::args::{InstallArgs, Operation, QueryArgs, RemoveArgs};
 use crate::interact::page_string;
+use crate::internal::config::Config;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::{sort, start_sudoloop, structs::Options};
 use crate::logging::get_logger;
@@ -79,6 +80,7 @@ async fn main() {
 async fn cmd_install(args: InstallArgs, options: Options) {
     let packages = &args.packages;
     let both = !args.aur && !args.repo;
+    let noconfirm = options.noconfirm;
 
     match args.search {
         true => {
@@ -108,6 +110,22 @@ async fn cmd_install(args: InstallArgs, options: Options) {
                     operations::install(sorted.repo, options).await;
                 }
                 if !sorted.aur.is_empty() {
+                    if Config::read().base.aur_verification_prompt {
+                        tracing::info!(
+                            "{}",
+                            format!(
+                                "These packages:\n{}\nwere found in the AUR.",
+                                sorted.aur.join(", ")
+                            )
+                        );
+                        tracing::info!("The AUR is a source of user-submitted scripts and isn't always safe to use.\nPlease make sure to read the PKGBUILDs of any packages you download from the AUR before installing them, to ensure the PKGBUILDs only do what they need to do.");
+                        let cont = noconfirm
+                            || prompt!(default no, "Are you sure that you want to continue?");
+                        if !cont {
+                            tracing::info!("Exiting");
+                            std::process::exit(AppExitCode::PacmanError as i32);
+                        }
+                    }
                     operations::aur_install(sorted.aur, options).await;
                 }
             }
