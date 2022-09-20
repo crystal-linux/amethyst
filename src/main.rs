@@ -31,7 +31,7 @@ use logging::init_logger;
 async fn main() {
     color_eyre::install().unwrap();
     if unsafe { libc::geteuid() } == 0 {
-        crash!( AppExitCode::RunAsRoot, "Running amethyst as root is disallowed as it can lead to system breakage. Instead, amethyst will prompt you when it needs superuser permissions");
+        crash!(AppExitCode::RunAsRoot, "{}", fl!("run-as-root"));
     }
 
     let args: Args = Args::parse();
@@ -64,11 +64,11 @@ async fn main() {
         }
         Operation::Query(query_args) => cmd_query(query_args).await,
         Operation::Upgrade(upgrade_args) => {
-            tracing::info!("Performing system upgrade");
+            tracing::info!("{}", fl!("system-upgrade"));
             operations::upgrade(upgrade_args, options).await;
         }
         Operation::Clean => {
-            tracing::info!("Removing orphaned packages");
+            tracing::info!("{}", fl!("removing-orphans"));
             operations::clean(options).await;
         }
         Operation::GenComp(gen_args) => cmd_gencomp(&gen_args),
@@ -102,8 +102,8 @@ async fn cmd_install(args: InstallArgs, options: Options) {
                 if !sorted.nf.is_empty() {
                     crash!(
                         AppExitCode::PacmanError,
-                        "Couldn't find packages: {} in repos or the AUR",
-                        sorted.nf.join(", ")
+                        "{}",
+                        fl!("couldnt-find-packages", packages = sorted.nf.join(", "))
                     );
                 }
                 if !sorted.repo.is_empty() {
@@ -111,14 +111,13 @@ async fn cmd_install(args: InstallArgs, options: Options) {
                 }
                 if !sorted.aur.is_empty() {
                     if Config::read().base.aur_verification_prompt {
-                        tracing::info!("The following packages were found in the AUR: ");
+                        tracing::info!("{}", fl!("following-packages"));
                         get_logger().print_list(&sorted.aur, "  ", 2);
                         newline!();
-                        tracing::warn!("The AUR is a source of user-submitted packages/scripts and isn't always safe to use.\nPlease make sure to review the PKGBUILD of anything you download from the AUR before installing it, as some PKGBUILDs may potentially be malicious. This warning can be toggled in the configuration file.");
-                        let cont = noconfirm
-                            || prompt!(default no, "Are you sure that you want to continue?");
+                        tracing::warn!("{}", fl!("aur-warning"));
+                        let cont = noconfirm || prompt!(default no, "{}", fl!("are-you-sure"));
                         if !cont {
-                            tracing::info!("Exiting");
+                            tracing::info!("{}", fl!("exiting"));
                             std::process::exit(AppExitCode::PacmanError as i32);
                         }
                     }
@@ -132,7 +131,13 @@ async fn cmd_install(args: InstallArgs, options: Options) {
 #[tracing::instrument(level = "trace")]
 async fn cmd_remove(args: RemoveArgs, options: Options) {
     let packages = args.packages;
-    tracing::info!("Uninstalling packages: {}", &packages.join(", "));
+    tracing::info!(
+        "{}",
+        fl!(
+            "uninstalling-packages",
+            packages = packages.join(", ").to_string()
+        )
+    );
     operations::uninstall(packages, options).await;
 }
 
@@ -144,20 +149,20 @@ async fn cmd_search(args: InstallArgs, options: Options) {
     let mut results = Vec::new();
 
     if args.repo || both {
-        tracing::info!("Searching repos for {}", &query_string);
+        tracing::info!("{}", fl!("searching-repos", query = query_string.clone()));
         let res = operations::search(&query_string, options).await;
         results.extend(res);
     }
     if args.aur || both {
-        tracing::info!("Searching AUR for {}", &query_string);
+        tracing::info!("{}", fl!("searching-aur", query = query_string.clone()));
         let res = operations::aur_search(&query_string, args.by, options).await;
         results.extend(res);
     }
 
     if results.is_empty() {
-        tracing::info!("No results found");
+        tracing::info!("{}", fl!("no-results"));
     } else {
-        tracing::info!("Results:");
+        tracing::info!("{}", fl!("results"));
 
         results.sort_by(|a, b| {
             let a_score = a.score(&query_string);
@@ -182,7 +187,7 @@ async fn cmd_query(args: QueryArgs) {
     let both = !args.aur && !args.repo && args.info.is_none();
 
     if args.repo {
-        tracing::info!("Installed Repo Packages: ");
+        tracing::info!("{}", fl!("installed-repo-packages"));
         PacmanQueryBuilder::native()
             .color(PacmanColor::Always)
             .query()
@@ -191,7 +196,7 @@ async fn cmd_query(args: QueryArgs) {
     }
 
     if args.aur {
-        tracing::info!("Installed AUR Packages: ");
+        tracing::info!("{}", fl!("installed-aur-packages"));
         PacmanQueryBuilder::foreign()
             .color(PacmanColor::Always)
             .query()
@@ -200,7 +205,7 @@ async fn cmd_query(args: QueryArgs) {
     }
 
     if both {
-        tracing::info!("Installed Packages: ");
+        tracing::info!("{}", fl!("installed-packages"));
         PacmanQueryBuilder::all()
             .color(PacmanColor::Always)
             .query()
@@ -228,14 +233,11 @@ fn cmd_gencomp(args: &GenCompArgs) {
         );
     } else {
         let shell: Shell = Shell::from_str(&args.shell).unwrap_or_else(|e| {
-            crash!(AppExitCode::Other, "Invalid shell, {}", e);
+            crash!(AppExitCode::Other, "{}", fl!("invalid-shell", shell = e));
         });
 
         if shell == Shell::Zsh {
-            crash!(
-                AppExitCode::Other,
-                "Zsh shell completions are currently unsupported due to a bug in the clap_completion crate"
-            );
+            crash!(AppExitCode::Other, "{}", fl!("zsh-error"));
         };
 
         shell.generate(

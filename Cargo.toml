@@ -56,6 +56,10 @@ directories = "4.0.1"
 console = "0.15.1"
 tracing-error = "0.2.0"
 fuzzy-matcher = "0.3.7"
+i18n-embed = { version = "0.13.4", features = ["fluent-system", "desktop-requester"] }
+i18n-embed-fl = "0.6.4"
+rust-embed = "6.4.1"
+unic-langid = "0.9.0"
 
 [dependencies.config]
 version = "0.13.2"

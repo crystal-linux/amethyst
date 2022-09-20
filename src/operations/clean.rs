@@ -4,6 +4,7 @@ use crate::builder::pacman::PacmanUninstallBuilder;
 use crate::builder::rm::RmBuilder;
 use crate::crash;
 
+use crate::fl;
 use crate::internal::exit_code::AppExitCode;
 
 use crate::internal::utils::get_cache_dir;
@@ -34,7 +35,7 @@ pub async fn clean(options: Options) {
         let cont = noconfirm || prompt!(default no, "Continue?");
         if !cont {
             // If user doesn't want to continue, break
-            tracing::info!("Exiting");
+            tracing::info!("{}", fl!("exiting"));
             std::process::exit(AppExitCode::PacmanError as i32);
         }
 
