@@ -12,7 +12,7 @@ use super::prompt_sudo_single;
 pub async fn detect() {
     prompt_sudo_single()
         .await
-        .expect(&fl!("sudo-prompt-failed").clone());
+        .expect(&fl!("sudo-prompt-failed"));
     let pb = get_logger().new_progress_spinner();
     pb.set_message(fl!("scanning-pacnew-files"));
 
@@ -29,10 +29,10 @@ pub async fn detect() {
 
     // If pacnew files are found, warn the user and prompt to pacdiff
     if pacnew.is_empty() {
-        pb.finish_with_message(format!("{}", fl!("no-pacnew-found")).bold().to_string());
+        pb.finish_with_message(fl!("no-pacnew-found").bold().to_string());
         get_logger().reset_output_type();
     } else {
-        pb.finish_with_message(format!("{}", fl!("pacnew-found")).bold().to_string());
+        pb.finish_with_message(fl!("pacnew-found").bold().to_string());
         get_logger().reset_output_type();
         tracing::info!(
             "{} {}.",

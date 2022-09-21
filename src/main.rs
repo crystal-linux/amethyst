@@ -133,10 +133,7 @@ async fn cmd_remove(args: RemoveArgs, options: Options) {
     let packages = args.packages;
     tracing::info!(
         "{}",
-        fl!(
-            "uninstalling-packages",
-            packages = packages.join(", ").to_string()
-        )
+        fl!("uninstalling-packages", packages = packages.join(", "))
     );
     operations::uninstall(packages, options).await;
 }

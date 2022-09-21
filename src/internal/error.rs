@@ -30,10 +30,8 @@ impl Display for AppError {
             AppError::Io(io) => Display::fmt(io, f),
             AppError::Rpc(e) => Display::fmt(e, f),
             AppError::Other(s) => Display::fmt(s, f),
-            AppError::NonZeroExit => Display::fmt(&format!("{}", fl!("non-zero-exit")), f),
-            AppError::BuildStepViolation => {
-                Display::fmt(&format!("{}", fl!("build-step-violation")), f)
-            }
+            AppError::NonZeroExit => Display::fmt(&fl!("non-zero-exit"), f),
+            AppError::BuildStepViolation => Display::fmt(&fl!("build-step-violation"), f),
             AppError::BuildError { pkg_name } => write!(f, "{} {pkg_name}", fl!("build-error")),
             AppError::UserCancellation => write!(f, "{}", fl!("user-cancel")),
             AppError::MissingDependencies(deps) => {
