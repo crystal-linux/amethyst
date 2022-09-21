@@ -2,6 +2,7 @@ use crossterm::style::Stylize;
 use futures::future;
 
 use crate::{
+    fl,
     internal::{
         dependencies::DependencyInformation,
         error::{AppError, AppResult},
@@ -21,14 +22,18 @@ pub struct AurFetch {
 impl AurFetch {
     #[tracing::instrument(level = "trace", skip_all)]
     pub async fn fetch_package_info(self) -> AppResult<AurDownload> {
-        let pb = spinner!("Fetching package information");
+        let pb = spinner!("{}", fl!("fetching-pkg-info"));
 
         let package_infos = aur_rpc::info(&self.packages).await?;
 
         tracing::debug!("package info = {package_infos:?}");
 
         if package_infos.len() != self.packages.len() {
-            pb.finish_with_message("Couldn't find all packages".red().to_string());
+            pb.finish_with_message(
+                format!("{}", fl!("couldnt-find-all-pkgs"))
+                    .red()
+                    .to_string(),
+            );
             let mut not_found = self.packages.clone();
             package_infos
                 .iter()
@@ -36,18 +41,18 @@ impl AurFetch {
             return Err(AppError::MissingDependencies(not_found));
         }
 
-        pb.finish_with_message("All packages found".green().to_string());
+        pb.finish_with_message(format!("{}", fl!("all-pkgs-found")).green().to_string());
         normal_output!();
 
         if print_aur_package_list(&package_infos.iter().collect::<Vec<_>>()).await
             && !self.options.noconfirm
             && !self.options.upgrade
-            && !prompt!(default yes, "Some packages are already installed. Continue anyway?")
+            && !prompt!(default yes, "{}", fl!("some-pkgs-already-installed"))
         {
             return Err(AppError::UserCancellation);
         }
 
-        let pb = spinner!("Fetching package information");
+        let pb = spinner!("{}", fl!("fetching-pkg-info"));
 
         let dependencies = future::try_join_all(
             package_infos
@@ -61,9 +66,7 @@ impl AurFetch {
 
         print_dependency_list(&dependencies).await;
 
-        if !self.options.noconfirm
-            && !prompt!(default yes, "Do you want to install these packages and package dependencies?")
-        {
+        if !self.options.noconfirm && !prompt!(default yes, "{}", fl!("do-you-want-to-install")) {
             Err(AppError::UserCancellation)
         } else {
             Ok(AurDownload {

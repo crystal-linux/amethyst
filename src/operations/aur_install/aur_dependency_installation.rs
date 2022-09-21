@@ -3,8 +3,9 @@ use futures::future;
 
 use crate::{
     builder::{makepkg::MakePkgBuilder, pacman::PacmanInstallBuilder},
+    fl,
     internal::{dependencies::DependencyInformation, error::AppResult},
-    multi_progress, normal_output, numeric,
+    multi_progress, normal_output,
     operations::{
         aur_install::common::{build_and_install, create_dependency_batches, download_aur_source},
         BuildContext,
@@ -30,8 +31,15 @@ impl AurDependencyInstallation {
 
         if !aur_dependencies.is_empty() {
             tracing::info!(
-                "Installing {} from the aur",
-                numeric!(aur_dependencies.len(), "package"["s"])
+                "{}",
+                fl!(
+                    "installing-from-aur",
+                    amountOfPkgs = format!(
+                        "{} {}",
+                        aur_dependencies.len(),
+                        fl!("packages", pkgNum = aur_dependencies.len())
+                    )
+                )
             );
             let batches = create_dependency_batches(aur_dependencies);
             tracing::debug!("aur install batches: {batches:?}");

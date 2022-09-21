@@ -22,7 +22,7 @@ use crate::{
         pacman::PacmanInstallBuilder,
         pager::PagerBuilder,
     },
-    crash,
+    crash, fl,
     internal::{
         alpm::{Alpm, PackageFrom},
         error::{AppError, AppResult},
@@ -30,7 +30,7 @@ use crate::{
         utils::{get_cache_dir, wrap_text},
     },
     logging::piped_stdio::StdioReader,
-    multi_progress, normal_output, numeric,
+    multi_progress, normal_output,
     operations::PackageArchives,
     prompt, spinner,
 };
@@ -41,23 +41,29 @@ use super::{BuildContext, BuildPath, BuildStep};
 pub async fn download_aur_source(mut ctx: BuildContext) -> AppResult<BuildContext> {
     let pkg_name = &ctx.package.metadata.name;
     let base_pkg = &ctx.package.metadata.package_base;
-    let pb = spinner!("{}: Downloading sources", pkg_name.clone().bold());
+    let pb = spinner!(
+        "{}: {}",
+        pkg_name.clone().bold(),
+        fl!("downloading-sources")
+    );
 
     let cache_dir = get_cache_dir();
     let pkg_dir = cache_dir.join(&pkg_name);
 
     if pkg_dir.exists() {
         pb.set_message(format!(
-            "{}: Pulling latest changes",
-            pkg_name.clone().bold()
+            "{}: {}",
+            pkg_name.clone().bold(),
+            fl!("pulling-latest-changes")
         ));
         GitPullBuilder::default().directory(&pkg_dir).pull().await?;
     } else {
         let aur_url = crate::internal::rpc::URL;
         let repository_url = format!("{aur_url}/{base_pkg}");
         pb.set_message(format!(
-            "{}: Cloning aur repository",
-            pkg_name.clone().bold()
+            "{}: {}",
+            pkg_name.clone().bold(),
+            fl!("cloning-aur-repo")
         ));
 
         GitCloneBuilder::default()
@@ -67,8 +73,9 @@ pub async fn download_aur_source(mut ctx: BuildContext) -> AppResult<BuildContex
             .await?;
 
         pb.set_message(format!(
-            "{}: Downloading and extracting files",
-            pkg_name.clone().bold()
+            "{}: {}",
+            pkg_name.clone().bold(),
+            fl!("down-and-ext-files")
         ));
 
         MakePkgBuilder::default()
@@ -83,7 +90,7 @@ pub async fn download_aur_source(mut ctx: BuildContext) -> AppResult<BuildContex
     pb.finish_with_message(format!(
         "{}: {}",
         pkg_name.clone().bold(),
-        "Downloaded!".green()
+        format!("{}", fl!("downloaded")).green()
     ));
     ctx.step = BuildStep::Build(BuildPath(pkg_dir));
 
@@ -133,10 +140,7 @@ pub fn create_dependency_batches(deps: Vec<&PackageInfo>) -> Vec<Vec<&PackageInf
 
         if current_batch.is_empty() {
             if relaxed {
-                crash!(
-                    AppExitCode::Other,
-                    "Dependency cycle detected. Aborting installation."
-                );
+                crash!(AppExitCode::Other, "{}", fl!("dependency-cycle"));
             }
 
             relaxed = true;
@@ -157,7 +161,7 @@ pub async fn build_and_install(
     make_opts: MakePkgBuilder,
     install_opts: PacmanInstallBuilder,
 ) -> AppResult<()> {
-    tracing::info!("Building packages");
+    tracing::info!("{}", fl!("building-packages"));
     multi_progress!();
     let results = future::join_all(
         ctxs.into_iter()
@@ -173,8 +177,13 @@ pub async fn build_and_install(
         }
     }
 
-    tracing::info!("Built {}", numeric!(ctxs.len(), "package"["s"]));
-    tracing::info!("Installing packages");
+    tracing::info!(
+        "{} {} {}",
+        fl!("built"),
+        ctxs.len(),
+        fl!("packages", pkgNum = ctxs.len())
+    );
+    tracing::info!("{}", fl!("installing-packages"));
 
     install_packages(ctxs, install_opts).await?;
 
@@ -188,7 +197,7 @@ async fn build_package(
 ) -> AppResult<BuildContext> {
     let pkg_name = &ctx.package.metadata.name;
     let build_path = ctx.build_path()?;
-    let pb = spinner!("{}: Building Package", pkg_name.as_str().bold());
+    let pb = spinner!("{}: {}", pkg_name.as_str().bold(), fl!("building-package"));
 
     let mut child = make_opts
         .directory(build_path)
@@ -214,7 +223,7 @@ async fn build_package(
         pb.finish_with_message(format!(
             "{}: {}",
             pkg_name.as_str().bold(),
-            "Build failed!".red(),
+            format!("{}", fl!("build-failed")).red(),
         ));
         return Err(AppError::BuildError {
             pkg_name: pkg_name.to_owned(),
@@ -236,12 +245,16 @@ async fn build_package(
 
     let pkg_to_install = pkgs_produced.get(pkg_name).ok_or_else(|| {
         AppError::Other(format!(
-            "Could not find package {} in produced packages",
-            pkg_name.clone()
+            "{}",
+            fl!("couldnt-find-pkg-produced", pkg = pkg_name.clone())
         ))
     })?;
 
-    pb.finish_with_message(format!("{}: {}", pkg_name.clone().bold(), "Built!".green()));
+    pb.finish_with_message(format!(
+        "{}: {}!",
+        pkg_name.clone().bold(),
+        format!("{}", fl!("built")).green()
+    ));
     ctx.step = BuildStep::Install(PackageArchives(vec![pkg_to_install.to_path_buf()]));
 
     Ok(ctx)
@@ -314,7 +327,7 @@ async fn handle_build_error<E: Into<AppError>>(err: E) -> AppResult<()> {
 
 #[tracing::instrument(level = "trace")]
 async fn review_build_log(log_file: &Path) -> AppResult<()> {
-    if prompt!(default yes, "Do you want to review the build log?") {
+    if prompt!(default yes, "{}", fl!("review-build-log")) {
         PagerBuilder::default().path(log_file).open().await?;
     }
 

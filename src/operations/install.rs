@@ -1,10 +1,16 @@
 use crate::builder::pacman::PacmanInstallBuilder;
 use crate::internal::exit_code::AppExitCode;
-use crate::{crash, Options};
+use crate::{crash, fl, Options};
 
 #[tracing::instrument(level = "trace")]
 pub async fn install(packages: Vec<String>, options: Options) {
-    tracing::info!("Installing packages {} from repos", &packages.join(", "));
+    tracing::info!(
+        "{}",
+        fl!(
+            "installing-packages-from-repos",
+            packages = packages.join(", ")
+        )
+    );
 
     if !packages.is_empty() {
         tracing::debug!("Installing from repos: {:?}", &packages);
@@ -17,8 +23,8 @@ pub async fn install(packages: Vec<String>, options: Options) {
         if result.is_err() {
             crash!(
                 AppExitCode::PacmanError,
-                "An error occured while installing packages: {}, aborting",
-                packages.join(", "),
+                "{}",
+                fl!("error-install", error = packages.join(", "))
             );
         }
 
