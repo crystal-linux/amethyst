@@ -148,4 +148,4 @@ config-docs = # See https://getcryst.al/docs/amethyst/config for more informatio
 quit = quit
 search = search
 next-result = next result
-previous-result = previous-result
+previous-result = previous result
