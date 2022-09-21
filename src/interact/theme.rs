@@ -151,7 +151,7 @@ impl Theme for AmeTheme {
     ) -> std::fmt::Result {
         write!(f, "  {}: ", prompt.bold())?;
         if selections.is_empty() {
-            write!(f, "{}", format!("{}", fl!("no-selections")).italic())?;
+            write!(f, "{}", fl!("no-selections").italic())?;
         } else {
             for (idx, sel) in selections.iter().enumerate() {
                 write!(f, "{}{}", if idx == 0 { "" } else { ", " }, sel)?;

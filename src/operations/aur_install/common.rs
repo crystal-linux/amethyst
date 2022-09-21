@@ -90,7 +90,7 @@ pub async fn download_aur_source(mut ctx: BuildContext) -> AppResult<BuildContex
     pb.finish_with_message(format!(
         "{}: {}",
         pkg_name.clone().bold(),
-        format!("{}", fl!("downloaded")).green()
+        fl!("downloaded").green()
     ));
     ctx.step = BuildStep::Build(BuildPath(pkg_dir));
 
@@ -223,7 +223,7 @@ async fn build_package(
         pb.finish_with_message(format!(
             "{}: {}",
             pkg_name.as_str().bold(),
-            format!("{}", fl!("build-failed")).red(),
+            fl!("build-failed").red(),
         ));
         return Err(AppError::BuildError {
             pkg_name: pkg_name.to_owned(),
@@ -243,17 +243,14 @@ async fn build_package(
     }
     tracing::debug!("Produced packages: {pkgs_produced:#?}");
 
-    let pkg_to_install = pkgs_produced.get(pkg_name).ok_or_else(|| {
-        AppError::Other(format!(
-            "{}",
-            fl!("couldnt-find-pkg-produced", pkg = pkg_name.clone())
-        ))
-    })?;
+    let pkg_to_install = pkgs_produced
+        .get(pkg_name)
+        .ok_or_else(|| AppError::Other(fl!("couldnt-find-pkg-produced", pkg = pkg_name.clone())))?;
 
     pb.finish_with_message(format!(
         "{}: {}!",
         pkg_name.clone().bold(),
-        format!("{}", fl!("built")).green()
+        fl!("built").green()
     ));
     ctx.step = BuildStep::Install(PackageArchives(vec![pkg_to_install.to_path_buf()]));
 

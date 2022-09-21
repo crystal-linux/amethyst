@@ -29,11 +29,7 @@ impl AurFetch {
         tracing::debug!("package info = {package_infos:?}");
 
         if package_infos.len() != self.packages.len() {
-            pb.finish_with_message(
-                format!("{}", fl!("couldnt-find-all-pkgs"))
-                    .red()
-                    .to_string(),
-            );
+            pb.finish_with_message(fl!("couldnt-find-all-pkgs").red().to_string());
             let mut not_found = self.packages.clone();
             package_infos
                 .iter()
@@ -41,7 +37,7 @@ impl AurFetch {
             return Err(AppError::MissingDependencies(not_found));
         }
 
-        pb.finish_with_message(format!("{}", fl!("all-pkgs-found")).green().to_string());
+        pb.finish_with_message(fl!("all-pkgs-found").green().to_string());
         normal_output!();
 
         if print_aur_package_list(&package_infos.iter().collect::<Vec<_>>()).await
