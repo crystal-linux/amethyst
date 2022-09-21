@@ -35,7 +35,7 @@ async fn main() {
     }
 
     let args: Args = Args::parse();
-    init_logger(args.verbose.into());
+    init_logger(usize::from(args.verbose).into());
 
     let noconfirm = args.no_confirm;
     let quiet = args.quiet;
