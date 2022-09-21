@@ -4,7 +4,9 @@ use aur_rpc::PackageInfo;
 use console::Alignment;
 use crossterm::style::Stylize;
 
-use crate::{builder::pacman::PacmanQueryBuilder, internal::dependencies::DependencyInformation};
+use crate::{
+    builder::pacman::PacmanQueryBuilder, fl, internal::dependencies::DependencyInformation,
+};
 
 use super::get_logger;
 
@@ -35,27 +37,27 @@ pub async fn print_dependency_list(dependencies: &[DependencyInformation]) -> bo
 
     let mut empty = true;
     if !deps_repo.is_empty() {
-        tracing::info!("Repo dependencies");
+        tracing::info!("{}", fl!("repo-dependencies"));
         get_logger().print_list(&deps_repo, "  ", 2);
         empty = false;
         get_logger().print_newline();
     }
     if !deps_aur.is_empty() {
-        tracing::info!("AUR dependencies");
+        tracing::info!("{}", fl!("aur-dependencies"));
         print_aur_package_list(&deps_aur).await;
         empty = false;
         get_logger().print_newline();
     }
 
     if !makedeps_repo.is_empty() {
-        tracing::info!("Repo make dependencies");
+        tracing::info!("{}", fl!("repo-make-dependencies"));
         get_logger().print_list(&makedeps_repo, "  ", 2);
         empty = false;
         get_logger().print_newline();
     }
 
     if !makedeps_aur.is_empty() {
-        tracing::info!("AUR make dependencies");
+        tracing::info!("{}", fl!("aur-make-dependencies"));
         print_aur_package_list(&makedeps_aur).await;
         empty = false;
         get_logger().print_newline();
@@ -81,14 +83,16 @@ pub async fn print_aur_package_list(packages: &[&PackageInfo]) -> bool {
     get_logger().print_list(
         packages.iter().map(|pkg| {
             format!(
-                "{} version {} ({} votes) {}",
+                "{} {} {} ({} {}) {}",
                 console::pad_str(&pkg.metadata.name, 30, Alignment::Left, Some("...")).bold(),
+                fl!("version"),
                 pkg.metadata.version.clone().dim(),
                 pkg.metadata.num_votes,
+                fl!("votes"),
                 if installed.contains_key(&pkg.metadata.name) {
-                    "(Installed)"
+                    format!("({})", fl!("capital-installed"))
                 } else {
-                    ""
+                    "".to_string()
                 }
                 .bold()
                 .magenta()

@@ -2,6 +2,7 @@ use std::collections::HashSet;
 
 use crate::{
     builder::pacman::PacmanInstallBuilder,
+    fl,
     internal::{dependencies::DependencyInformation, error::AppResult, structs::Options},
 };
 
@@ -23,7 +24,7 @@ impl RepoDependencyInstallation {
             .collect();
 
         if !repo_dependencies.is_empty() {
-            tracing::info!("Installing repo dependencies");
+            tracing::info!("{}", fl!("installing-repo-deps"));
             PacmanInstallBuilder::default()
                 .as_deps(true)
                 .packages(repo_dependencies)

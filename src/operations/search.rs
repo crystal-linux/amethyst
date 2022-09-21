@@ -2,6 +2,7 @@ use std::fmt::Display;
 use std::fmt::Formatter;
 use std::str::FromStr;
 
+use crate::fl;
 use crate::internal::alpm::Alpm;
 use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
@@ -49,7 +50,8 @@ impl Display for PackageSearchResult {
         };
         let out_of_date = if let Some(out_of_date) = self.out_of_date {
             format!(
-                " [out of date: since {}]",
+                " [{} {}]",
+                fl!("out-of-date"),
                 Local
                     .timestamp(out_of_date.try_into().unwrap(), 0)
                     .date_naive()
@@ -58,7 +60,7 @@ impl Display for PackageSearchResult {
             String::new()
         };
         let installed = if self.installed {
-            " [installed]".to_string()
+            format!(" [{}]", fl!("installed"))
         } else {
             String::new()
         };
@@ -96,7 +98,8 @@ impl Printable for PackageSearchResult {
         .blue();
         let out_of_date = if let Some(out_of_date) = self.out_of_date {
             format!(
-                " [out of date: since {}]",
+                " [{} {}]",
+                fl!("out-of-date"),
                 Local
                     .timestamp(out_of_date.try_into().unwrap(), 0)
                     .date_naive()
@@ -107,7 +110,7 @@ impl Printable for PackageSearchResult {
         .bold()
         .red();
         let installed = if self.installed {
-            " [installed]".to_string()
+            format!(" [{}]", fl!("installed"))
         } else {
             "".to_string()
         }

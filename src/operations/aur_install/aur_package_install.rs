@@ -1,7 +1,7 @@
 use crate::{
     builder::{makepkg::MakePkgBuilder, pacman::PacmanInstallBuilder},
+    fl,
     internal::{dependencies::DependencyInformation, error::AppResult, structs::Options},
-    numeric,
     operations::aur_install::{
         common::build_and_install, make_dependency_removal::MakeDependencyRemoval,
     },
@@ -19,8 +19,9 @@ impl AurPackageInstall {
     #[tracing::instrument(level = "trace", skip_all)]
     pub async fn install_packages(self) -> AppResult<MakeDependencyRemoval> {
         tracing::info!(
-            "Installing {}",
-            numeric!(self.contexts.len(), "package"["s"])
+            "Installing {} {}",
+            self.contexts.len(),
+            fl!("packages", pkgNum = self.contexts.len())
         );
         build_and_install(
             self.contexts,

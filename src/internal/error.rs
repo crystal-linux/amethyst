@@ -2,8 +2,8 @@ use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 use std::io;
 
-use crate::crash;
 use crate::internal::exit_code::AppExitCode;
+use crate::{crash, fl};
 
 pub type AppResult<T> = Result<T, AppError>;
 
@@ -30,14 +30,16 @@ impl Display for AppError {
             AppError::Io(io) => Display::fmt(io, f),
             AppError::Rpc(e) => Display::fmt(e, f),
             AppError::Other(s) => Display::fmt(s, f),
-            AppError::NonZeroExit => Display::fmt("exited with non zero code", f),
-            AppError::BuildStepViolation => Display::fmt("AUR build violated build steps", f),
-            AppError::BuildError { pkg_name } => write!(f, "Failed to build package {pkg_name}"),
-            AppError::UserCancellation => write!(f, "Cancelled by user"),
-            AppError::MissingDependencies(deps) => {
-                write!(f, "Missing dependencies {}", deps.join(", "))
+            AppError::NonZeroExit => Display::fmt(&format!("{}", fl!("non-zero-exit")), f),
+            AppError::BuildStepViolation => {
+                Display::fmt(&format!("{}", fl!("build-step-violation")), f)
             }
-            AppError::MakePkg(msg) => write!(f, "Failed to run makepkg {msg}"),
+            AppError::BuildError { pkg_name } => write!(f, "{} {pkg_name}", fl!("build-error")),
+            AppError::UserCancellation => write!(f, "{}", fl!("user-cancel")),
+            AppError::MissingDependencies(deps) => {
+                write!(f, "{} {}", fl!("missing-deps"), deps.join(", "))
+            }
+            AppError::MakePkg(msg) => write!(f, "{} {msg}", fl!("makepkg-err")),
             AppError::MinusError(e) => Display::fmt(e, f),
             AppError::FmtError(e) => Display::fmt(e, f),
             AppError::AlpmError(e) => Display::fmt(e, f),
@@ -99,7 +101,7 @@ impl<T> SilentUnwrap<T> for AppResult<T> {
             Ok(val) => val,
             Err(e) => {
                 tracing::debug!("{e}");
-                crash!(exit_code, "An error occurred")
+                crash!(exit_code, "{}", fl!("error-occurred"))
             }
         }
     }

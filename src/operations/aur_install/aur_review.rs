@@ -2,6 +2,7 @@ use tokio::fs;
 
 use crate::{
     builder::pager::PagerBuilder,
+    fl,
     internal::{
         dependencies::DependencyInformation,
         error::{AppError, AppResult},
@@ -24,12 +25,12 @@ impl AurReview {
     #[tracing::instrument(level = "trace", skip_all)]
     pub async fn review_pkgbuild(self) -> AppResult<RepoDependencyInstallation> {
         if !self.options.noconfirm {
-            let to_review = multi_select!(&self.packages, "Select packages to review");
+            let to_review = multi_select!(&self.packages, "{}", fl!("select-pkgs-review"));
 
             for pkg in to_review.into_iter().filter_map(|i| self.packages.get(i)) {
                 self.review_single_package(pkg).await?;
             }
-            if !prompt!(default yes, "Do you still want to install those packages?") {
+            if !prompt!(default yes, "{}", fl!("do-you-still-want-to-install")) {
                 return Err(AppError::UserCancellation);
             }
         }
@@ -41,7 +42,7 @@ impl AurReview {
     }
 
     async fn review_single_package(&self, pkg: &str) -> AppResult<()> {
-        tracing::info!("Reviewing {pkg}");
+        tracing::info!("{} {pkg}", fl!("reviewing"));
         let mut files_iter = fs::read_dir(get_cache_dir().join(pkg)).await?;
         let mut files = Vec::new();
 
@@ -59,7 +60,7 @@ impl AurReview {
             .map(|f| f.to_string_lossy())
             .collect::<Vec<_>>();
 
-        while let Some(selection) = select_opt!(&file_names, "Select a file to review") {
+        while let Some(selection) = select_opt!(&file_names, "{}", fl!("select-file-review")) {
             if let Some(path) = files.get(selection) {
                 if let Err(e) = PagerBuilder::default().path(path).open().await {
                     tracing::debug!("Pager error {e}");
@@ -69,7 +70,7 @@ impl AurReview {
             }
         }
 
-        tracing::info!("Done reviewing {pkg}");
+        tracing::info!("{}", fl!("done-reviewing-pkg", pkg = pkg));
 
         Ok(())
     }

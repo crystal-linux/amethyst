@@ -4,7 +4,7 @@ use tokio::fs;
 
 use crate::builder::pacman::PacmanUninstallBuilder;
 use crate::internal::exit_code::AppExitCode;
-use crate::{crash, Options};
+use crate::{crash, fl, Options};
 
 /// Uninstalls the given packages
 #[tracing::instrument(level = "trace")]
@@ -18,7 +18,7 @@ pub async fn uninstall(packages: Vec<String>, options: Options) {
         .uninstall()
         .await
         .unwrap_or_else(|_| {
-            crash!(AppExitCode::PacmanError, "Failed to remove packages");
+            crash!(AppExitCode::PacmanError, "{}", fl!("failed-remove-pkgs"));
         });
 
     for package in packages {

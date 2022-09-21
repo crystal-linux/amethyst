@@ -25,12 +25,15 @@ pub async fn clean(options: Options) {
 
     if orphaned_packages.stdout.as_str().is_empty() {
         // If no orphaned packages found, do nothing
-        tracing::info!("No orphaned packages found");
+        tracing::info!("{}", fl!("no-orphans"));
     } else {
         // Prompt users whether to remove orphaned packages
         tracing::info!(
-            "Removing orphans would uninstall the following packages: \n{}",
-            &orphaned_packages.stdout.trim_end()
+            "{}",
+            fl!(
+                "removing-orphans-would",
+                packages = orphaned_packages.stdout.trim_end()
+            )
         );
         let cont = noconfirm || prompt!(default no, "Continue?");
         if !cont {
@@ -58,15 +61,14 @@ pub async fn clean(options: Options) {
             .await;
 
         if result.is_err() {
-            crash!(AppExitCode::PacmanError, "Failed to remove orphans");
+            crash!(AppExitCode::PacmanError, "{}", fl!("failed-remove-orphans"));
         } else {
-            tracing::info!("Successfully removed orphans");
+            tracing::info!("{}", fl!("success-remove-orphans"));
         }
     }
 
     // Prompt the user whether to clear the Amethyst cache
-    let clear_ame_cache =
-        noconfirm || prompt!(default no, "Clear Amethyst's internal PKGBUILD cache?");
+    let clear_ame_cache = noconfirm || prompt!(default no, "{}", fl!("clear-pkgbuild-cache"));
 
     if clear_ame_cache {
         let cache_dir = get_cache_dir();
@@ -80,7 +82,7 @@ pub async fn clean(options: Options) {
     }
 
     // Prompt the user whether to clear cache or not
-    let clear_pacman_cache = noconfirm || prompt!(default no, "Also clear pacman's package cache?");
+    let clear_pacman_cache = noconfirm || prompt!(default no, "{}", fl!("clear-pacman-cache"));
 
     if clear_pacman_cache {
         // Clear pacman's cache
@@ -96,11 +98,11 @@ pub async fn clean(options: Options) {
         if let Err(e) = result {
             crash!(
                 AppExitCode::PacmanError,
-                "Failed to clear package cache, {}",
-                e
+                "{}",
+                fl!("failed-clear-cache", error = e.to_string())
             )
         } else {
-            tracing::info!("Successfully cleared package cache");
+            tracing::info!("{}", fl!("success-clear-cache"));
         }
     }
 }

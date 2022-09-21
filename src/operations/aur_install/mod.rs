@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use crate::internal::error::{AppError, AppResult};
 
 use crate::internal::exit_code::AppExitCode;
-use crate::{cancelled, crash, Options};
+use crate::{cancelled, crash, fl, Options};
 
 use self::aur_fetch::AurFetch;
 
@@ -96,13 +96,17 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
     if let Err(e) = aur_install_internal(AurInstall::new(options, packages)).await {
         match e {
             AppError::Rpc(e) => {
-                crash!(AppExitCode::RpcError, "AUR RPC Call failed with {e}")
+                crash!(AppExitCode::RpcError, "{} {e}", fl!("aur-rpc-crash"))
             }
             AppError::BuildStepViolation => {
-                crash!(AppExitCode::MakePkgError, "Failed to build")
+                crash!(AppExitCode::MakePkgError, "{}", fl!("failed-to-build"))
             }
             AppError::BuildError { pkg_name } => {
-                crash!(AppExitCode::MakePkgError, "Failed to build {pkg_name}")
+                crash!(
+                    AppExitCode::MakePkgError,
+                    "{} {pkg_name}",
+                    fl!("failed-to-build")
+                )
             }
             AppError::UserCancellation => {
                 cancelled!();
@@ -110,14 +114,15 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
             AppError::MissingDependencies(deps) => {
                 crash!(
                     AppExitCode::MissingDeps,
-                    "Missing dependencies {}",
+                    "{} {}",
+                    fl!("missing-deps"),
                     deps.join(", ")
                 )
             }
             AppError::MakePkg(msg) => {
-                crash!(AppExitCode::MakePkgError, "makepkg failed {msg}")
+                crash!(AppExitCode::MakePkgError, "{} {msg}", fl!("makepkg-failed"))
             }
-            _ => crash!(AppExitCode::Other, "Unknown error"),
+            _ => crash!(AppExitCode::Other, "{}", fl!("unknown-error")),
         }
     }
 }

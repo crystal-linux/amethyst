@@ -2,7 +2,7 @@ use crossterm::style::Stylize;
 use dialoguer::theme::Theme;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 
-use crate::internal::utils::wrap_text;
+use crate::{fl, internal::utils::wrap_text};
 const ERR_SYMBOL: &str = "X";
 const PROMPT_SYMBOL: &str = "?";
 
@@ -151,7 +151,7 @@ impl Theme for AmeTheme {
     ) -> std::fmt::Result {
         write!(f, "  {}: ", prompt.bold())?;
         if selections.is_empty() {
-            write!(f, "{}", "No selections".italic())?;
+            write!(f, "{}", format!("{}", fl!("no-selections")).italic())?;
         } else {
             for (idx, sel) in selections.iter().enumerate() {
                 write!(f, "{}{}", if idx == 0 { "" } else { ", " }, sel)?;
