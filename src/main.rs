@@ -237,8 +237,10 @@ fn cmd_gencomp(args: &GenCompArgs) {
             crash!(AppExitCode::Other, "{}", fl!("zsh-error"));
         };
 
-        shell.generate(
-            &<args::Args as clap::CommandFactory>::command(),
+        clap_complete::generate(
+            shell,
+            &mut <args::Args as clap::CommandFactory>::command(),
+            "ame",
             &mut std::io::stderr(),
         );
     }
