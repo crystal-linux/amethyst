@@ -30,7 +30,7 @@ alpm-utils = "2.0.0"
 pacmanconf = "2.0.0"
 chrono = { version = "0.4.22", default-features = false, features = [ "clock", "std", "wasmbind" ] }
 trigram = "0.4.4"
-clap = { version = "4.0.0-rc.1", features = [ "derive", "wrap_help" ] }
+clap = { version = "3.2.17", features = [ "derive", "wrap_help" ] }
 regex = { version = "1.6.0", default-features = false, features = [ "std", "unicode-perl" ] }
 colored = "2.0.0"
 serde = { version = "1.0.144", default-features = false, features = [ "derive", "serde_derive" ] }
@@ -44,8 +44,8 @@ tracing-subscriber = { version = "0.3.15", features = ["env-filter"] }
 textwrap = "0.15.0"
 crossterm = "0.25.0"
 toml = "0.5.9"
-clap_complete = "4.0.0-rc.1"
-clap_complete_fig = "4.0.0-rc.1"
+clap_complete = "3.2.4"
+clap_complete_fig = "3.2.4"
 color-eyre = { version = "0.6.2", features = ["issue-url", "url"] }
 indicatif = { version = "0.17.0", features = ["tokio"] }
 lazy_static = "1.4.0"
