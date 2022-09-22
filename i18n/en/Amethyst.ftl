@@ -53,7 +53,7 @@ installed = installed
 failed-remove-pkgs = Failed to remove packages
 
 # operations::upgrade
-failed-upgrade-repo-pkgs = Failed to upgrade repo packages, continue to upgrading AUR packages?
+failed-upgrade-repo-pkgs = Failed to upgrade repo packages
 success-upgrade-repo-pkgs = Successfully upgraded repo packages
 couldnt-find-remote-pkg = Could not find the remote package for {$pkg}
 no-upgrades-aur-package = No upgrades available for installed AUR packages

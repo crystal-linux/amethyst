@@ -36,13 +36,9 @@ async fn upgrade_repo(options: Options) {
         .await;
 
     if result.is_err() {
-        let continue_upgrading = prompt!(default no,
-            "{}", fl!("failed-upgrade-repo-pkgs")
-        );
-        if !continue_upgrading {
-            tracing::info!("Exiting");
-            std::process::exit(AppExitCode::PacmanError as i32);
-        }
+        tracing::error!("{}", fl!("failed-upgrade-repo-pkgs"));
+        tracing::info!("{}", fl!("exiting"));
+        std::process::exit(AppExitCode::PacmanError as i32);
     } else {
         tracing::info!("{}", fl!("success-upgrade-repo-pkgs"));
     }

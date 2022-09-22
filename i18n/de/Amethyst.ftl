@@ -47,7 +47,7 @@ installed = installiert
 # operations::uninstall
 failed-remove-pkgs = Pakete konnten nicht deinstalliert werden
 # operations::upgrade
-failed-upgrade-repo-pkgs = Pakete von Paketquellen konnten nicht aktualisiert werden, fortfahren AUR Pakete zu aktualisieren?
+failed-upgrade-repo-pkgs = Pakete von Paketquellen konnten nicht aktualisiert werden
 success-upgrade-repo-pkgs = Pakete von Paketquellen wurden erfolgreich aktualisiert
 couldnt-find-remote-pkg = Remotepaket für {$pkg} konnte nicht gefunden werden
 no-upgrades-aur-package = Keine Aktualisierungen für AUR Pakete gefunden
