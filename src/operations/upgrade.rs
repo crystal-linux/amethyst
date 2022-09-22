@@ -5,7 +5,7 @@ use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcinfo;
 use crate::operations::aur_install::aur_install;
-use crate::{fl, prompt, Options};
+use crate::{fl, Options};
 
 /// Upgrades all installed packages
 #[tracing::instrument(level = "trace")]
