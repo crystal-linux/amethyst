@@ -14,7 +14,7 @@ use crate::internal::{sort, start_sudoloop, structs::Options};
 use crate::logging::get_logger;
 use crate::logging::Printable;
 
-use clap_complete::{Generator, Shell};
+use clap_complete::Shell;
 use clap_complete_fig::Fig;
 
 use std::str::FromStr;
