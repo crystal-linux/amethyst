@@ -155,3 +155,4 @@ query-info = Get information about a specific package
 upgrade-repo = Upgrades only repo/native packages
 upgrade-aur = Upgrades only from the AUR
 gencomp-shell = The shell to generate completions for (bash, fish, elvish, pwsh, fig)
+review = {$pkg} überprüfen?
