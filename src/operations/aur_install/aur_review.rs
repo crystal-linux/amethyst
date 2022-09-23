@@ -25,10 +25,16 @@ impl AurReview {
     #[tracing::instrument(level = "trace", skip_all)]
     pub async fn review_pkgbuild(self) -> AppResult<RepoDependencyInstallation> {
         if !self.options.noconfirm {
-            let to_review = multi_select!(&self.packages, "{}", fl!("select-pkgs-review"));
+            if self.packages.len() == 1 {
+                if prompt!(default yes, "{}", fl!("review", pkg = self.packages[0].clone())) {
+                    self.review_single_package(&self.packages[0]).await?;
+                }
+            } else {
+                let to_review = multi_select!(&self.packages, "{}", fl!("select-pkgs-review"));
 
-            for pkg in to_review.into_iter().filter_map(|i| self.packages.get(i)) {
-                self.review_single_package(pkg).await?;
+                for pkg in to_review.into_iter().filter_map(|i| self.packages.get(i)) {
+                    self.review_single_package(pkg).await?;
+                }
             }
             if !prompt!(default yes, "{}", fl!("do-you-still-want-to-install")) {
                 return Err(AppError::UserCancellation);

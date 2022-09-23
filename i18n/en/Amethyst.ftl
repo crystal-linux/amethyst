@@ -96,6 +96,7 @@ do-you-still-want-to-install = Do you still want to install those packages?
 reviewing = Reviewing
 select-file-review = Select a file to review
 done-reviewing-pkg = Done reviewing {$pkg}
+review = Review {$pkg}?
 
 # operations::aur_install::aur_download
 all-sources-ready = All sources are ready.
