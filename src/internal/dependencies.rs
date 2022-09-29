@@ -12,6 +12,7 @@ use lazy_regex::regex;
 pub struct DependencyInformation {
     pub depends: DependencyCollection,
     pub make_depends: DependencyCollection,
+    pub check_depends: DependencyCollection,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -56,13 +57,52 @@ impl DependencyInformation {
     /// Resolves all dependency information for a given package
     #[tracing::instrument(level = "trace")]
     pub async fn for_package(package: &PackageInfo) -> AppResult<Self> {
+        let check_depends = Self::resolve_check_depends(package).await?;
         let make_depends = Self::resolve_make_depends(package).await?;
         let depends = Self::resolve_depends(package).await?;
 
         Ok(Self {
             depends,
             make_depends,
+            check_depends,
         })
+    }
+
+    /// Resolves all check dependencies for a package
+    #[tracing::instrument(level = "trace")]
+    async fn resolve_check_depends(package: &PackageInfo) -> AppResult<DependencyCollection> {
+        let mut pkgs_to_resolve: HashSet<String> = package
+            .check_depends
+            .iter()
+            .filter_map(|d| Self::map_dep_to_name(d))
+            .collect();
+
+        Self::filter_fulfilled_dependencies(&mut pkgs_to_resolve).await?;
+        let mut already_searched = HashSet::new();
+        already_searched.insert(package.metadata.name.to_owned());
+        let mut dependencies = DependencyCollection::default();
+
+        while !pkgs_to_resolve.is_empty() {
+            already_searched.extend(pkgs_to_resolve.iter().cloned());
+            Self::extend_by_repo_packages(&mut pkgs_to_resolve, &mut dependencies).await?;
+
+            let mut aur_packages = aur_rpc::info(&pkgs_to_resolve).await.map_err(|_| {
+                AppError::MissingDependencies(pkgs_to_resolve.iter().cloned().collect())
+            })?;
+            aur_packages.iter().for_each(|p| {
+                pkgs_to_resolve.remove(&p.metadata.name);
+            });
+            let not_found = std::mem::take(&mut pkgs_to_resolve);
+
+            dependencies
+                .not_found
+                .append(&mut not_found.into_iter().collect());
+            pkgs_to_resolve = Self::get_filtered_check_depends(&aur_packages, &already_searched);
+            Self::filter_fulfilled_dependencies(&mut pkgs_to_resolve).await?;
+            dependencies.aur.append(&mut aur_packages);
+        }
+
+        Ok(dependencies)
     }
 
     /// Resolves all make dependencies for a package
@@ -152,6 +192,21 @@ impl DependencyInformation {
         Ok(())
     }
 
+    fn get_filtered_check_depends(
+        aur_packages: &[PackageInfo],
+        searched: &HashSet<String>,
+    ) -> HashSet<String> {
+        aur_packages
+            .iter()
+            .flat_map(|p| {
+                p.check_depends
+                    .iter()
+                    .filter_map(|d| Self::map_dep_to_name(d))
+            })
+            .filter(|d| !searched.contains(d))
+            .collect()
+    }
+
     fn get_filtered_make_depends(
         aur_packages: &[PackageInfo],
         searched: &HashSet<String>,
@@ -232,20 +287,43 @@ impl DependencyInformation {
     }
 
     pub fn all_aur_depends(&self) -> Vec<&PackageInfo> {
-        self.make_depends
+        let make_deps: Vec<&PackageInfo> = self
+            .make_depends
             .aur
             .iter()
             .chain(self.depends.aur.iter())
-            .collect()
+            .collect();
+        let check_deps: Vec<&PackageInfo> = self
+            .check_depends
+            .aur
+            .iter()
+            .chain(self.depends.aur.iter())
+            .collect();
+        let mut combined_vec: Vec<&PackageInfo> = Vec::new();
+        combined_vec.extend(&make_deps);
+        combined_vec.extend(&check_deps);
+        combined_vec
     }
 
     pub fn all_repo_depends(&self) -> Vec<&str> {
-        self.make_depends
+        let make_deps: Vec<&str> = self
+            .make_depends
             .repo
             .iter()
             .chain(self.depends.repo.iter())
             .map(String::as_str)
-            .collect()
+            .collect();
+        let check_deps: Vec<&str> = self
+            .check_depends
+            .repo
+            .iter()
+            .chain(self.depends.repo.iter())
+            .map(String::as_str)
+            .collect();
+        let mut combined_vec: Vec<&str> = Vec::new();
+        combined_vec.extend(&make_deps);
+        combined_vec.extend(&check_deps);
+        combined_vec
     }
 }
 
