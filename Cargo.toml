@@ -1,6 +1,6 @@
 [package]
 name = "Amethyst"
-version = "4.0.1"
+version = "4.0.2"
 authors = ["Michal S. <michal@tar.black>", "axtlos <axtlos@tar.black>", "trivernis <trivernis@protonmail.com>", "Fries <fries@tar.black>"]
 description = "A fast and efficient AUR helper"
 repository = "https://github.com/crystal-linux/amethyst"
