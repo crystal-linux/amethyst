@@ -11,7 +11,7 @@ static VERSION: &str = concat!(
 );
 
 #[derive(Debug, Clone, Parser)]
-#[clap(bin_name = "ame", name = "Amethyst", version = VERSION, about = env ! ("CARGO_PKG_DESCRIPTION"), infer_subcommands = true)]
+#[command(bin_name = "ame", name = "Amethyst", version = VERSION, about = fl!("description"), infer_subcommands = true)]
 pub struct Args {
     #[command(subcommand)]
     pub subcommand: Option<Operation>,
