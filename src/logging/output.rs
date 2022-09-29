@@ -9,29 +9,48 @@ use crate::{builder::pacman::PacmanQueryBuilder, internal::dependencies::Depende
 use super::get_logger;
 
 pub async fn print_dependency_list(dependencies: &[DependencyInformation]) -> bool {
-    let (mut deps_repo, mut makedeps_repo, deps_aur, makedeps_aur) = dependencies
+    let (
+        mut deps_repo,
+        mut makedeps_repo,
+        mut checkdeps_repo,
+        deps_aur,
+        makedeps_aur,
+        checkdeps_aur,
+    ) = dependencies
         .iter()
         .map(|d| {
             (
                 d.depends.repo.iter().collect(),
                 d.make_depends.repo.iter().collect(),
+                d.check_depends.repo.iter().collect(),
                 d.depends.aur.iter().collect(),
                 d.make_depends.aur.iter().collect(),
+                d.check_depends.aur.iter().collect(),
             )
         })
         .fold(
-            (Vec::new(), Vec::new(), Vec::new(), Vec::new()),
+            (
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+            ),
             |mut acc, mut deps| {
                 acc.0.append(&mut deps.0);
                 acc.1.append(&mut deps.1);
                 acc.2.append(&mut deps.2);
                 acc.3.append(&mut deps.3);
+                acc.4.append(&mut deps.4);
+                acc.5.append(&mut deps.5);
 
                 acc
             },
         );
     deps_repo.dedup();
     makedeps_repo.dedup();
+    checkdeps_repo.dedup();
 
     let mut empty = true;
     if !deps_repo.is_empty() {
@@ -57,6 +76,20 @@ pub async fn print_dependency_list(dependencies: &[DependencyInformation]) -> bo
     if !makedeps_aur.is_empty() {
         tracing::info!("AUR make dependencies");
         print_aur_package_list(&makedeps_aur).await;
+        empty = false;
+        get_logger().print_newline();
+    }
+
+    if !checkdeps_repo.is_empty() {
+        tracing::info!("Repo check dependencies");
+        get_logger().print_list(&checkdeps_repo, "  ", 2);
+        empty = false;
+        get_logger().print_newline();
+    }
+
+    if !checkdeps_aur.is_empty() {
+        tracing::info!("AUR check dependencies");
+        print_aur_package_list(&checkdeps_aur).await;
         empty = false;
         get_logger().print_newline();
     }
