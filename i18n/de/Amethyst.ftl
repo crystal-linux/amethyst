@@ -11,9 +11,9 @@ run-as-root = Amethyst  mit root Berechtigungen auszuführen ist nicht erlaubt u
 following-packages = Folgende Pakete wurden in der AUR gefunden:
 aur-warning = 
     Die AUR ist eine Plattform, welche von der Community verwaltete Pakete zur Verfügung stellt und die Sicherheit eines Paketes nicht gewährleisten kann.
-    Es wird empfohlen die PKGBUILD-Dateien der Pakete zu überprüfen bevor Du diese Pakete installierst, da manche PKGBUILD-Dateien gefährlich sein können. 
+    Es wird empfohlen die PKGBUILD-Dateien der Pakete zu überprüfen bevor Sie diese Pakete installieren, da manche PKGBUILD-Dateien gefährlich sein können. 
     Diese Warnung kann in der Konfigurationsdatei dekativiert werden.
-are-you-sure = Bist du dir sicher, dass Du fortfahren möchtest?
+are-you-sure = Sie sich sicher, dass Sie fortfahren möchten?
 uninstalling-packages = Folgende Pakete werden deinstalliert: {$packages}
 system-upgrade = Führe Systemaktualisierung durch
 removing-orphans = Deinstalliere nicht benötigte Pakete
@@ -65,7 +65,7 @@ fetching-pkg-info = Rufe Paketinformationen ab
 couldnt-find-all-pkgs = Konnte nicht alle Pakete finden
 all-pkgs-found = Alle Pakete wurden gefunden
 some-pkgs-already-installed = Einige Pakete sind bereits installiert. Trotzdem fortfahren?
-do-you-want-to-install = Möchstest du diese Pakete inklusive derne Abhängigkeiten installieren?
+do-you-want-to-install = Möchten Sie diese Pakete inklusive deren Abhängigkeiten installieren?
 # operations::aur_install::common
 downloading-sources = Lädt Quelldateien herunter
 pulling-latest-changes = Lädt letzte Änderungen herunter
@@ -79,12 +79,12 @@ installing-packages = Installiere Pakete
 building-package = Baue Paket
 build-failed = Erstellen des Pakets fehlgeschlagen!
 couldnt-find-pkg-produced = Konnte das Paket {$pkg} nicht in den erstellten Paketen finden
-review-build-log = Möchtest du dir die Logdatei über die Paketerstellung anschauen?
+review-build-log = Möchten Sie sich die Logdatei über die Paketerstellung anschauen?
 # operations::aur_install::aur_review
-select-pkgs-review = Wähle Pakete aus, die du überprüfen möchtest
-do-you-still-want-to-install = Möchstest du die Pakete immer noch installieren?
+select-pkgs-review = Wählen Sie die Pakete aus, die Sie überprüfen möchten
+do-you-still-want-to-install = Möchten Sie die Pakete weiterhin installieren?
 reviewing = Überprüfen
-select-file-review = Wähle eine Datei zum überprüfen aus
+select-file-review = Wählen Sie eine Datei zum Überprüfen aus
 done-reviewing-pkg = Überprüfung von {$pkg} abgeschlossen
 # operations::aur_install::aur_download
 all-sources-ready = Alle Quellen sind bereit.
@@ -95,7 +95,7 @@ installing-repo-deps = Installiere Pacman-Abhängigkeiten
 # operations::aur_install::aur_dependency_installation
 installing-from-aur = Installiere {$amountOfPkgs} aus der AUR
 # operations::aur_install::make_dependency_removal
-remove-installed-make-deps = Möchtest du die nur zum Bauen verwendeten Abhängigkeiten entfernen?
+remove-installed-make-deps = Möchten Sie die ausschließlich zum Bauen verwendeten Abhängigkeiten entfernen?
 done = Fertig!
 # operations::aur_install
 aur-rpc-crash = AUR RPC Aufruf ist fehlgeschlagen:
@@ -117,13 +117,13 @@ pacnew-found = .pacnew Dateien gefunden
 pacnew-warning =
     Einige von dir installierten oder aktualisierten Pakete haben eine .pacnew Datei hinterlassen.
     Diese Dateien werden erstellt, wenn sich die Konfiguration eines Programmes geändert hat und nicht automatisch
-    mit der vorhandenden Konfiguration zusammengeführt werden konnte. Du kannst diese Konflikte lösen,
-    indem du folgendes ausführst: 
-run-pacdiff-now = Möchtest du pacdiff nun ausführen?
+    mit der vorhandenden Konfiguration zusammengeführt werden konnte. Sie können diese Konflikte lösen,
+    indem Sie folgendes ausführen: 
+run-pacdiff-now = Möchten Sie pacdiff nun ausführen?
 pacdiff-warning =
-    Pacdiff nutzt standardmäßig vimdiff um Dateien zusammenzuführen. Du kannst Bereiche fokussieren, indem du die Maus
-    über diese Bewegst und die linke Maustaste drückst. 
-    Zum Beenden von vimdiff kannst du folgende Tastenkombination ausführen: ESC, :qa!, ENTER
+    Pacdiff nutzt standardmäßig vimdiff um Dateien zusammenzuführen. Sie können Bereiche fokussieren, indem Sie die Maus
+    über diese bewegen und die linke Maustaste drücken. 
+    Zum Beenden von vimdiff können Sie folgende Tastenkombination ausführen: ESC, :qa!, ENTER
     Diese Warnung kann in der Konfigurationdatei ~/.config/ame/config.toml unter der Einstellung `pacdiff_warn` ausgeschaltet werden, indem diese auf false gesetzt wird.
 # internal::config
 config-docs = # See https://getcryst.al/docs/amethyst/config for more information on config keys
@@ -148,7 +148,7 @@ clean = Entfernt nicht verwendete Pakete
 diff = Führt pacdiff aus
 install-packages = Namen der Pakete die installiert oder gesucht werden sollen 
 install-aur = Betrachtet nur Paekte aus der AUR
-install-repo = Betrachtet nur Paketet aus den Pacman-Paketquellen
+install-repo = Betrachtet nur Pakete aus den Pacman-Paketquellen
 install-search = Sucht nach Paketen die einem bestimmten Muster entsprechen, anstatt zu installieren
 install-by = Sucht nach dem Wert eines bestimmten Feldes
 remove-packages = Die Namen der Pakete, die entfernt werden sollen
