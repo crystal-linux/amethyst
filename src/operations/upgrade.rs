@@ -5,7 +5,7 @@ use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcinfo;
 use crate::operations::aur_install::aur_install;
-use crate::{fl, Options};
+use crate::{fl_error, fl_info, fl_warn, Options};
 
 /// Upgrades all installed packages
 #[tracing::instrument(level = "trace")]
@@ -36,11 +36,11 @@ async fn upgrade_repo(options: Options) {
         .await;
 
     if result.is_err() {
-        tracing::error!("{}", fl!("failed-upgrade-repo-pkgs"));
-        tracing::info!("{}", fl!("exiting"));
+        fl_error!("failed-upgrade-repo-pkgs");
+        fl_info!("exiting");
         std::process::exit(AppExitCode::PacmanError as i32);
     } else {
-        tracing::info!("{}", fl!("success-upgrade-repo-pkgs"));
+        fl_info!("success-upgrade-repo-pkgs");
     }
 }
 
@@ -72,7 +72,7 @@ async fn upgrade_aur(options: Options) {
                 aur_upgrades.push(pkg.name);
             }
         } else {
-            tracing::warn!("{}", fl!("couldnt-find-remote-pkg", pkg = pkg.name));
+            fl_warn!("couldnt-find-remote-pkg", pkg = pkg.name);
         }
     }
 
@@ -83,9 +83,9 @@ async fn upgrade_aur(options: Options) {
         };
         aur_install(aur_upgrades, options).await;
     } else {
-        tracing::info!("{}", fl!("no-upgrades-aur-package"));
+        fl_info!("no-upgrades-aur-package");
     }
 
-    tracing::info!("{}", fl!("scanning-for-pacnew"));
+    fl_info!("scanning-for-pacnew");
     detect().await;
 }

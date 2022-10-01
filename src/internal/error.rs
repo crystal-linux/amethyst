@@ -3,7 +3,7 @@ use std::fmt::{Debug, Display, Formatter};
 use std::io;
 
 use crate::internal::exit_code::AppExitCode;
-use crate::{crash, fl};
+use crate::{fl, fl_crash};
 
 pub type AppResult<T> = Result<T, AppError>;
 
@@ -99,7 +99,7 @@ impl<T> SilentUnwrap<T> for AppResult<T> {
             Ok(val) => val,
             Err(e) => {
                 tracing::debug!("{e}");
-                crash!(exit_code, "{}", fl!("error-occurred"))
+                fl_crash!(exit_code, "error-occurred")
             }
         }
     }

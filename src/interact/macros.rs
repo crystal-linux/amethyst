@@ -13,6 +13,16 @@ macro_rules! prompt {
 }
 
 #[macro_export]
+macro_rules! fl_prompt {
+    (default $def:tt, $message_id:literal) => {
+        prompt!(default $def, "{}", fl!($message_id))
+    };
+    (default $def:tt, $message_id:literal, $($arg:tt)*) => {
+        prompt!(default $def, "{}", fl!($message_id, $($arg)*))
+    };
+}
+
+#[macro_export]
 /// Macro for prompting the user with a multi select
 macro_rules! multi_select {
     ($items:expr, $($arg:tt)+) => {
