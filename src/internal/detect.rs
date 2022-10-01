@@ -3,7 +3,7 @@ use crossterm::style::Stylize;
 use crate::builder::pacdiff::PacdiffBuilder;
 use crate::internal::config::Config;
 use crate::logging::get_logger;
-use crate::{fl, prompt};
+use crate::{fl, fl_prompt, fl_warn, prompt};
 
 use super::prompt_sudo_single;
 
@@ -40,13 +40,13 @@ pub async fn detect() {
             "sudo pacdiff".reset().magenta()
         );
 
-        let choice = prompt!(default no, "{}", fl!("run-pacdiff-now"));
+        let choice = fl_prompt!(default no, "run-pacdiff-now");
         if choice {
             let config = Config::get();
             if config.base.pacdiff_warn {
-                tracing::warn!("{}", fl!("pacdiff-warning"));
+                fl_warn!("pacdiff-warning");
 
-                if prompt!(default no, "{}", fl!("continue")) {
+                if fl_prompt!(default no, "continue") {
                     PacdiffBuilder::pacdiff().await.unwrap();
                 }
             } else {

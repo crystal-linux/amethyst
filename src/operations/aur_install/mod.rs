@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use crate::internal::error::{AppError, AppResult};
 
 use crate::internal::exit_code::AppExitCode;
-use crate::{cancelled, crash, fl, Options};
+use crate::{cancelled, crash, fl, fl_crash, Options};
 
 use self::aur_fetch::AurFetch;
 
@@ -99,7 +99,7 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
                 crash!(AppExitCode::RpcError, "{} {e}", fl!("aur-rpc-crash"))
             }
             AppError::BuildStepViolation => {
-                crash!(AppExitCode::MakePkgError, "{}", fl!("failed-to-build"))
+                fl_crash!(AppExitCode::MakePkgError, "failed-to-build")
             }
             AppError::BuildError { pkg_name } => {
                 crash!(
@@ -122,7 +122,7 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
             AppError::MakePkg(msg) => {
                 crash!(AppExitCode::MakePkgError, "{} {msg}", fl!("makepkg-failed"))
             }
-            _ => crash!(AppExitCode::Other, "{}", fl!("unknown-error")),
+            _ => fl_crash!(AppExitCode::Other, "unknown-error"),
         }
     }
 }

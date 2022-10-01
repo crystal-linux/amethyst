@@ -22,7 +22,7 @@ use crate::{
         pacman::PacmanInstallBuilder,
         pager::PagerBuilder,
     },
-    crash, fl,
+    crash, fl, fl_info,
     internal::{
         alpm::{Alpm, PackageFrom},
         error::{AppError, AppResult},
@@ -161,8 +161,9 @@ pub async fn build_and_install(
     make_opts: MakePkgBuilder,
     install_opts: PacmanInstallBuilder,
 ) -> AppResult<()> {
-    tracing::info!("{}", fl!("building-packages"));
+    fl_info!("building-packages");
     multi_progress!();
+
     let results = future::join_all(
         ctxs.into_iter()
             .map(|ctx| build_package(ctx, make_opts.clone())),
@@ -183,7 +184,7 @@ pub async fn build_and_install(
         ctxs.len(),
         fl!("packages", pkgNum = ctxs.len())
     );
-    tracing::info!("{}", fl!("installing-packages"));
+    fl_info!("installing-packages");
 
     install_packages(ctxs, install_opts).await?;
 

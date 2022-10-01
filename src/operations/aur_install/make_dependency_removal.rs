@@ -1,6 +1,6 @@
 use crate::{
     builder::pacman::PacmanUninstallBuilder,
-    fl,
+    fl, fl_info, fl_prompt,
     internal::{dependencies::DependencyInformation, error::AppResult, structs::Options},
     prompt,
 };
@@ -20,7 +20,7 @@ impl MakeDependencyRemoval {
             .collect::<Vec<_>>();
         if !make_depends.is_empty()
             && !self.options.noconfirm
-            && prompt!(default yes, "{}", fl!("remove-installed-make-deps"))
+            && fl_prompt!(default yes, "remove-installed-make-deps")
         {
             PacmanUninstallBuilder::default()
                 .packages(make_depends)
@@ -29,7 +29,7 @@ impl MakeDependencyRemoval {
                 .await?;
         }
 
-        tracing::info!("{}", fl!("done"));
+        fl_info!("done");
 
         Ok(())
     }

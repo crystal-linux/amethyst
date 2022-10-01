@@ -3,7 +3,7 @@ use aur_rpc::PackageInfo;
 use futures::future;
 
 use crate::{
-    fl,
+    fl_info,
     internal::{dependencies::DependencyInformation, error::AppResult, structs::Options},
     multi_progress, normal_output,
     operations::BuildContext,
@@ -33,7 +33,7 @@ impl AurDownload {
         .await?;
 
         normal_output!();
-        tracing::info!("{}", fl!("all-sources-ready"));
+        fl_info!("all-sources-ready");
 
         Ok(AurReview {
             options: self.options,

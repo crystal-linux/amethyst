@@ -2,7 +2,7 @@ use tokio::fs;
 
 use crate::{
     builder::pager::PagerBuilder,
-    fl,
+    fl, fl_info, fl_prompt,
     internal::{
         dependencies::DependencyInformation,
         error::{AppError, AppResult},
@@ -26,7 +26,7 @@ impl AurReview {
     pub async fn review_pkgbuild(self) -> AppResult<RepoDependencyInstallation> {
         if !self.options.noconfirm {
             if self.packages.len() == 1 {
-                if prompt!(default yes, "{}", fl!("review", pkg = self.packages[0].clone())) {
+                if fl_prompt!(default yes, "review", pkg = self.packages[0].clone()) {
                     self.review_single_package(&self.packages[0]).await?;
                 }
             } else {
@@ -36,7 +36,7 @@ impl AurReview {
                     self.review_single_package(pkg).await?;
                 }
             }
-            if !prompt!(default yes, "{}", fl!("do-you-still-want-to-install")) {
+            if !fl_prompt!(default yes, "do-you-still-want-to-install") {
                 return Err(AppError::UserCancellation);
             }
         }
@@ -76,7 +76,7 @@ impl AurReview {
             }
         }
 
-        tracing::info!("{}", fl!("done-reviewing-pkg", pkg = pkg));
+        fl_info!("done-reviewing-pkg", pkg = pkg);
 
         Ok(())
     }

@@ -2,9 +2,11 @@ use crate::builder::paccache::PaccacheBuilder;
 use crate::builder::pacman::PacmanQueryBuilder;
 use crate::builder::pacman::PacmanUninstallBuilder;
 use crate::builder::rm::RmBuilder;
-use crate::crash;
 
 use crate::fl;
+use crate::fl_crash;
+use crate::fl_info;
+use crate::fl_prompt;
 use crate::internal::exit_code::AppExitCode;
 
 use crate::internal::utils::get_cache_dir;
@@ -25,20 +27,17 @@ pub async fn clean(options: Options) {
 
     if orphaned_packages.stdout.as_str().is_empty() {
         // If no orphaned packages found, do nothing
-        tracing::info!("{}", fl!("no-orphans"));
+        fl_info!("no-orphans");
     } else {
         // Prompt users whether to remove orphaned packages
-        tracing::info!(
-            "{}",
-            fl!(
-                "removing-orphans-would",
-                packages = orphaned_packages.stdout.trim_end()
-            )
+        fl_info!(
+            "removing-orphans-would",
+            packages = orphaned_packages.stdout.trim_end()
         );
         let cont = noconfirm || prompt!(default no, "Continue?");
         if !cont {
             // If user doesn't want to continue, break
-            tracing::info!("{}", fl!("exiting"));
+            fl_info!("exiting");
             std::process::exit(AppExitCode::PacmanError as i32);
         }
 
@@ -61,14 +60,14 @@ pub async fn clean(options: Options) {
             .await;
 
         if result.is_err() {
-            crash!(AppExitCode::PacmanError, "{}", fl!("failed-remove-orphans"));
+            fl_crash!(AppExitCode::PacmanError, "failed-remove-orphans");
         } else {
-            tracing::info!("{}", fl!("success-remove-orphans"));
+            fl_info!("success-remove-orphans");
         }
     }
 
     // Prompt the user whether to clear the Amethyst cache
-    let clear_ame_cache = noconfirm || prompt!(default no, "{}", fl!("clear-pkgbuild-cache"));
+    let clear_ame_cache = noconfirm || fl_prompt!(default no, "clear-pkgbuild-cache");
 
     if clear_ame_cache {
         let cache_dir = get_cache_dir();
@@ -82,7 +81,7 @@ pub async fn clean(options: Options) {
     }
 
     // Prompt the user whether to clear cache or not
-    let clear_pacman_cache = noconfirm || prompt!(default no, "{}", fl!("clear-pacman-cache"));
+    let clear_pacman_cache = noconfirm || fl_prompt!(default no, "clear-pacman-cache");
 
     if clear_pacman_cache {
         // Clear pacman's cache
@@ -96,13 +95,13 @@ pub async fn clean(options: Options) {
             .await;
 
         if let Err(e) = result {
-            crash!(
+            fl_crash!(
                 AppExitCode::PacmanError,
-                "{}",
-                fl!("failed-clear-cache", error = e.to_string())
-            )
+                "failed-clear-cache",
+                error = e.to_string()
+            );
         } else {
-            tracing::info!("{}", fl!("success-clear-cache"));
+            fl_info!("success-clear-cache");
         }
     }
 }

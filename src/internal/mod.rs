@@ -11,7 +11,6 @@ pub mod dependencies;
 mod detect;
 pub mod error;
 pub mod exit_code;
-pub mod fs_utils;
 pub mod rpc;
 mod sort;
 pub mod structs;
