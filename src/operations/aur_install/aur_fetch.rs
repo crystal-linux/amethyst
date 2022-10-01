@@ -2,7 +2,7 @@ use crossterm::style::Stylize;
 use futures::future;
 
 use crate::{
-    fl,
+    fl, fl_prompt,
     internal::{
         dependencies::DependencyInformation,
         error::{AppError, AppResult},
@@ -43,7 +43,7 @@ impl AurFetch {
         if print_aur_package_list(&package_infos.iter().collect::<Vec<_>>()).await
             && !self.options.noconfirm
             && !self.options.upgrade
-            && !prompt!(default yes, "{}", fl!("some-pkgs-already-installed"))
+            && !fl_prompt!(default yes, "some-pkgs-already-installed")
         {
             return Err(AppError::UserCancellation);
         }
@@ -62,7 +62,7 @@ impl AurFetch {
 
         print_dependency_list(&dependencies).await;
 
-        if !self.options.noconfirm && !prompt!(default yes, "{}", fl!("do-you-want-to-install")) {
+        if !self.options.noconfirm && !fl_prompt!(default yes, "do-you-want-to-install") {
             Err(AppError::UserCancellation)
         } else {
             Ok(AurDownload {

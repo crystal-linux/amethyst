@@ -1,15 +1,12 @@
 use crate::builder::pacman::PacmanInstallBuilder;
 use crate::internal::exit_code::AppExitCode;
-use crate::{crash, fl, Options};
+use crate::{fl_crash, fl_info, Options};
 
 #[tracing::instrument(level = "trace")]
 pub async fn install(packages: Vec<String>, options: Options) {
-    tracing::info!(
-        "{}",
-        fl!(
-            "installing-packages-from-repos",
-            packages = packages.join(", ")
-        )
+    fl_info!(
+        "installing-packages-from-repos",
+        packages = packages.join(", ")
     );
 
     if !packages.is_empty() {
@@ -21,10 +18,10 @@ pub async fn install(packages: Vec<String>, options: Options) {
             .await;
 
         if result.is_err() {
-            crash!(
+            fl_crash!(
                 AppExitCode::PacmanError,
-                "{}",
-                fl!("error-install", error = packages.join(", "))
+                "error-install",
+                error = packages.join(", ")
             );
         }
 

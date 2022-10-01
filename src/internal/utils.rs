@@ -19,6 +19,18 @@ macro_rules! crash {
 }
 
 #[macro_export]
+/// Macro for printing a message and destructively exiting
+macro_rules! fl_crash {
+    ($exit_code:expr, $message_id:literal) =>  {
+        $crate::internal::utils::log_and_crash($crate::fl!($message_id), $exit_code)
+    };
+
+    ($exit_code:expr, $message_id:literal, $($arg:tt)*) => {
+        $crate::internal::utils::log_and_crash($crate::fl!($message_id, $($arg)*), $exit_code)
+    };
+}
+
+#[macro_export]
 /// Cancelles the process
 macro_rules! cancelled {
     () => {
