@@ -10,6 +10,9 @@ categories = ["command-line-utilities"]
 default-run = "ame"
 edition = "2021"
 
+[package.metadata]
+codename = "Disco Duck"
+
 [[bin]]
 name = "ame"
 path = "src/main.rs"
@@ -30,7 +33,7 @@ alpm-utils = "2.0.0"
 pacmanconf = "2.0.0"
 chrono = { version = "0.4.22", default-features = false, features = [ "clock", "std", "wasmbind" ] }
 trigram = "0.4.4"
-clap = { version = "4.0.0-rc.1", features = [ "derive", "wrap_help" ] }
+clap = { version = "4.0.7", features = [ "derive", "wrap_help" ] }
 regex = { version = "1.6.0", default-features = false, features = [ "std", "unicode-perl" ] }
 colored = "2.0.0"
 serde = { version = "1.0.144", default-features = false, features = [ "derive", "serde_derive" ] }
@@ -38,7 +41,7 @@ native-tls = { version = "0.2.10", default-features = false }
 libc = { version = "0.2.132", default-features = false }
 async-recursion = "1.0.0"
 aur-rpc = "0.2.1"
-futures = "0.3.23"
+futures = "0.3.24"
 tracing = "0.1.36"
 tracing-subscriber = { version = "0.3.15", features = ["env-filter"] }
 textwrap = "0.15.0"
@@ -68,3 +71,7 @@ features = ["toml"]
 [dependencies.tokio]
 version = "1.21.0"
 features = ["rt", "rt-multi-thread", "io-std", "io-util", "process", "time", "macros", "tracing", "fs"]
+
+[build-dependencies]
+cargo_toml = "0.12.3"
+serde = { version = "1.0.144", features = ["derive"] }
