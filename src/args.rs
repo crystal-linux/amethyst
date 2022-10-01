@@ -104,6 +104,9 @@ pub struct QueryArgs {
 
     #[arg(long, short, help = fl!("query-info"))]
     pub info: Option<String>,
+
+    #[arg(long, short, help = fl!("query-owns"))]
+    pub owns: Option<String>,
 }
 
 #[derive(Default, Debug, Clone, Parser)]
