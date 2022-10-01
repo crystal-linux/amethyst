@@ -157,5 +157,5 @@ query-repo = Listet Pakete aus den Pacman-Paketquellen auf [-Qr, -Qn]
 query-info = Gibt Informationen über ein bestimmtes Paket aus
 upgrade-repo = Aktualisiert nur Pakete aus Pacman-Paketquellen
 upgrade-aur = Aktualisiert nur AUR-Pakete
-gencomp-shell = Die Shell für den Auto-Vervollständigungen generiert werden sollen (bash, fish, elvish, pwsh, fig)
+gencomp-shell = Die Shell für die Auto-Vervollständigungen generiert werden soll (bash, fish, elvish, pwsh, fig)
 review = {$pkg} überprüfen?
