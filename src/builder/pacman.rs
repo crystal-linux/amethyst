@@ -111,6 +111,7 @@ enum PacmanQueryType {
     Info,
     Native,
     Orphaned,
+    Owns,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -154,6 +155,10 @@ impl PacmanQueryBuilder {
 
     pub fn orphaned() -> Self {
         Self::new(PacmanQueryType::Orphaned)
+    }
+
+    pub fn owns() -> Self {
+        Self::new(PacmanQueryType::Owns)
     }
 
     pub fn package(mut self, package: String) -> Self {
@@ -212,6 +217,7 @@ impl PacmanQueryBuilder {
             PacmanQueryType::Info => command.arg("-i"),
             PacmanQueryType::Native => command.arg("-n"),
             PacmanQueryType::Orphaned => command.arg("-dtq"),
+            PacmanQueryType::Owns => command.arg("-o"),
             PacmanQueryType::All => command,
         };
 

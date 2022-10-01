@@ -176,6 +176,7 @@ remove-packages = The name of the package(s) to remove
 query-aur = Lists AUR/foreign packages [-Qa, -Qm]
 query-repo = Lists repo/native packages [-Qr, -Qn]
 query-info = Get information about a specific package
+query-owns = Get information about which package owns a file
 upgrade-repo = Upgrades only repo/native packages
 upgrade-aur = Upgrades only from the AUR
 gencomp-shell = The shell to generate completions for (bash, fish, elvish, pwsh, fig)

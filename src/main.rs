@@ -179,7 +179,7 @@ async fn cmd_search(args: InstallArgs, options: Options) {
 
 #[tracing::instrument(level = "trace")]
 async fn cmd_query(args: QueryArgs) {
-    let both = !args.aur && !args.repo && args.info.is_none();
+    let both = !args.aur && !args.repo && args.info.is_none() && args.owns.is_none();
 
     if args.repo {
         fl_info!("installed-repo-packages");
@@ -214,6 +214,16 @@ async fn cmd_query(args: QueryArgs) {
             .query()
             .await
             .silent_unwrap(AppExitCode::PacmanError);
+    }
+
+    if let Some(owns) = args.owns {
+        let result = PacmanQueryBuilder::owns()
+            .package(owns.clone())
+            .query()
+            .await;
+        if result.is_err() {
+            fl_crash!(AppExitCode::PacmanError, "error-occurred");
+        }
     }
 }
 
