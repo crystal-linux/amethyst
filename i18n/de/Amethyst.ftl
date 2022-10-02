@@ -8,7 +8,7 @@ packages =
 missing-deps = Fehlende Packetabhängigkeiten
 continue = Fortfahren?
 # main
-run-as-root = Amethyst  mit root Berechtigungen auszuführen ist nicht erlaubt und kann zu korrupten Systemen führen. Amethyst wird nach root Berechtigungen fragen, wenn diese nötig sein sollten.
+run-as-root = Amethyst mit root Berechtigungen auszuführen ist nicht erlaubt und kann zu korrupten Systemen führen. Amethyst wird nach root Berechtigungen fragen, wenn diese nötig sein sollten.
 following-packages = Folgende Pakete wurden in der AUR gefunden:
 aur-warning =
     Die AUR ist eine Plattform, welche von der Community verwaltete Pakete zur Verfügung stellt und die Sicherheit eines Paketes nicht gewährleisten kann.
