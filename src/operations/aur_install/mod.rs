@@ -96,7 +96,11 @@ pub async fn aur_install(packages: Vec<String>, options: Options) {
     if let Err(e) = aur_install_internal(AurInstall::new(options, packages)).await {
         match e {
             AppError::Rpc(e) => {
-                crash!(AppExitCode::RpcError, "{} {e}", fl!("aur-rpc-crash"))
+                fl_crash!(
+                    AppExitCode::RpcError,
+                    "aur-rpc-crash",
+                    error = e.to_string()
+                )
             }
             AppError::BuildStepViolation => {
                 fl_crash!(AppExitCode::MakePkgError, "failed-to-build")

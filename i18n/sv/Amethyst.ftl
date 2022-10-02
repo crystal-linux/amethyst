@@ -115,7 +115,7 @@ remove-installed-make-deps = Vill du ta bort de installerade byggberoendena?
 done = Klart!
 
 # operations::aur_install
-aur-rpc-crash = AUR RPC-anrop misslyckades med
+aur-rpc-crash = AUR RPC-anrop misslyckades med: {$error}
 failed-to-build = Misslyckades att bygga
 makepkg-failed = makepkg misslyckades
 unknown-error = Okänt fel
@@ -130,7 +130,7 @@ error-occurred = Ett fel inträffade
 
 # internal::detect
 sudo-prompt-failed = Sudo prompt misslyckades
-scanning-pacnew-files = Letar efter nya pacnew filer"
+scanning-pacnew-files = Letar efter nya pacnew filer
 no-pacnew-found = Inga .pacnew filer hittades
 pacnew-found = pacnew filer hittades
 pacnew-warning =
