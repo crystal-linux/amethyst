@@ -98,7 +98,7 @@ installing-from-aur = Installiere {$amountOfPkgs} aus der AUR
 remove-installed-make-deps = Möchten Sie die ausschließlich zum Bauen verwendeten Abhängigkeiten entfernen?
 done = Fertig!
 # operations::aur_install
-aur-rpc-crash = AUR RPC Aufruf ist fehlgeschlagen:
+aur-rpc-crash = AUR RPC Aufruf ist fehlgeschlagen: {$error}
 failed-to-build = Konnte nicht gebaut werden
 makepkg-failed = makepkg ist fehlgeschlagen
 unknown-error = Unbekannter Fehler

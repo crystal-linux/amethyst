@@ -115,7 +115,7 @@ remove-installed-make-deps = Rimuovere le dipendenze di compilazione?
 done = Fatto!
 
 # operations::aur_install
-aur-rpc-crash = La chiamata RCP a AUR non è riuscita:
+aur-rpc-crash = La chiamata RCP a AUR non è riuscita: {$error}
 failed-to-build = Errore di compilazione
 makepkg-failed = Errore di makepkg
 unknown-error = Errore sconosciuto
