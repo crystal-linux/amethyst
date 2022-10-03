@@ -48,3 +48,64 @@ clear-pkgbuild-cache = Wyczyścić wewnętrzną pamięć podręczną PKGBUILD?
 # operations::install
 installing-packages-from-repos = Instalowanie { $packages } z repozytoriów
 zsh-error = Uzupełnienia powłoki Zsh są obecnie nieobsługiwane z powodu błędu w clap_completion
+build-failed = Błąd podczas kompilacji!
+do-you-still-want-to-install = Na pewno chcesz zainstalować te pakiety?
+# operations::aur_install::make_dependency_removal
+remove-installed-make-deps = Chcesz odinstalować zależności potrzebne do kompilacji?
+invalid-shell = Nieprawidłowa powłoka, { $shell }
+# operations::aur_install::aur_fetch
+fetching-pkg-info = Pobieranie informacji o pakiecie
+couldnt-find-all-pkgs = Nie odnaleziono wszystkich pakietów
+all-pkgs-found = Odnaleziono wszystkie pakiety
+some-pkgs-already-installed = Niektóre pakiety są już zainstalowane, kontynuować?
+do-you-want-to-install = Chcesz zainstalować te pakiety i ich zależności?
+# operations::aur_install::common
+downloading-sources = Pobieranie źródeł
+pulling-latest-changes = Pobieranie najnowszych zmian
+cloning-aur-repo = Pobieranie pakiety z AUR
+down-and-ext-files = Pobieranie i rozpakowywanie plików
+downloaded = Pobrano!
+dependency-cycle = Wykryto problem z zależnościami. Przerywanie instalacji.
+building-packages = Kompilowanie pakietów
+built = Skompilowano
+installing-packages = Instalowanie pakietów
+building-package = Kompilowanie pakietów
+couldnt-find-pkg-produced = Nie odnaleziono pakietu { $pkg } w zbudowanych pakietach
+review-build-log = Czy chcesz zobaczyć wynik kompilacji?
+# operations::aur_install::aur_download
+all-sources-ready = Wszystkie źródła są gotowe.
+# interact::theme
+no-selections = Nic nie zaznaczono
+# operations::aur_install::repo_dependency_installation
+installing-repo-deps = Instalowanie zależności repozytorium
+# operations::aur_install::aur_dependency_installation
+installing-from-aur = Instalowanie { $amountOfPkgs } z AUR
+done = Gotowe!
+failed-to-build = Kompilacja się nie powiodła
+unknown-error = Nieznany błąd
+# internal::error
+non-zero-exit = Przerwano z kodem innym niż 0
+build-error = Kompilacja paczki nie powiodła się
+user-cancel = Przerwano przez użytkownika
+error-occurred = Wystąpił problem
+no-pacnew-found = Nie odnaleziono plików .pacnew
+pacnew-found = Odnaleziono pliki .pacnew
+pacnew-warning =
+    Wygląda na to, że co najmniej jeden zainstalowany/zaktualizowany program zainstalował plik konfiguracyjny .pacnew.
+    Są one tworzone, gdy zmodyfikowałeś konfigurację programu, a aktualizacja pakietu nie mogła automatycznie scalić nowego pliku.
+    Możesz poradzić sobie z tymi plikami, uruchamiając
+# internal::config
+config-docs = # Po więcej informacji na temat konfiguracji Amethystu zobacz https://getcryst.al/docs/amethyst/config
+# internal::paging
+quit = wyjdź
+search = wyszukaj
+next-result = następny wynik
+previous-result = poprzedni wynik
+# --help
+verbose = Ustawia poziom czegośtam
+no-confirm = coś bez aktywności użytkownika
+quiet = Spraw, aby niektóre polecenia miały mniejszą wydajność (tylko clean, upgrade i install są obsługiwane)
+install = Instaluje lub wyszukuje pakiet w AUR lub repozytoriach zdefiniowanych przez Pacmana
+remove = Usuwa zainstalowany pakiet
+query = Wyszukuje wśród zainstalowanych pakietów
+scanning-pacnew-files = Wyszukiwanie plików .pacnew
