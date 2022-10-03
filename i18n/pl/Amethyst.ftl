@@ -1,4 +1,4 @@
-installed = zainstalowane
+installed = zainstalowano
 # operations::uninstall
 failed-remove-pkgs = Nie udało się usunąć pakietów
 # operations::upgrade
@@ -121,3 +121,15 @@ query-repo = Wyświetla listę pakietów z repozytoriów [-Qa, -Qm]
 query-info = Wyświetl informacje na temat danej paczki
 upgrade-repo = Aktualizuje tylko natywne/pakiety z repozytoriów
 query-owns = Uzyskaj informacje o tym, który pakiet posiada plik
+description = Szybki i wydajny pomocnik AUR
+# operations::search
+out-of-date = nieaktualny: od
+# used across files
+exiting = Opuszczanie
+packages =
+    { $pkgNum ->
+        [one] pakiet
+       *[other] pakietów
+    }
+upgrade-aur = Aktualizuje pakiety tylko z AUR
+gencomp-shell = Powłoka do wygenerowania uzupełnień (bash, fish, elvish, pwsh, fig)
