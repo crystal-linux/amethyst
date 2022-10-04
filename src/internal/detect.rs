@@ -5,8 +5,6 @@ use crate::internal::config::Config;
 use crate::logging::get_logger;
 use crate::{fl, fl_prompt, fl_warn, prompt};
 
-use super::prompt_sudo_single;
-
 /// Searches the filesystem for .pacnew files and helps the user deal with them.
 #[tracing::instrument(level = "trace")]
 pub async fn detect() {
