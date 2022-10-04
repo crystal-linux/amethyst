@@ -51,8 +51,8 @@ Made for Crystal, compatible with any Arch-based Linux distribution.
 
 ### Install on non-Crystal distros
 - `sudo pacman -S --needed base-devel pacman-contrib cargo`
-- `git clone https://github.com/crystal-linux/pkgbuild.amethyst`
-- `cd pkgbuild.amethyst && makepkg -si`
+- `git clone https://github.com/crystal-linux-packages/ame`
+- `cd ame && makepkg -si`
 
 <br>
 
