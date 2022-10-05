@@ -7,6 +7,7 @@
 <h2 align="center">Amethyst</h2>
 
 <p align="center">
+    <a href="https://getcryst.al/site/docs/amethyst/getting-started"><img src="https://img.shields.io/badge/Documentation-Click%20here!-informational"></a>
     <a href="https://github.com/crystal-linux/amethyst"><img src="https://github.com/crystal-linux/amethyst/actions/workflows/test.yml/badge.svg"></a><br>
     <a href="https://github.com/crystal-linux/.github/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0-blue.svg" alt="License"></a>
     <a href="https://github.com/crystal-linux/amethyst/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues-raw/crystal-linux/amethyst"></a>
