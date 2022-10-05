@@ -65,7 +65,7 @@ async fn upgrade_aur(options: Options) {
             .silent_unwrap(AppExitCode::RpcError);
 
         if let Some(remote_package) = remote_package {
-            if vercmp(remote_package.metadata.version.clone(), pkg.version.clone()).is_ge() {
+            if vercmp(remote_package.metadata.version.clone(), pkg.version.clone()).is_gt() {
                 tracing::debug!(
                     "local version: {}, remote version: {}",
                     pkg.version,
