@@ -1,3 +1,5 @@
+use alpm::vercmp;
+
 use crate::args::UpgradeArgs;
 use crate::builder::pacman::{PacmanColor, PacmanQueryBuilder, PacmanUpgradeBuilder};
 use crate::internal::detect;
@@ -63,7 +65,7 @@ async fn upgrade_aur(options: Options) {
             .silent_unwrap(AppExitCode::RpcError);
 
         if let Some(remote_package) = remote_package {
-            if remote_package.metadata.version != pkg.version {
+            if vercmp(remote_package.metadata.version.clone(), pkg.version.clone()).is_ge() {
                 tracing::debug!(
                     "local version: {}, remote version: {}",
                     pkg.version,
