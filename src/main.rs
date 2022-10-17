@@ -17,6 +17,7 @@ use crate::logging::Printable;
 use clap_complete::Shell;
 use clap_complete_fig::Fig;
 
+use alpm::vercmp;
 use std::str::FromStr;
 
 mod args;
@@ -25,6 +26,7 @@ mod interact;
 mod internal;
 mod logging;
 mod operations;
+use crate::internal::rpc::rpcinfo;
 use logging::init_logger;
 
 #[tokio::main]
@@ -231,7 +233,7 @@ async fn cmd_query(args: QueryArgs) {
 #[tracing::instrument(level = "trace")]
 async fn cmd_checkupdates() {
     // TODO: Implement AUR update checking, which would then respectively display in crystal-update
-    println!(
+    print!(
         "{}",
         ShellCommand::checkupdates()
             .wait_with_output()
@@ -239,6 +241,28 @@ async fn cmd_checkupdates() {
             .silent_unwrap(AppExitCode::Other)
             .stdout
     );
+    let non_native_pkgs = PacmanQueryBuilder::foreign()
+        .color(PacmanColor::Never)
+        .query_with_output()
+        .await
+        .silent_unwrap(AppExitCode::PacmanError);
+
+    tracing::debug!("aur packages: {non_native_pkgs:?}");
+
+    for pkg in non_native_pkgs {
+        let remote_package = rpcinfo(&pkg.name)
+            .await
+            .silent_unwrap(AppExitCode::RpcError);
+
+        if let Some(remote_package) = remote_package {
+            if vercmp(remote_package.metadata.version.clone(), pkg.version.clone()).is_gt() {
+                println!(
+                    "{} {} -> {}",
+                    pkg.name, pkg.version, remote_package.metadata.version
+                )
+            }
+        }
+    }
 }
 
 #[tracing::instrument(level = "trace")]
