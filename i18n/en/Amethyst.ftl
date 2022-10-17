@@ -166,6 +166,7 @@ query = Queries installed packages
 upgrade = Upgrades locally installed packages to their latest versions (Default)
 gencomp = Generates shell completions for supported shells (bash, fish, elvish, pwsh)
 clean = Removes all orphaned packages
+checkupdates = Queries for and returns available package updates
 diff = Runs pacdiff
 install-packages = The name of the package(s) to install or search for
 install-aur = Operate only on AUR packages

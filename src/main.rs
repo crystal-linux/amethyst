@@ -71,6 +71,7 @@ async fn main() {
             fl_info!("removing-orphans");
             operations::clean(options).await;
         }
+        Operation::CheckUpdates => cmd_checkupdates().await,
         Operation::GenComp(gen_args) => cmd_gencomp(&gen_args),
         Operation::Diff => detect().await,
     }
@@ -225,6 +226,19 @@ async fn cmd_query(args: QueryArgs) {
             fl_crash!(AppExitCode::PacmanError, "error-occurred");
         }
     }
+}
+
+#[tracing::instrument(level = "trace")]
+async fn cmd_checkupdates() {
+    // TODO: Implement AUR update checking, which would then respectively display in crystal-update
+    println!(
+        "{}",
+        ShellCommand::checkupdates()
+            .wait_with_output()
+            .await
+            .silent_unwrap(AppExitCode::Other)
+            .stdout
+    );
 }
 
 #[tracing::instrument(level = "trace")]

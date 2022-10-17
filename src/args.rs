@@ -60,6 +60,9 @@ pub enum Operation {
     #[command(bin_name = "ame", name = "clean", short_flag = 'C', about = fl!("clean"))]
     Clean,
 
+    #[command(bin_name = "ame", name = "checkupdates", about = fl!("checkupdates"))]
+    CheckUpdates,
+
     #[command(bin_name = "ame", name = "diff", short_flag = 'd', about = fl!("diff"))]
     Diff,
 }

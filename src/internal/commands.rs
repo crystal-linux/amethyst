@@ -69,6 +69,10 @@ impl ShellCommand {
         Self::new(pager)
     }
 
+    pub fn checkupdates() -> Self {
+        Self::new("checkupdates")
+    }
+
     fn new<S: ToString>(command: S) -> Self {
         Self {
             command: command.to_string(),
