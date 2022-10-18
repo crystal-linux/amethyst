@@ -1,46 +1,47 @@
 # used across files
 exiting = Schließt...
-packages = { $pkgNum ->
-    [one] Paket
-    *[other] Pakete
-}
+packages =
+    { $pkgNum ->
+        [one] Paket
+       *[other] Pakete
+    }
 missing-deps = Fehlende Packetabhängigkeiten
 continue = Fortfahren?
 # main
-run-as-root = Amethyst  mit root Berechtigungen auszuführen ist nicht erlaubt und kann zu korrupten Systemen führen. Amethyst wird nach root Berechtigungen fragen, wenn diese nötig sein sollten.
+run-as-root = Amethyst mit root Berechtigungen auszuführen ist nicht erlaubt und kann zu korrupten Systemen führen. Amethyst wird nach root Berechtigungen fragen, wenn diese nötig sein sollten.
 following-packages = Folgende Pakete wurden in der AUR gefunden:
-aur-warning = 
+aur-warning =
     Die AUR ist eine Plattform, welche von der Community verwaltete Pakete zur Verfügung stellt und die Sicherheit eines Paketes nicht gewährleisten kann.
     Es wird empfohlen die PKGBUILD-Dateien der Pakete zu überprüfen bevor Sie diese Pakete installieren, da manche PKGBUILD-Dateien gefährlich sein können. 
     Diese Warnung kann in der Konfigurationsdatei dekativiert werden.
 are-you-sure = Sie sich sicher, dass Sie fortfahren möchten?
-uninstalling-packages = Folgende Pakete werden deinstalliert: {$packages}
+uninstalling-packages = Folgende Pakete werden deinstalliert: { $packages }
 system-upgrade = Führe Systemaktualisierung durch
 removing-orphans = Deinstalliere nicht benötigte Pakete
-couldnt-find-packages = Folgende Pakete wurden nicht in den Pacman-Paketquellen oder der AUR gefunden: {$packages}
-searching-repos = Suche Paketquellen nach {$query}
-searching-aur = Suche AUR nach {$query}
+couldnt-find-packages = Folgende Pakete wurden nicht in den Pacman-Paketquellen oder der AUR gefunden: { $packages }
+searching-repos = Suche Paketquellen nach { $query }
+searching-aur = Suche AUR nach { $query }
 no-results = Keine Ergebnisse gefunden
 results = Ergebnisse:
 installed-repo-packages = Aus den Pacman-Paketquellen installierte Pakete:
 installed-aur-packages = Aus der AUR installierte Pakete:
 installed-packages = Installierte Pakete:
-invalid-shell = Nicht unterstützte Shell: {$shell}
+invalid-shell = Nicht unterstützte Shell: { $shell }
 zsh-error = ZSH shell Vervollständigung werden zurzeit nicht vom clap_completion crate unterstützt
 # operations::clean
 no-orphans = Keine nicht benötigten Pakete gefunden
-removing-orphans-would = 
+removing-orphans-would =
     Das entfernen von nicht benötigten Paketen wird folgende Pakete entfernen:
-    {$packages}
+    { $packages }
 failed-remove-orphans = Nicht benötigte Pakete konnten nicht entfernt werden
 success-remove-orphans = Nicht benötigte Pakete wurden erfolgreich entfernt
 clear-pkgbuild-cache = Amethysts internen Paketcache leeren?
 clear-pacman-cache = Pacmans Paketcache leeren?
-failed-clear-cache = Paketcache konnte nicht geleert werden, {$error}
+failed-clear-cache = Paketcache konnte nicht geleert werden, { $error }
 success-clear-cache = Paketcache wurde erfolgreich geleert
 # operations::install
-installing-packages-from-repos = Die Pakete {$packages} werden von den Paketquellen installiert
-error-install = Während der Paketinstallation ist ein Fehler aufgetreten: {$error}. Die Installation wird abgebrochen
+installing-packages-from-repos = Die Pakete { $packages } werden von den Paketquellen installiert
+error-install = Während der Paketinstallation ist ein Fehler aufgetreten: { $error }. Die Installation wird abgebrochen
 # operations::search
 out-of-date = veraltet: since
 installed = installiert
@@ -49,13 +50,13 @@ failed-remove-pkgs = Pakete konnten nicht deinstalliert werden
 # operations::upgrade
 failed-upgrade-repo-pkgs = Pakete aus Pacman-Paketquellen konnten nicht aktualisiert werden
 success-upgrade-repo-pkgs = Pakete aus Pacman-Paketquellen wurden erfolgreich aktualisiert
-couldnt-find-remote-pkg = Remotepaket für {$pkg} konnte nicht gefunden werden
+couldnt-find-remote-pkg = Remotepaket für { $pkg } konnte nicht gefunden werden
 no-upgrades-aur-package = Keine Aktualisierungen für AUR Pakete gefunden
 scanning-for-pacnew = Scanne für .pacnew Dateien nach Aktualisierung
 # logging::output
 repo-dependencies = Paketabhängigkeiten aus den Pacman-Paketquellen
 aur-dependencies = Paketabhängigkeiten aus der AUR
-repo-make-dependencies = Paketabhängigkeiten zum Bauen der Pakete aus den Pacman-Paketquellen 
+repo-make-dependencies = Paketabhängigkeiten zum Bauen der Pakete aus den Pacman-Paketquellen
 aur-make-dependencies = Paketabhängigkeiten zum Bauen der Pakete aus der AUR
 version = Version
 votes = Votes
@@ -73,19 +74,19 @@ cloning-aur-repo = Lädt AUR-Repository herunter
 down-and-ext-files = Lädt Dateien herunter und extrahiert diese
 downloaded = Heruntergeladen!
 dependency-cycle = Abhängigkeitskreis erkannt! Die Installation wird abgebrochen.
-building-packages = Baue Pakete 
+building-packages = Baue Pakete
 built = Gebaut
 installing-packages = Installiere Pakete
 building-package = Baue Paket
 build-failed = Erstellen des Pakets fehlgeschlagen!
-couldnt-find-pkg-produced = Konnte das Paket {$pkg} nicht in den erstellten Paketen finden
+couldnt-find-pkg-produced = Konnte das Paket { $pkg } nicht in den erstellten Paketen finden
 review-build-log = Möchten Sie sich die Logdatei über die Paketerstellung anschauen?
 # operations::aur_install::aur_review
 select-pkgs-review = Wählen Sie die Pakete aus, die Sie überprüfen möchten
 do-you-still-want-to-install = Möchten Sie die Pakete weiterhin installieren?
 reviewing = Überprüfen
 select-file-review = Wählen Sie eine Datei zum Überprüfen aus
-done-reviewing-pkg = Überprüfung von {$pkg} abgeschlossen
+done-reviewing-pkg = Überprüfung von { $pkg } abgeschlossen
 # operations::aur_install::aur_download
 all-sources-ready = Alle Quellen sind bereit.
 # interact::theme
@@ -93,12 +94,12 @@ no-selections = Keine Auswahl
 # operations::aur_install::repo_dependency_installation
 installing-repo-deps = Installiere Pacman-Abhängigkeiten
 # operations::aur_install::aur_dependency_installation
-installing-from-aur = Installiere {$amountOfPkgs} aus der AUR
+installing-from-aur = Installiere { $amountOfPkgs } aus der AUR
 # operations::aur_install::make_dependency_removal
 remove-installed-make-deps = Möchten Sie die ausschließlich zum Bauen verwendeten Abhängigkeiten entfernen?
 done = Fertig!
 # operations::aur_install
-aur-rpc-crash = AUR RPC Aufruf ist fehlgeschlagen: {$error}
+aur-rpc-crash = AUR RPC Aufruf ist fehlgeschlagen: { $error }
 failed-to-build = Konnte nicht gebaut werden
 makepkg-failed = makepkg ist fehlgeschlagen
 unknown-error = Unbekannter Fehler
@@ -118,7 +119,7 @@ pacnew-warning =
     Einige von dir installierten oder aktualisierten Pakete haben eine .pacnew Datei hinterlassen.
     Diese Dateien werden erstellt, wenn sich die Konfiguration eines Programmes geändert hat und nicht automatisch
     mit der vorhandenden Konfiguration zusammengeführt werden konnte. Sie können diese Konflikte lösen,
-    indem Sie folgendes ausführen: 
+    indem Sie folgendes ausführen:
 run-pacdiff-now = Möchten Sie pacdiff nun ausführen?
 pacdiff-warning =
     Pacdiff nutzt standardmäßig vimdiff um Dateien zusammenzuführen. Sie können Bereiche fokussieren, indem Sie die Maus
@@ -146,7 +147,7 @@ upgrade = Aktualisiert lokale Pakete auf deren neuste Version (Standardwert)
 gencomp = Generiert Shell-Vervollständigungen für unterstützte Shells (bash, fish, elvish, pwsh)
 clean = Entfernt nicht verwendete Pakete
 diff = Führt pacdiff aus
-install-packages = Namen der Pakete die installiert oder gesucht werden sollen 
+install-packages = Namen der Pakete die installiert oder gesucht werden sollen
 install-aur = Betrachtet nur Paekte aus der AUR
 install-repo = Betrachtet nur Pakete aus den Pacman-Paketquellen
 install-search = Sucht nach Paketen die einem bestimmten Muster entsprechen, anstatt zu installieren
@@ -158,4 +159,5 @@ query-info = Gibt Informationen über ein bestimmtes Paket aus
 upgrade-repo = Aktualisiert nur Pakete aus Pacman-Paketquellen
 upgrade-aur = Aktualisiert nur AUR-Pakete
 gencomp-shell = Die Shell für die Auto-Vervollständigungen generiert werden soll (bash, fish, elvish, pwsh, fig)
-review = {$pkg} überprüfen?
+review = { $pkg } überprüfen?
+description = Ein schneller und effizienter AUR-Helfer
