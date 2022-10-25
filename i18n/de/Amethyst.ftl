@@ -154,6 +154,7 @@ install-by = Sucht nach dem Wert eines bestimmten Feldes
 remove-packages = Die Namen der Pakete, die entfernt werden sollen
 query-aur = Listet AUR und Pacman-fremde Pakete auf [-Qa, -Qm]
 query-repo = Listet Pakete aus den Pacman-Paketquellen auf [-Qr, -Qn]
+query-explicit = Listet Pakete auf, die explizit installiert wurden [-Qe]
 query-info = Gibt Informationen über ein bestimmtes Paket aus
 upgrade-repo = Aktualisiert nur Pakete aus Pacman-Paketquellen
 upgrade-aur = Aktualisiert nur AUR-Pakete
