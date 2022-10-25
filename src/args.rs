@@ -102,6 +102,9 @@ pub struct QueryArgs {
     #[arg(long, short, help = fl!("query-repo"))]
     pub repo: bool,
 
+    #[arg(long, short, help = fl!("query-explicit"))]
+    pub explicit: bool,
+
     #[arg(long, short, help = fl!("query-info"))]
     pub info: Option<String>,
 

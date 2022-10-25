@@ -101,6 +101,7 @@ impl PacmanInstallBuilder {
 pub struct PacmanQueryBuilder {
     query_type: PacmanQueryType,
     color: PacmanColor,
+    explicit: bool,
     packages: Vec<String>,
 }
 
@@ -133,6 +134,7 @@ impl PacmanQueryBuilder {
         Self {
             query_type,
             color: PacmanColor::default(),
+            explicit: false,
             packages: Vec::new(),
         }
     }
@@ -177,6 +179,12 @@ impl PacmanQueryBuilder {
 
     pub fn color(mut self, color: PacmanColor) -> Self {
         self.color = color;
+
+        self
+    }
+
+    pub fn explicit(mut self, explicit: bool) -> Self {
+        self.explicit = explicit;
 
         self
     }
@@ -233,6 +241,10 @@ impl PacmanQueryBuilder {
             }
             PacmanColor::Never => command.arg("never"),
         };
+
+        if self.explicit {
+            command = command.arg("--explicit")
+        }
 
         command.args(self.packages)
     }

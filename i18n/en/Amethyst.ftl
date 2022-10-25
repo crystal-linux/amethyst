@@ -175,6 +175,7 @@ install-by = Searches by a specific field
 remove-packages = The name of the package(s) to remove
 query-aur = Lists AUR/foreign packages [-Qa, -Qm]
 query-repo = Lists repo/native packages [-Qr, -Qn]
+query-explicit = Lists explicitly installed packages [-Qe]
 query-info = Get information about a specific package
 query-owns = Get information about which package owns a file
 upgrade-repo = Upgrades only repo/native packages
