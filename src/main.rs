@@ -189,21 +189,21 @@ async fn cmd_query(args: QueryArgs) {
             .query()
             .await
             .silent_unwrap(AppExitCode::PacmanError);
-        }
-        
-        if args.aur {
-            fl_info!("installed-aur-packages");
-            PacmanQueryBuilder::foreign()
+    }
+
+    if args.aur {
+        fl_info!("installed-aur-packages");
+        PacmanQueryBuilder::foreign()
             .color(PacmanColor::Always)
             .explicit(args.explicit)
             .query()
             .await
             .silent_unwrap(AppExitCode::PacmanError);
-        }
-        
-        if both {
-            fl_info!("installed-packages");
-            PacmanQueryBuilder::all()
+    }
+
+    if both {
+        fl_info!("installed-packages");
+        PacmanQueryBuilder::all()
             .color(PacmanColor::Always)
             .explicit(args.explicit)
             .query()
