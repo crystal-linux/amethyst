@@ -8,6 +8,8 @@ use crate::internal::error::SilentUnwrap;
 use crate::internal::exit_code::AppExitCode;
 use crate::internal::rpc::rpcsearch;
 use crate::internal::utils::wrap_text;
+use crate::logging::fmt_builder::FmtBuilder;
+use crate::logging::fmt_builder::FmtOptions;
 use crate::logging::Printable;
 use crate::Options;
 
@@ -32,99 +34,68 @@ impl PackageSearchResult {
     pub fn score(&self, query: &str) -> f32 {
         similarity(query, &self.name)
     }
+
+    fn fmt_builder<'a>(&'a self) -> FmtBuilder<'a> {
+        let mut builder = FmtBuilder::new();
+        builder
+            .append({
+                let repo = self.repo.clone();
+                if repo == "aur" {
+                    format!("{repo}/").bold().cyan()
+                } else {
+                    format!("{repo}/").bold().purple()
+                }
+            })
+            .append(self.name.bold())
+            .append(" ")
+            .append(self.version.bold().green())
+            .append_if(
+                !self.groups.as_ref().map(|g| g.is_empty()).unwrap_or(true),
+                || {
+                    self.groups
+                        .as_ref()
+                        .map(|groups| format!("({})", groups.join(",")))
+                        .unwrap()
+                        .bold()
+                        .blue()
+                },
+            )
+            .append(
+                self.out_of_date
+                    .map(|ood| Local.timestamp(ood.try_into().unwrap(), 0).date_naive())
+                    .map(|ood| format!(" [{} {}]", fl!("out-of-date"), ood).bold().red()),
+            )
+            .append_if(self.installed, || {
+                format!(" [{}]", fl!("installed")).bold().cyan()
+            })
+            .append("\n    ")
+            .append(
+                wrap_text(
+                    self.description
+                        .clone()
+                        .unwrap_or_else(|| "No description".to_string()),
+                    4,
+                )
+                .join("\n"),
+            );
+
+        builder
+    }
 }
 
 impl Display for PackageSearchResult {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let repo = &self.repo;
-        let name = &self.name;
-        let version = &self.version;
-        let groups = if let Some(groups) = &self.groups {
-            if groups.is_empty() {
-                String::new()
-            } else {
-                format!("({})", groups.join(", "))
-            }
-        } else {
-            String::new()
-        };
-        let out_of_date = if let Some(out_of_date) = self.out_of_date {
-            format!(
-                " [{} {}]",
-                fl!("out-of-date"),
-                Local
-                    .timestamp(out_of_date.try_into().unwrap(), 0)
-                    .date_naive()
-            )
-        } else {
-            String::new()
-        };
-        let installed = if self.installed {
-            format!(" [{}]", fl!("installed"))
-        } else {
-            String::new()
-        };
-        let description = wrap_text(
-            self.description
-                .clone()
-                .unwrap_or_else(|| "No description".to_string()),
-            4,
-        )
-        .join("\n");
-
-        format!("{repo}{name} {version}{groups}{out_of_date}{installed}\n    {description}").fmt(f)
+        self.fmt_builder()
+            .options(FmtOptions { colored: false })
+            .fmt(f)
     }
 }
 
 impl Printable for PackageSearchResult {
     fn to_print_string(&self) -> String {
-        let repo = if &self.repo == "aur" {
-            (self.repo.clone() + "/").bold().cyan()
-        } else {
-            (self.repo.clone() + "/").bold().purple()
-        };
-        let name = &self.name.bold();
-        let version = &self.version.bold().green();
-        let groups = if let Some(groups) = &self.groups {
-            if groups.is_empty() {
-                "".to_string()
-            } else {
-                format!(" ({})", groups.join(", "))
-            }
-        } else {
-            "".to_string()
-        }
-        .bold()
-        .blue();
-        let out_of_date = if let Some(out_of_date) = self.out_of_date {
-            format!(
-                " [{} {}]",
-                fl!("out-of-date"),
-                Local
-                    .timestamp(out_of_date.try_into().unwrap(), 0)
-                    .date_naive()
-            )
-        } else {
-            "".to_string()
-        }
-        .bold()
-        .red();
-        let installed = if self.installed {
-            format!(" [{}]", fl!("installed"))
-        } else {
-            "".to_string()
-        }
-        .bold()
-        .cyan();
-        let description = wrap_text(
-            self.description
-                .clone()
-                .unwrap_or_else(|| "No description".to_string()),
-            4,
-        )
-        .join("\n");
-
-        format!("{repo}{name} {version}{groups}{out_of_date}{installed}\n    {description}")
+        self.fmt_builder()
+            .options(FmtOptions { colored: true })
+            .build()
     }
 }
 

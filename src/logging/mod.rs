@@ -15,6 +15,7 @@ use fmt_layer::AmeFormatLayer;
 use crate::internal::uwu_enabled;
 
 use self::handler::LogHandler;
+pub mod fmt_builder;
 pub mod handler;
 pub mod output;
 pub mod piped_stdio;
